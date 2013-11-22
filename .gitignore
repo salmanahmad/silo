@@ -1,0 +1,7 @@
+target/
+
+# ZZZ.java is used a temporary file to compile and inspect for
+# bytecode generation. At some point, it should be removed
+# and taken away from this ignore list.
+ZZZ.java
+
