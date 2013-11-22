@@ -25,4 +25,29 @@ public class ParserTest {
         parser.parse("\n\n\n");
         parser.parse("\n\n  \n \n");
     }
+
+    @Test
+    public void testSymbol() {
+        Parser parser = new Parser();
+        parser.parse("foo");
+    }
+
+    @Test
+    public void testChildlessNode() {
+        Parser parser = new Parser();
+        parser.parse("foo()");
+    }
+
+    @Test
+    public void testOneChildNode() {
+        Parser parser = new Parser();
+        parser.parse("foo(bar)");
+    }
+
+    @Test
+    public void testManyChildrenNode() {
+        Parser parser = new Parser();
+        parser.parse("foo(bar, baz, qux)");
+    }
+
 }

@@ -14,6 +14,9 @@ package silo.lang;
 import java.util.Vector;
 import java.util.Arrays;
 
+// TODO: I need to figure out how to include meta-data like line number
+// and character positions in the Node class.
+
 public class Node {
     Object label;
     Vector children;

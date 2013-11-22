@@ -39,8 +39,7 @@ public class Parser {
         GrammarParser parser = new GrammarParser(tokens);
 
         try {
-            parser.program();
-            return null;
+            return parser.program().value;
         } catch(RecognitionException exception) {
             throw new RuntimeException("Parser error.");
         }

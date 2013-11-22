@@ -41,6 +41,7 @@ import silo.lang.*;
 program returns [Node value]
   : terminator?                        { $value = new Node(null); }
     ( expressions                      { $value = $expressions.value; }
+      terminator
     )?
     EOF!
   ;
@@ -52,7 +53,6 @@ expressions returns [Node value]
       terminator
       tail=expression                  { $value.addChild($tail.value); }
     )*
-    terminator
   ;
 
 // TODO: Right now, all expressions return an Object because it must be cascaded up from
