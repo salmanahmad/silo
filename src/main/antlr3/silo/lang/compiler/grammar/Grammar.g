@@ -7,7 +7,7 @@ options {
   ASTLabelType=CommonTree;
 }
 
-@parser::header { 
+@parser::header {
 package silo.lang.compiler.grammar;
 
 import silo.lang.*;
@@ -38,104 +38,114 @@ import silo.lang.*;
     }
 }
 
-program
-  : terminator? expressions? EOF!
+program returns [Node code]
+  : terminator?                        { $code = new Node(null); }
+    ( expressions                      { $code = $expressions.node; }
+    )?
+    EOF!
   ;
 
-expressions
-  : head=expression 
+expressions returns [Node node]
+  :                                    { $node = new Node(null); }
+    head=expression                    { $node.addChild($head.node); }
     (
-      terminator 
-      tail=expression
+      terminator
+      tail=expression                  { $node.addChild($tail.node); }
     )*
     terminator
   ;
 
-expression
-  : assignmentExpression
+// TODO: Right now, all expressions return an Object because it must be cascaded up from
+// literalExpression. The idea of using Objects seems kind of scary. When I get around to
+// adding a Value class to the code base, consider using Value instead of Object.
+
+expression returns [Object node]
+  : assignmentExpression               { $node = $assignmentExpression.node; }
   ;
 
-assignmentExpression
-  : n1=orExpression
-    ( ASSIGN
-      n2=assignmentExpression
+assignmentExpression returns [Object node]
+  : n1=orExpression                    { $node = $n1.node; }
+    ( op=ASSIGN
+      n2=assignmentExpression          { $node = new Node(new Symbol($op.text), $n1.node, $n2.node); }
     )?
   ;
   
-orExpression
-  : n1=andExpression
-    ( OR
-      n2=orExpression
+orExpression returns [Object node]
+  : n1=andExpression                   { $node = $n1.node; }
+    ( op=OR
+      n2=orExpression                  { $node = new Node(new Symbol($op.text), $n1.node, $n2.node); }
     )?
   ;
 
-andExpression
-  : n1=relationalExpression
-    ( AND
-      n2=andExpression
+andExpression returns [Object node]
+  : n1=relationalExpression            { $node = $n1.node; }
+    ( op=AND
+      n2=andExpression                 { $node = new Node(new Symbol($op.text), $n1.node, $n2.node); }
     )?
   ;
 
-relationalExpression
-  : n1=additiveExpression
-    ( relationalOperator
-      n2=relationalExpression
+relationalExpression returns [Object node]
+  : n1=additiveExpression              { $node = $n1.node; }
+    ( op=relationalOperator
+      n2=relationalExpression          { $node = new Node(new Symbol($op.text), $n1.node, $n2.node); }
     )?
   ;
 
-additiveExpression
-  : n1=multiplicativeExpression
-    ( additiveOperator
-      n2=additiveExpression
+additiveExpression returns [Object node]
+  : n1=multiplicativeExpression        { $node = $n1.node; }
+    ( op=additiveOperator
+      n2=additiveExpression            { $node = new Node(new Symbol($op.text), $n1.node, $n2.node); }
     )?
   ;
 
-multiplicativeExpression
-  : n1=unaryExpresion 
-    ( multiplicativeOperator
-      n2=multiplicativeExpression
+multiplicativeExpression returns [Object node]
+  : n1=unaryExpresion                  { $node = $n1.value; }
+    ( op=multiplicativeOperator
+      n2=multiplicativeExpression      { $node = new Node(new Symbol($op.text), $n1.value, $n2.node); }
     )?
   ;
 
-unaryExpresion
-  : NOT node1=unaryExpresion
-  | primaryExpression
+unaryExpresion returns [Object value]
+  : op=NOT n1=unaryExpresion           { $value = new Node(new Symbol($op.text), $n1.value); }
+  | primaryExpression                  { $value = $primaryExpression.object; }
   ;
 
-primaryExpression
-  : nodeExpression
-  | literalExpression 
+primaryExpression returns [Object object]
+  : nodeExpression                     { $object = $nodeExpression.node; }
+  | literalExpression                  { $object = $literalExpression.object; }
   ;
 
-nodeExpression
-  : ( literalExpression
+nodeExpression returns [Node node]
+  : ( literalExpression                { $node = new Node($literalExpression.object); }
     )?
-    nodeTailExpression
-  ;
 
-nodeTailExpression
-  : OPEN_PAREN
-    ( head=expression      
-      ( (COMMA | NEWLINE) (COMMA | NEWLINE)*
-        tail=expression
-      )*
+    OPEN_PAREN
+    ( head=expressions                 { $node.addChildren($head.node.getChildren()); }
     )?
     CLOSE_PAREN
 
-    ( nodeTailExpression
-    )?
+    ( OPEN_PAREN                       { $node = new Node($node); }
+      ( tail=expressions               { $node.addChildren($tail.node.getChildren()); }
+      )?
+      CLOSE_PAREN
+    )*
   ;
 
-literalExpression
-  : TRUE
-  | FALSE
-  | NULL
-  | SYMBOL
-  | STRING
-  | NUMBER
+literalExpression returns [Object object]
+  : NULL                               { $object = null; }
+  | TRUE                               { $object = Boolean.TRUE; }
+  | FALSE                              { $object = Boolean.FALSE; }
+  | SYMBOL                             { $object = new Symbol($SYMBOL.text); }
+  | STRING                             { $object = $text; }
+  | INTEGER                            { $object = Integer.parseInt($text); }
+  | FLOAT                              { $object = Float.parseFloat($text); }
+  | DOUBLE                             { $object = Double.parseDouble($text); }
   ;
 
-relationalOperator 
+// TODO: Once I decide on the standard library names for operators as well as if
+// operators should be functions or traits, I should update these rules.
+
+relationalOperator returns [Symbol symbol]
   : EQUAL
   | NOT_EQUAL
   | LESS_THAN_EQUAL
@@ -144,31 +154,31 @@ relationalOperator
   | GREATER_THAN
   ;
 
-additiveOperator
+additiveOperator returns [Symbol symbol]
   : PLUS
   | MINUS
   ;
 
-multiplicativeOperator
+multiplicativeOperator returns [Symbol symbol]
   : MULTIPLY
   | DIVIDE
   | MODULO
   ;
 
 terminator
-  : (NEWLINE | SEMICOLON)+
+  : (NEWLINE | COMMA | SEMICOLON)+
   | EOF
   ;
 
 STRING
 @init{ StringBuilder buf = new StringBuilder(); }
-  : '"' 
-    ( escape=ESC                       {buf.append(getText());} 
-    | normal=~('"'|'\\'|'\n'|'\r')     {buf.appendCodePoint($normal);} 
+  : '"'
+    ( escape=ESC                       {buf.append(getText());}
+    | normal=~('"'|'\\'|'\n'|'\r')     {buf.appendCodePoint($normal);}
     )*
     '"'                                {setText(buf.toString());}
   | '\''
-    ( normal=~('\'')                   {buf.appendCodePoint($normal);} 
+    ( normal=~('\'')                   {buf.appendCodePoint($normal);}
     )*
     '\''                               {setText(buf.toString());}
   ;

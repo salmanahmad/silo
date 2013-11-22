@@ -40,6 +40,7 @@ public class Parser {
 
         try {
             parser.program();
+            return null;
         } catch(RecognitionException exception) {
             throw new RuntimeException("Parser error.");
         }
