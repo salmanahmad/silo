@@ -50,4 +50,10 @@ public class ParserTest {
         parser.parse("foo(bar, baz, qux)");
     }
 
+    @Test
+    public void testNestedChildren() {
+        Parser parser = new Parser();
+        parser.parse("foo(bar(), baz, qux())");
+    }
+
 }
