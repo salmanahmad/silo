@@ -38,19 +38,19 @@ import silo.lang.*;
     }
 }
 
-program returns [Node code]
-  : terminator?                        { $code = new Node(null); }
-    ( expressions                      { $code = $expressions.node; }
+program returns [Node value]
+  : terminator?                        { $value = new Node(null); }
+    ( expressions                      { $value = $expressions.value; }
     )?
     EOF!
   ;
 
-expressions returns [Node node]
-  :                                    { $node = new Node(null); }
-    head=expression                    { $node.addChild($head.node); }
+expressions returns [Node value]
+  :                                    { $value = new Node(null); }
+    head=expression                    { $value.addChild($head.value); }
     (
       terminator
-      tail=expression                  { $node.addChild($tail.node); }
+      tail=expression                  { $value.addChild($tail.value); }
     )*
     terminator
   ;
@@ -59,87 +59,87 @@ expressions returns [Node node]
 // literalExpression. The idea of using Objects seems kind of scary. When I get around to
 // adding a Value class to the code base, consider using Value instead of Object.
 
-expression returns [Object node]
-  : assignmentExpression               { $node = $assignmentExpression.node; }
+expression returns [Object value]
+  : assignmentExpression               { $value = $assignmentExpression.value; }
   ;
 
-assignmentExpression returns [Object node]
-  : n1=orExpression                    { $node = $n1.node; }
+assignmentExpression returns [Object value]
+  : n1=orExpression                    { $value = $n1.value; }
     ( op=ASSIGN
-      n2=assignmentExpression          { $node = new Node(new Symbol($op.text), $n1.node, $n2.node); }
+      n2=assignmentExpression          { $value = new Node(new Symbol($op.text), $n1.value, $n2.value); }
     )?
   ;
   
-orExpression returns [Object node]
-  : n1=andExpression                   { $node = $n1.node; }
+orExpression returns [Object value]
+  : n1=andExpression                   { $value = $n1.value; }
     ( op=OR
-      n2=orExpression                  { $node = new Node(new Symbol($op.text), $n1.node, $n2.node); }
+      n2=orExpression                  { $value = new Node(new Symbol($op.text), $n1.value, $n2.value); }
     )?
   ;
 
-andExpression returns [Object node]
-  : n1=relationalExpression            { $node = $n1.node; }
+andExpression returns [Object value]
+  : n1=relationalExpression            { $value = $n1.value; }
     ( op=AND
-      n2=andExpression                 { $node = new Node(new Symbol($op.text), $n1.node, $n2.node); }
+      n2=andExpression                 { $value = new Node(new Symbol($op.text), $n1.value, $n2.value); }
     )?
   ;
 
-relationalExpression returns [Object node]
-  : n1=additiveExpression              { $node = $n1.node; }
+relationalExpression returns [Object value]
+  : n1=additiveExpression              { $value = $n1.value; }
     ( op=relationalOperator
-      n2=relationalExpression          { $node = new Node(new Symbol($op.text), $n1.node, $n2.node); }
+      n2=relationalExpression          { $value = new Node(new Symbol($op.text), $n1.value, $n2.value); }
     )?
   ;
 
-additiveExpression returns [Object node]
-  : n1=multiplicativeExpression        { $node = $n1.node; }
+additiveExpression returns [Object value]
+  : n1=multiplicativeExpression        { $value = $n1.value; }
     ( op=additiveOperator
-      n2=additiveExpression            { $node = new Node(new Symbol($op.text), $n1.node, $n2.node); }
+      n2=additiveExpression            { $value = new Node(new Symbol($op.text), $n1.value, $n2.value); }
     )?
   ;
 
-multiplicativeExpression returns [Object node]
-  : n1=unaryExpresion                  { $node = $n1.value; }
+multiplicativeExpression returns [Object value]
+  : n1=unaryExpresion                  { $value = $n1.value; }
     ( op=multiplicativeOperator
-      n2=multiplicativeExpression      { $node = new Node(new Symbol($op.text), $n1.value, $n2.node); }
+      n2=multiplicativeExpression      { $value = new Node(new Symbol($op.text), $n1.value, $n2.value); }
     )?
   ;
 
 unaryExpresion returns [Object value]
   : op=NOT n1=unaryExpresion           { $value = new Node(new Symbol($op.text), $n1.value); }
-  | primaryExpression                  { $value = $primaryExpression.object; }
+  | primaryExpression                  { $value = $primaryExpression.value; }
   ;
 
-primaryExpression returns [Object object]
-  : nodeExpression                     { $object = $nodeExpression.node; }
-  | literalExpression                  { $object = $literalExpression.object; }
+primaryExpression returns [Object value]
+  : nodeExpression                     { $value = $nodeExpression.value; }
+  | literalExpression                  { $value = $literalExpression.value; }
   ;
 
-nodeExpression returns [Node node]
-  : ( literalExpression                { $node = new Node($literalExpression.object); }
+nodeExpression returns [Node value]
+  : ( literalExpression                { $value = new Node($literalExpression.value); }
     )?
 
     OPEN_PAREN
-    ( head=expressions                 { $node.addChildren($head.node.getChildren()); }
+    ( head=expressions                 { $value.addChildren($head.value.getChildren()); }
     )?
     CLOSE_PAREN
 
-    ( OPEN_PAREN                       { $node = new Node($node); }
-      ( tail=expressions               { $node.addChildren($tail.node.getChildren()); }
+    ( OPEN_PAREN                       { $value = new Node($value); }
+      ( tail=expressions               { $value.addChildren($tail.value.getChildren()); }
       )?
       CLOSE_PAREN
     )*
   ;
 
-literalExpression returns [Object object]
-  : NULL                               { $object = null; }
-  | TRUE                               { $object = Boolean.TRUE; }
-  | FALSE                              { $object = Boolean.FALSE; }
-  | SYMBOL                             { $object = new Symbol($SYMBOL.text); }
-  | STRING                             { $object = $text; }
-  | INTEGER                            { $object = Integer.parseInt($text); }
-  | FLOAT                              { $object = Float.parseFloat($text); }
-  | DOUBLE                             { $object = Double.parseDouble($text); }
+literalExpression returns [Object value]
+  : NULL                               { $value = null; }
+  | TRUE                               { $value = Boolean.TRUE; }
+  | FALSE                              { $value = Boolean.FALSE; }
+  | SYMBOL                             { $value = new Symbol($SYMBOL.text); }
+  | STRING                             { $value = $text; }
+  | INTEGER                            { $value = Integer.parseInt($text); }
+  | FLOAT                              { $value = Float.parseFloat($text); }
+  | DOUBLE                             { $value = Double.parseDouble($text); }
   ;
 
 // TODO: Once I decide on the standard library names for operators as well as if
