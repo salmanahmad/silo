@@ -112,6 +112,7 @@ unaryExpresion returns [Object value]
 
 primaryExpression returns [Object value]
   : nodeExpression                     { $value = $nodeExpression.value; }
+  | blockExpression                    { $value = $blockExpression.value; }
   | literalExpression                  { $value = $literalExpression.value; }
   ;
 
@@ -134,6 +135,15 @@ nodeExpression returns [Node value]
       terminator?
       CLOSE_PAREN
     )*
+  ;
+
+blockExpression returns [Node value]
+  : OPEN_BRACE                         { $value = new Node(new Symbol("do")); }
+    terminator?
+    ( expressions                      { $value = new Node(new Symbol("do"), $expressions.value.getChildren()); }
+    )?
+    terminator?
+    CLOSE_BRACE
   ;
 
 literalExpression returns [Object value]
