@@ -11,6 +11,7 @@ options {
 package silo.lang.compiler.grammar;
 
 import silo.lang.*;
+import silo.util.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,7 +21,9 @@ import java.util.Arrays;
 
 @lexer::header {
 package silo.lang.compiler.grammar;
+
 import silo.lang.*;
+import silo.util.*;
 }
 
 @parser::members {
@@ -106,14 +109,15 @@ multiplicativeExpression returns [Object value]
   ;
 
 unaryExpresion returns [Object value]
-  : op=unaryOperator n1=unaryExpresion           { $value = new Node(new Symbol($op.text), $n1.value); }
+  : op=unaryOperator n1=unaryExpresion { $value = new Node(new Symbol($op.text), $n1.value); }
   | binaryExpression                   { $value = $binaryExpression.value; }
   ;
 
 binaryExpression returns [Object value]
+@init { Node parent = null; Node child = null; }
   : n1=primaryExpression               { $value = $n1.value; }
     ( op=binaryOperator
-      n2=binaryExpression              { $value = new Node(new Symbol($op.text), $n1.value, $n2.value); }
+      n2=binaryExpression              { $value = Helper.cascadeNode(new Node(new Symbol($op.text), $n1.value), $n2.value); }
     )?
   ;
 

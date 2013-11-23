@@ -44,6 +44,10 @@ public class Node {
         }
     }
 
+    public Object getLabel() {
+        return label;
+    }
+
     public void addChild(Object child) {
         this.children.add(child);
     }
