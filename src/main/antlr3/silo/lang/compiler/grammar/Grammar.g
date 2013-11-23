@@ -106,8 +106,15 @@ multiplicativeExpression returns [Object value]
   ;
 
 unaryExpresion returns [Object value]
-  : op=NOT n1=unaryExpresion           { $value = new Node(new Symbol($op.text), $n1.value); }
-  | primaryExpression                  { $value = $primaryExpression.value; }
+  : op=unaryOperator n1=unaryExpresion           { $value = new Node(new Symbol($op.text), $n1.value); }
+  | binaryExpression                   { $value = $binaryExpression.value; }
+  ;
+
+binaryExpression returns [Object value]
+  : n1=primaryExpression               { $value = $n1.value; }
+    ( op=binaryOperator
+      n2=binaryExpression              { $value = new Node(new Symbol($op.text), $n1.value, $n2.value); }
+    )?
   ;
 
 primaryExpression returns [Object value]
@@ -180,6 +187,14 @@ multiplicativeOperator returns [Symbol symbol]
   | MODULO
   ;
 
+unaryOperator returns [Symbol symbol]
+  : NOT
+  ;
+
+binaryOperator returns [Symbol symbol]
+  : COLON
+  | ARROW
+  ;
 terminator
   : (NEWLINE | COMMA | SEMICOLON)+
   | EOF
@@ -204,14 +219,9 @@ FLOAT:              '-'? DIGIT+ ('.' DIGIT+) 'f';
 
 TRUE:               'true';
 FALSE:              'false';
-
 NULL:               'null';
 
 SYMBOL:             LETTER SYMBOL_CHAR*;
-
-SEMICOLON:          ';';
-DOT:                '.';
-COMMA:              ',';
 
 OPEN_BRACKET:       '[';
 CLOSE_BRACKET:      ']';
@@ -222,14 +232,16 @@ CLOSE_BRACE:        '}';
 
 ASSIGN:             '=';
 
+AND:                '&&' | 'and';
+OR:                 '||' | 'or';
+NOT:                '!' | 'not';
+
 EQUAL:              '==';
 NOT_EQUAL:          '!=';
 LESS_THAN_EQUAL:    '<=';
 GREATER_THAN_EQUAL: '>=';
 LESS_THAN:          '<';
 GREATER_THAN:       '>';
-
-ARROW:              '=>';
 
 PLUS:               '+';
 MINUS:              '-';
@@ -238,14 +250,17 @@ MULTIPLY:           '*';
 DIVIDE:             '/';
 MODULO:             '%';
 
-AND:                '&&' | 'and';
-OR:                 '||' | 'or';
-NOT:                '!' | 'not';
+ARROW:              '=>';
+SCOPE:              '::';
+COLON:              ':';
+DOT:                '.';
 
-COMMENT:            '//' ~('\r' | '\n')* (NEWLINE | EOF) { $type = NEWLINE; };
-
+SEMICOLON:          ';';
+COMMA:              ',';
 NEWLINE:            '\r'? '\n';
 WHITESPACE:         SPACE+ { $channel = HIDDEN; };
+
+COMMENT:            '//' ~('\r' | '\n')* (NEWLINE | EOF) { $type = NEWLINE; };
 
 fragment ESC
   : '\\'
@@ -265,7 +280,6 @@ fragment ESC
 fragment LETTER:      LOWER | UPPER;
 fragment NUMBER:      INTEGER | FLOAT | DOUBLE;
 fragment SYMBOL_CHAR: LETTER | DIGIT | UNDERSCORE;
-fragment COLON:       ':';
 fragment UNDERSCORE:  '_';
 fragment LOWER:       'a'..'z';
 fragment UPPER:       'A'..'Z';
