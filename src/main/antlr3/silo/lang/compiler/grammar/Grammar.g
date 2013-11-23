@@ -102,22 +102,36 @@ additiveExpression returns [Object value]
   ;
 
 multiplicativeExpression returns [Object value]
-  : n1=unaryExpresion                  { $value = $n1.value; }
+  : n1=binaryExpression                { $value = $n1.value; }
     ( op=multiplicativeOperator
       n2=multiplicativeExpression      { $value = new Node(new Symbol($op.text), $n1.value, $n2.value); }
     )?
   ;
 
-unaryExpresion returns [Object value]
-  : op=unaryOperator n1=unaryExpresion { $value = new Node(new Symbol($op.text), $n1.value); }
-  | binaryExpression                   { $value = $binaryExpression.value; }
+binaryExpression returns [Object value]
+  : n1=consExpression                  { $value = $n1.value; }
+    ( op=binaryOperator
+      n2=binaryExpression              { $value = new Node(new Symbol($op.text), $n1.value, $n2.value); }
+    )?
   ;
 
-binaryExpression returns [Object value]
+consExpression returns [Object value]
+: n1=unaryExpresion                    { $value = $n1.value; }
+  ( op=consOperator
+    n2=consExpression                  { $value = new Node(new Symbol($op.text), $n1.value, $n2.value); }
+  )?
+;
+
+unaryExpresion returns [Object value]
+  : op=unaryOperator n1=unaryExpresion { $value = new Node(new Symbol($op.text), $n1.value); }
+  | chainExpression                    { $value = $chainExpression.value; }
+  ;
+
+chainExpression returns [Object value]
 @init { Node parent = null; Node child = null; }
   : n1=primaryExpression               { $value = $n1.value; }
-    ( op=binaryOperator
-      n2=binaryExpression              { $value = Helper.cascadeNode(new Node(new Symbol($op.text), $n1.value), $n2.value); }
+    ( op=chainOperator
+      n2=chainExpression               { $value = Helper.cascadeNode(new Node(new Symbol($op.text), $n1.value), $n2.value); }
     )?
   ;
 
@@ -197,8 +211,14 @@ unaryOperator returns [Symbol symbol]
 
 binaryOperator returns [Symbol symbol]
   : ARROW
-  | SCOPE
-  | COLON
+  ;
+
+consOperator returns [Symbol symbol]
+  : COLON
+  ;
+
+chainOperator returns [Symbol symbol]
+  : SCOPE
   | DOT
   | PIPE
   ;
