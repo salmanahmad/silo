@@ -192,9 +192,13 @@ unaryOperator returns [Symbol symbol]
   ;
 
 binaryOperator returns [Symbol symbol]
-  : COLON
-  | ARROW
+  : ARROW
+  | SCOPE
+  | COLON
+  | DOT
+  | PIPE
   ;
+
 terminator
   : (NEWLINE | COMMA | SEMICOLON)+
   | EOF
@@ -254,6 +258,7 @@ ARROW:              '=>';
 SCOPE:              '::';
 COLON:              ':';
 DOT:                '.';
+PIPE:               '|';
 
 SEMICOLON:          ';';
 COMMA:              ',';
