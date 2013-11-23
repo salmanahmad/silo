@@ -35,7 +35,8 @@ public class Node {
     }
 
     public boolean equals(Object o) {
-        if(Node.class.equals(o.getClass())) {
+
+        if(o instanceof Node) {
             Node node = (Node)o;
             return Helper.equals(this.label, node.label) && Helper.equals(this.children, node.children);
         } else {
@@ -64,7 +65,7 @@ public class Node {
             children.add(Helper.toQuotedString(child));
         }
 
-        s += StringUtils.join(children, ",");
+        s += StringUtils.join(children, ", ");
 
         s += ")";
         return s;

@@ -22,7 +22,7 @@ public class Symbol {
     }
 
     public boolean equals(Object o) {
-        if(Symbol.class.equals(o.getClass())) {
+        if(o instanceof Symbol) {
             Symbol symbol = (Symbol)o;
             return Helper.equals(this.name, symbol.name);
         } else {
