@@ -11,11 +11,22 @@
 
 package silo.lang;
 
+import silo.util.Helper;
+
 public class Symbol {
 
     public String name;
 
     public Symbol(String name) {
         this.name = name;
+    }
+
+    public boolean equals(Object o) {
+        if(Symbol.class.equals(o.getClass())) {
+            Symbol symbol = (Symbol)o;
+            return Helper.equals(this.name, symbol.name);
+        } else {
+            return super.equals(o);
+        }
     }
 }

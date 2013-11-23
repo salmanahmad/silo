@@ -11,6 +11,8 @@
 
 package silo.lang;
 
+import silo.util.Helper;
+
 import java.util.Vector;
 import java.util.Arrays;
 
@@ -30,7 +32,16 @@ public class Node {
         this.label = label;
         this.children = new Vector(Arrays.asList(children));
     }
-    
+
+    public boolean equals(Object o) {
+        if(Node.class.equals(o.getClass())) {
+            Node node = (Node)o;
+            return Helper.equals(this.label, node.label) && Helper.equals(this.children, node.children);
+        } else {
+            return super.equals(o);
+        }
+    }
+
     public void addChild(Object child) {
         this.children.add(child);
     }
