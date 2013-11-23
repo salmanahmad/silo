@@ -37,11 +37,13 @@ public class NodeTest {
     public void testEquality() {
         Node n1 = new Node(new Symbol("print"),
             "foo",
+            new Node(new Symbol("add"), 1, 1),
             new Node(new Symbol("bar"))
         );
 
         Node n2 = new Node(new Symbol("print"),
             "foo",
+            new Node(new Symbol("add"), 1, 1),
             new Node(new Symbol("bar"))
         );
 
@@ -62,6 +64,18 @@ public class NodeTest {
         );
 
         Assert.assertEquals("print(\"foo\", bar())", n1.toString());
+    }
+
+    @Test
+    public void testToPrettyString() {
+        Node n1 = new Node(new Symbol("print"),
+            "foo",
+            new Node(new Symbol("add"), 1, 1),
+            new Node(new Symbol("bar"))
+        );
+
+        String expected = "print(\n  \"foo\"\n  add(\n    1\n    1\n  )\n  bar()\n)";
+        Assert.assertEquals(expected, n1.toPrettyString());
     }
 }
 

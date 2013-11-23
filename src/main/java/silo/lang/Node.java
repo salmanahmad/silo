@@ -70,4 +70,45 @@ public class Node {
         s += ")";
         return s;
     }
+
+    public String toPrettyString() {
+        return this.toPrettyString(0);
+    }
+
+    private String toPrettyString(int indent) {
+        StringBuffer buffer = new StringBuffer();
+
+        String spacing = "";
+        String tab = "  ";
+        for(int i = 0; i < indent; i++) {
+            spacing += tab;
+        }
+
+        buffer.append(spacing);
+        buffer.append(Helper.toQuotedString(this.label));
+        buffer.append("(");
+
+        if(this.children.size() == 0) {
+            buffer.append(")");
+        } else {
+            for(Object child : this.children) {
+                buffer.append("\n");
+
+                if(child instanceof Node) {
+                    Node node = (Node)child;
+                    buffer.append(node.toPrettyString(indent + 1));
+                } else {
+                    buffer.append(spacing);
+                    buffer.append(tab);
+                    buffer.append(Helper.toQuotedString(child));
+                }
+            }
+
+            buffer.append("\n");
+            buffer.append(spacing);
+            buffer.append(")");
+        }
+
+        return buffer.toString();
+    }
 }
