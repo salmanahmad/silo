@@ -57,7 +57,7 @@ public class Node {
     }
 
     public String toString() {
-        String s = Helper.toQuotedString(this.label);
+        String s = this.label == null ? "" : Helper.toQuotedString(this.label);
         s += "(";
 
         Vector<String> children = new Vector<String>();
@@ -85,7 +85,7 @@ public class Node {
         }
 
         buffer.append(spacing);
-        buffer.append(Helper.toQuotedString(this.label));
+        buffer.append(this.label == null ? "" : Helper.toQuotedString(this.label));
         buffer.append("(");
 
         if(this.children.size() == 0) {

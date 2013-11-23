@@ -1,4 +1,8 @@
 
-foo()
 a = true
+bb = true
+cc = null
 
+d1 = 5
+d2 = 5.0
+d3 = 5.0f

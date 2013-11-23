@@ -24,7 +24,7 @@ public class Helper {
 
     public static String toQuotedString(Object o) {
         if(o == null) {
-            return "";
+            return "null";
         }
 
         if(o instanceof String) {
