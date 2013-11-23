@@ -1,5 +1,7 @@
 
 
 if(foo() {
-    print("Input: %o", foo)
+    print("True")
+} else {
+    print("False")
 })
