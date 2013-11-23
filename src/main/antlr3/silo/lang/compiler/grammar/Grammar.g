@@ -50,7 +50,7 @@ expressions returns [Node value]
   :                                    { $value = new Node(null); }
     head=expression                    { $value.addChild($head.value); }
     (
-      terminator
+      terminator?
       tail=expression                  { $value.addChild($tail.value); }
     )*
   ;
@@ -116,17 +116,22 @@ primaryExpression returns [Object value]
   ;
 
 nodeExpression returns [Node value]
-  : ( literalExpression                { $value = new Node($literalExpression.value); }
+  :                                    { $value = new Node(null); }
+    ( literalExpression                { $value = new Node($literalExpression.value); }
     )?
 
     OPEN_PAREN
+    terminator?
     ( head=expressions                 { $value.addChildren($head.value.getChildren()); }
     )?
+    terminator?
     CLOSE_PAREN
 
     ( OPEN_PAREN                       { $value = new Node($value); }
+      terminator?
       ( tail=expressions               { $value.addChildren($tail.value.getChildren()); }
       )?
+      terminator?
       CLOSE_PAREN
     )*
   ;

@@ -51,7 +51,7 @@ public class NodeTest {
             "foo",
             new Node(new Symbol("baz"))
         );
-        
+
         Assert.assertEquals(n1, n2);
         Assert.assertNotEquals(n1, n3);
     }

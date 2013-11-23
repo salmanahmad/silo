@@ -13,10 +13,29 @@
 import org.junit.*;
 import java.util.*;
 
+import silo.util.Helper;
+import silo.lang.*;
 import silo.lang.compiler.*;
 import silo.lang.compiler.grammar.*;
 
 public class ParserTest {
+
+    @Test
+    public void testResourceExamples() throws Exception {
+        String[] paths = Helper.getResourceListing("/examples/");
+        for(String path : paths) {
+            path = "/examples/" + path;
+            try {
+                Parser parser = new Parser();
+                String source = Helper.readResource(path);
+                Node program = parser.parse(source);
+                //System.out.println(program.toPrettyString());
+            } catch(Exception e) {
+                System.out.println("Failed on test: " + path);
+                throw e;
+            }
+        }
+    }
 
     @Test
     public void testEmpty() {
