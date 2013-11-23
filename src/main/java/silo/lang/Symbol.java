@@ -29,4 +29,8 @@ public class Symbol {
             return super.equals(o);
         }
     }
+
+    public String toString() {
+        return this.name;
+    }
 }

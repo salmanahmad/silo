@@ -15,6 +15,7 @@ import silo.util.Helper;
 
 import java.util.Vector;
 import java.util.Arrays;
+import org.apache.commons.lang3.StringUtils;
 
 // TODO: I need to figure out how to include meta-data like line number
 // and character positions in the Node class.
@@ -52,5 +53,20 @@ public class Node {
 
     public Vector getChildren() {
         return new Vector(children);
+    }
+
+    public String toString() {
+        String s = Helper.toQuotedString(this.label);
+        s += "(";
+
+        Vector<String> children = new Vector<String>();
+        for(Object child : this.children) {
+            children.add(Helper.toQuotedString(child));
+        }
+
+        s += StringUtils.join(children, ",");
+
+        s += ")";
+        return s;
     }
 }

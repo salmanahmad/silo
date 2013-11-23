@@ -17,10 +17,10 @@ import silo.lang.*;
 import silo.lang.compiler.*;
 import silo.lang.compiler.grammar.*;
 
-public class EqualityTest {
+public class NodeTest {
 
     @Test
-    public void testSymbol() {
+    public void testSymbolEquality() {
         Symbol s1 = new Symbol("foo");
         Symbol s2 = new Symbol("foo");
         Symbol s3 = new Symbol("baz");
@@ -34,7 +34,7 @@ public class EqualityTest {
     }
 
     @Test
-    public void testNode() {
+    public void testEquality() {
         Node n1 = new Node(new Symbol("print"),
             "foo",
             new Node(new Symbol("bar"))
@@ -53,4 +53,19 @@ public class EqualityTest {
         Assert.assertEquals(n1, n2);
         Assert.assertNotEquals(n1, n3);
     }
+
+    @Test
+    public void testToString() {
+        Node n1 = new Node(new Symbol("print"),
+            "foo",
+            new Node(new Symbol("bar"))
+        );
+
+        Assert.assertEquals("print(\"foo\", bar())", n1.toString());
+    }
 }
+
+
+
+
+
