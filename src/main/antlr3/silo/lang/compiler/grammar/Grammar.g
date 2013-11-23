@@ -207,7 +207,7 @@ FALSE:              'false';
 
 NULL:               'null';
 
-SYMBOL:             LETTER SYMBOL_CHAR+;
+SYMBOL:             LETTER SYMBOL_CHAR*;
 
 SEMICOLON:          ';';
 DOT:                '.';
