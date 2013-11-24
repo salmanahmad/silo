@@ -20,8 +20,6 @@ import silo.lang.compiler.grammar.*;
 
 public class ParserTest {
 
-    // TODO: Make a test case that is accessible from the commandline flag to run an individual test
-
     @Test
     public void testResourceExamples() throws Exception {
         String[] paths = Helper.getResourceListing("/examples/");
@@ -32,6 +30,22 @@ public class ParserTest {
                 String source = Helper.readResource(path);
                 Node program = parser.parse(source);
                 //System.out.println(program.toPrettyString());
+            } catch(Exception e) {
+                System.out.println("Failed on test: " + path);
+                throw e;
+            }
+        }
+    }
+
+    @Test
+    public void testExample() throws Exception {
+        String path = System.getProperty("example");
+        if(path != null) {
+            try {
+                Parser parser = new Parser();
+                String source = Helper.readResource("/examples/" + path);
+                Node program = parser.parse(source);
+                System.out.println(program.toPrettyString());
             } catch(Exception e) {
                 System.out.println("Failed on test: " + path);
                 throw e;
