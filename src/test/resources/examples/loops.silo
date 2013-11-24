@@ -1,0 +1,17 @@
+
+items = array(1, 2, 3, 4, 5, 6, 7, 8)
+
+each(item in items {
+    println(item)
+})
+
+for(i = 0; i < length(items); i = i +1; {
+    println(items(i))
+})
+
+i = 0
+
+while(i < 5 {
+    println(i)
+    i = i + 1
+})

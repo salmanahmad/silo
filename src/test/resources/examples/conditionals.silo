@@ -5,3 +5,16 @@ if(foo() {
 } else {
     print("False")
 })
+
+if(a == 1 {
+    println("one")
+} else(a == 2) {
+    println("two")
+} else(a == 3) {
+    println("three")
+} else {
+    println("other")
+})
+
+a = if(a, a + 5)
+

@@ -1,0 +1,21 @@
+
+fn(a, b {
+    return(a + b)
+})
+
+fn(a:int, b:int {
+    return(a + b)
+})
+
+func(main(args : array(string)) {
+    println("Hello, World!");
+})
+
+func(foo(a:int, b:int => int) {
+    return(5)
+})
+
+
+func(foo(a:int, b:int => int, string) {
+    return(5, "a")
+})
