@@ -18,6 +18,7 @@ import java.io.*;
 import java.net.URL;
 import org.apache.commons.lang3.StringEscapeUtils;
 
+// TODO: Move this class to the lang pakcage and rename it as Util.
 
 public class Helper {
 
