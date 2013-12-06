@@ -16,7 +16,6 @@ import silo.lang.compiler.grammar.GrammarLexer;
 import silo.lang.compiler.grammar.GrammarParser;
 
 import org.antlr.runtime.*;
-import java.util.Vector;
 
 public class Parser {
 
