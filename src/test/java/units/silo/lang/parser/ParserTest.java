@@ -40,6 +40,7 @@ public class ParserTest {
     @Test
     public void testExample() throws Exception {
         String path = System.getProperty("example");
+
         if(path != null) {
             try {
                 Parser parser = new Parser();

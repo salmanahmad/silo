@@ -24,6 +24,7 @@ import org.apache.commons.lang3.StringUtils;
 // TODO: Change "children" to a PersistentDataStructure
 
 public class Node {
+    // TODO: Rename label to head?
     Object label;
     Vector children;
 

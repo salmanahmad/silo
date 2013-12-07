@@ -23,5 +23,20 @@ public class RuntimeClassLoader extends URLClassLoader {
     public RuntimeClassLoader(ClassLoader parent) {
         super(new URL[] {}, parent);
     }
+
+    public Class loadClass(byte[] b) {
+        Class klass = null;
+
+        try {
+            // TODO - This seems really slow. Investigate more.
+            klass = defineClass(null, b, 0, b.length);
+        } catch(Exception e) {
+            // TODO - Remove this comment
+            //e.printStackTrace();
+            throw new RuntimeException("Could not load class.");
+        }
+
+        return klass;
+    }
 }
 

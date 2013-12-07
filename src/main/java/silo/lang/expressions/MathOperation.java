@@ -16,16 +16,28 @@ import silo.lang.*;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.GeneratorAdapter;
 
-public class LiteralInteger implements Expression {
+public class MathOperation implements Expression {
 
-    public final int value;
+    public final Expression e1;
+    public final Expression e2;
+    public int operation;
 
-    public LiteralInteger(int value) {
-        this.value = value;
+    public MathOperation(Expression e1, Expression e2, int operation) {
+        this.e1 = e1;
+        this.e2 = e2;
+        this.operation = operation;
     }
 
     public void emit(CompilationContext context, GeneratorAdapter generator) {
+        this.e1.emit(context, generator);
+        this.e2.emit(context, generator);
+
+        // TODO: Implicit conversion rules
+
+        generator.math(this.operation, Type.INT_TYPE);
+
+        context.operandStack.pop();
+        context.operandStack.pop();
         context.operandStack.push(Type.INT_TYPE);
-        generator.push(value);
     }
 }

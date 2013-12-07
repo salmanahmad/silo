@@ -9,7 +9,9 @@
  *
  */
 
-package silo.lang;
+package silo.lang.expressions;
+
+import silo.lang.*;
 
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.GeneratorAdapter;
