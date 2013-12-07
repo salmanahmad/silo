@@ -166,10 +166,15 @@ public class Compiler implements Opcodes {
     public static Expression buildExpression(Object value) {
         if(value instanceof Node) {
             Node node = (Node)value;
+            Object label = node.getLabel();
 
             if(node.getLabel() == null) {
                 return Block.build(node);
-            } else if(node.getLabel().equals(new Symbol("declare"))) {
+            } else if(label.equals(new Symbol("do"))) {
+                return Block.build(node);
+            } else if(label.equals(new Symbol("function"))) {
+                return FunctionExpression.build(node);
+            } else if(label.equals(new Symbol("declare"))) {
                 return Declare.build(node);
             } else if(MathOperation.accepts(node.getLabel())) {
                 return MathOperation.build(node);

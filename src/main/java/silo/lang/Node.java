@@ -68,6 +68,31 @@ public class Node {
         return new Vector(children);
     }
 
+    public Node getChildNode(Symbol name) {
+        for(Object child : children) {
+            if(child instanceof Node) {
+                Node node = (Node)child;
+                if(node.getLabel().equals(name)) {
+                    return node;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public Object getFirstChild() {
+        return children.get(0);
+    }
+
+    public Object getSecondChild() {
+        return children.get(1);
+    }
+
+    public Object getLastChild() {
+        return children.lastElement();
+    }
+
     public String toString() {
         String s = this.label == null ? "" : Helper.toQuotedString(this.label);
         s += "(";

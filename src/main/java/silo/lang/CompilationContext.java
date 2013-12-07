@@ -17,6 +17,13 @@ import java.util.Stack;
 
 public class CompilationContext {
 
+    int uniqueIdentifierCounter = 0;
+
     public Stack<Type> operandStack = new Stack<Type>();
+
+    public Symbol uniqueIdentifier(String tag) {
+        uniqueIdentifierCounter += 1;
+        return new Symbol("__" + tag + "__" + uniqueIdentifierCounter);
+    }
 
 }
