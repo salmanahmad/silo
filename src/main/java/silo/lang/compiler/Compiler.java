@@ -11,6 +11,7 @@
 
 package silo.lang.compiler;
 
+import silo.lang.Runtime;
 import silo.lang.*;
 import silo.lang.expressions.*;
 
@@ -34,19 +35,14 @@ import java.io.PrintStream;
 
 
 public class Compiler implements Opcodes {
-    public RuntimeClassLoader classloader;
 
-    public Compiler(RuntimeClassLoader classloader) {
-        this.classloader = classloader;
-    }
-
-    public Vector<Node> compile(Node node) {
+    public static Vector<Node> compile(Runtime runtime, Node node) {
         
         System.out.println(node);
         
         Expression expression = buildExpression(node);
 
-        CompilationContext context = new CompilationContext();
+        CompilationContext context = new CompilationContext(runtime);
         GeneratorAdapter generator = null;
 
         ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
@@ -68,7 +64,7 @@ public class Compiler implements Opcodes {
         cw.visitEnd();
 
         byte[] code = cw.toByteArray();
-        Class klass = classloader.loadClass(code);
+        Class klass = runtime.loader().loadClass(code);
 
 
 
@@ -128,7 +124,7 @@ public class Compiler implements Opcodes {
         */
     }
 
-    public Object expandMacros(Object node) {
+    public static Object expandMacros(Object node) {
         /*
         Object previous = null;
 
@@ -146,20 +142,20 @@ public class Compiler implements Opcodes {
         return null;
     }
 
-    private void checkForDuplicates(Vector<Node> declarations) {
+    private static void checkForDuplicates(Vector<Node> declarations) {
         
     }
 
-    public Object expandMacrosOnce(Object node) {
+    public static Object expandMacrosOnce(Object node) {
         // TODO
         return null;
     }
 
-    private boolean containsUncompiledMacros(Object value) {
+    private static boolean containsUncompiledMacros(Object value) {
         return false;
     }
 
-    public Vector<Node> extractDeclarations(Node node) {
+    public static Vector<Node> extractDeclarations(Node node) {
         return null;
     }
 
@@ -190,7 +186,7 @@ public class Compiler implements Opcodes {
         }
     }
 
-    public void emit(Node node) {
+    public static void emit(Node node) {
         
     }
 }

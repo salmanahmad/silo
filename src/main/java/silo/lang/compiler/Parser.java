@@ -19,7 +19,7 @@ import org.antlr.runtime.*;
 
 public class Parser {
 
-    public Node parse(String source) {
+    public static Node parse(String source) {
         ANTLRStringStream stream = new ANTLRStringStream(source);
         GrammarLexer lexer = new GrammarLexer(stream);
 

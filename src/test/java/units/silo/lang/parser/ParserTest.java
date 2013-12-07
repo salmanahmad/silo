@@ -23,12 +23,12 @@ public class ParserTest {
     @Test
     public void testResourceExamples() throws Exception {
         String[] paths = Helper.getResourceListing("/examples/");
+
         for(String path : paths) {
             path = "/examples/" + path;
             try {
-                Parser parser = new Parser();
                 String source = Helper.readResource(path);
-                Node program = parser.parse(source);
+                Node program = Parser.parse(source);
                 //System.out.println(program.toPrettyString());
             } catch(Exception e) {
                 System.out.println("Failed on test: " + path);
@@ -43,9 +43,8 @@ public class ParserTest {
 
         if(path != null) {
             try {
-                Parser parser = new Parser();
                 String source = Helper.readResource("/examples/" + path);
-                Node program = parser.parse(source);
+                Node program = Parser.parse(source);
                 System.out.println(program.toPrettyString());
             } catch(Exception e) {
                 System.out.println("Failed on test: " + path);
@@ -56,8 +55,7 @@ public class ParserTest {
 
     @Test
     public void testChain() throws Exception {
-        Parser parser = new Parser();
-        Node program = parser.parse("a.b.c.d");
+        Node program = Parser.parse("a.b.c.d");
 
         Node expected = new Node(null, new Node(
             new Symbol("."),
@@ -78,40 +76,34 @@ public class ParserTest {
 
     @Test
     public void testEmpty() {
-        Parser parser = new Parser();
-        parser.parse("");
-        parser.parse("\n\n\n");
-        parser.parse("\n\n  \n \n");
+        Parser.parse("");
+        Parser.parse("\n\n\n");
+        Parser.parse("\n\n  \n \n");
     }
 
     @Test
     public void testSymbol() {
-        Parser parser = new Parser();
-        parser.parse("foo");
+        Parser.parse("foo");
     }
 
     @Test
     public void testChildlessNode() {
-        Parser parser = new Parser();
-        parser.parse("foo()");
+        Parser.parse("foo()");
     }
 
     @Test
     public void testOneChildNode() {
-        Parser parser = new Parser();
-        parser.parse("foo(bar)");
+        Parser.parse("foo(bar)");
     }
 
     @Test
     public void testManyChildrenNode() {
-        Parser parser = new Parser();
-        parser.parse("foo(bar, baz, qux)");
+        Parser.parse("foo(bar, baz, qux)");
     }
 
     @Test
     public void testNestedChildren() {
-        Parser parser = new Parser();
-        parser.parse("foo(bar(), baz, qux())");
+        Parser.parse("foo(bar(), baz, qux())");
     }
 
 }

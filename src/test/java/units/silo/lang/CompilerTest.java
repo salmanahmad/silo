@@ -13,6 +13,7 @@
 import org.junit.*;
 import java.util.*;
 
+import silo.lang.Runtime;
 import silo.lang.*;
 import silo.lang.compiler.*;
 import silo.lang.compiler.Compiler;
@@ -22,10 +23,9 @@ public class CompilerTest {
 
     @Test
     public void testSimple() {
-        Parser parser = new Parser();
-        Node program = parser.parse("print(5 + 4)");
+        Runtime runtime = new Runtime();
 
-        Compiler compiler = new Compiler(new RuntimeClassLoader());
-        compiler.compile(program);
+        Node program = Parser.parse("print(5 + 4)");
+        Compiler.compile(runtime, program);
     }
 }

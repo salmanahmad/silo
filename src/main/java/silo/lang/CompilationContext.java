@@ -17,9 +17,18 @@ import java.util.Stack;
 
 public class CompilationContext {
 
-    int uniqueIdentifierCounter = 0;
+    Runtime runtime;
 
     public Stack<Type> operandStack = new Stack<Type>();
+    int uniqueIdentifierCounter = 0;
+
+    public CompilationContext(Runtime runtime) {
+        this.runtime = runtime;
+    }
+
+    public Runtime runtime() {
+        return runtime;
+    }
 
     public Symbol uniqueIdentifier(String tag) {
         uniqueIdentifierCounter += 1;
