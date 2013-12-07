@@ -12,6 +12,7 @@
 package silo.lang.expressions;
 
 import silo.lang.*;
+import silo.lang.compiler.Compiler;
 
 import java.util.Vector;
 
@@ -27,6 +28,16 @@ public class Invoke implements Expression {
 
     public Expression name;
     public Vector<Expression> arguments;
+
+    public static Invoke build(Node node) {
+        Vector<Expression> arguments = new Vector();
+
+        for(Object child : node.getChildren()) {
+            arguments.add(Compiler.buildExpression(child));
+        }
+
+        return new Invoke(null, arguments);
+    }
 
     public Invoke(Expression name, Vector<Expression> arguments) {
         this.name = name;

@@ -12,6 +12,7 @@
 package silo.lang.expressions;
 
 import silo.lang.*;
+import silo.lang.compiler.Compiler;
 
 import java.util.Vector;
 
@@ -21,6 +22,16 @@ import org.objectweb.asm.commons.GeneratorAdapter;
 public class Block implements Expression {
 
     public final Vector<Expression> expressions;
+
+    public static Block build(Node node) {
+        Vector<Expression> arguments = new Vector();
+
+        for(Object child : node.getChildren()) {
+            arguments.add(Compiler.buildExpression(child));
+        }
+
+        return new Block(arguments);
+    }
 
     public Block(Vector<Expression> expressions) {
         this.expressions = expressions;

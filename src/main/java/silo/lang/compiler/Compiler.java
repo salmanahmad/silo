@@ -44,7 +44,7 @@ public class Compiler implements Opcodes {
         
         System.out.println(node);
         
-        Expression expression = transformToExpression(node);
+        Expression expression = buildExpression(node);
 
         CompilationContext context = new CompilationContext();
         GeneratorAdapter generator = null;
@@ -163,38 +163,18 @@ public class Compiler implements Opcodes {
         return null;
     }
 
-    public Expression transformToExpression(Object value) {
+    public static Expression buildExpression(Object value) {
         if(value instanceof Node) {
             Node node = (Node)value;
-            
+
             if(node.getLabel() == null) {
-                Vector<Expression> arguments = new Vector();
-
-                for(Object child : node.getChildren()) {
-                    arguments.add(transformToExpression(child));
-                }
-
-                return new Block(arguments);
-            }
-
-            if(node.getLabel().equals(new Symbol("+"))) {
-                if(node.getChildren().size() != 2) {
-                    throw new RuntimeException("Binary math operation needs 2 arguments.");
-                }
-
-                return new MathOperation(
-                    transformToExpression(node.getChildren().get(0)),
-                    transformToExpression(node.getChildren().get(1)),
-                    GeneratorAdapter.ADD);
-
+                return Block.build(node);
+            } else if(node.getLabel().equals(new Symbol("declare"))) {
+                return Declare.build(node);
+            } else if(MathOperation.accepts(node.getLabel())) {
+                return MathOperation.build(node);
             } else {
-                Vector<Expression> arguments = new Vector();
-
-                for(Object child : node.getChildren()) {
-                    arguments.add(transformToExpression(child));
-                }
-
-                return new Invoke(null, arguments);
+                return Invoke.build(node);
             }
 
         } else if(value instanceof Integer) {
