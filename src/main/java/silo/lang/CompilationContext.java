@@ -11,15 +11,13 @@
 
 package silo.lang;
 
-import org.objectweb.asm.Type;
-
 import java.util.Stack;
 
 public class CompilationContext {
 
     Runtime runtime;
 
-    public Stack<Type> operandStack = new Stack<Type>();
+    public Stack<Class> operandStack = new Stack<Class>();
     int uniqueIdentifierCounter = 0;
 
     public CompilationContext(Runtime runtime) {

@@ -13,7 +13,6 @@ package silo.lang.expressions;
 
 import silo.lang.*;
 
-import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.GeneratorAdapter;
 
 public class LiteralBoolean implements Expression {
@@ -25,7 +24,7 @@ public class LiteralBoolean implements Expression {
     }
 
     public void emit(CompilationContext context, GeneratorAdapter generator) {
-        context.operandStack.push(Type.BOOLEAN_TYPE);
+        context.operandStack.push(Boolean.TYPE);
         generator.push(value);
     }
 }

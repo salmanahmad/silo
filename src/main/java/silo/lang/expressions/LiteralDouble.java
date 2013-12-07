@@ -13,7 +13,6 @@ package silo.lang.expressions;
 
 import silo.lang.*;
 
-import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.GeneratorAdapter;
 
 public class LiteralDouble implements Expression {
@@ -25,7 +24,7 @@ public class LiteralDouble implements Expression {
     }
 
     public void emit(CompilationContext context, GeneratorAdapter generator) {
-        context.operandStack.push(Type.DOUBLE_TYPE);
+        context.operandStack.push(Double.TYPE);
         generator.push(value);
     }
 }

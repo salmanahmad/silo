@@ -16,6 +16,7 @@ import silo.lang.*;
 import silo.lang.expressions.*;
 
 import java.util.Vector;
+import java.util.HashMap;
 
 import org.objectweb.asm.*;
 import org.objectweb.asm.commons.*;
@@ -35,6 +36,19 @@ import java.io.PrintStream;
 
 
 public class Compiler implements Opcodes {
+
+    public static HashMap<String, Class> primitives = new HashMap<String, Class>();
+    static {
+        primitives.put("boolean", Boolean.TYPE);
+        primitives.put("char", Character.TYPE);
+        primitives.put("byte", Byte.TYPE);
+        primitives.put("short", Short.TYPE);
+        primitives.put("int", Integer.TYPE);
+        primitives.put("long", Long.TYPE);
+        primitives.put("float", Float.TYPE);
+        primitives.put("double", Double.TYPE);
+        primitives.put("void", Void.TYPE);
+    }
 
     public static Vector<Node> compile(Runtime runtime, Node node) {
         

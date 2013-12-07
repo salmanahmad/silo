@@ -84,7 +84,7 @@ public class MathOperation implements Expression {
 
         context.operandStack.pop();
         context.operandStack.pop();
-        context.operandStack.push(Type.INT_TYPE);
+        context.operandStack.push(Integer.TYPE);
     }
 }
     

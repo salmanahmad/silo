@@ -13,7 +13,6 @@ package silo.lang.expressions;
 
 import silo.lang.*;
 
-import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.GeneratorAdapter;
 
 public class LiteralFloat implements Expression {
@@ -25,7 +24,7 @@ public class LiteralFloat implements Expression {
     }
 
     public void emit(CompilationContext context, GeneratorAdapter generator) {
-        context.operandStack.push(Type.FLOAT_TYPE);
+        context.operandStack.push(Float.TYPE);
         generator.push(value);
     }
 }
