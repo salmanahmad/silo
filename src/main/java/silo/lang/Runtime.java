@@ -11,23 +11,42 @@
 
 package silo.lang;
 
+import silo.lang.compiler.Compiler;
+
 import java.util.*;
 import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
 
 public class Runtime {
-    RuntimeClassLoader loader;
+
+    // TODO: Should this handle and manage which files have been required to avoid redefining and compiling stuff?
+    // Perhaps I should have a utility helper method called "Runtime.require" along side Runtime.compile() and Runtime.execute().
+    // Runtime.compile(String) should be provided in some manner...
+
+    public final RuntimeClassLoader loader;
+
+    CompilationContext compilationContext;
 
     public Runtime() {
-        this.loader = new RuntimeClassLoader();
+        this(new RuntimeClassLoader());
     }
 
     public Runtime(RuntimeClassLoader loader) {
         this.loader = loader;
+        this.compilationContext = new CompilationContext(this);
     }
 
-    public RuntimeClassLoader loader() {
-        return loader;
+    public Vector<Class> compile(Node node) {
+        Node program = new Node(new Symbol("function"),
+            new Node(new Symbol("do"),
+                node
+            )
+        );
+
+        compilationContext.clear();
+        Compiler.compile(compilationContext, program);
+
+        return compilationContext.classes;
     }
 
 }

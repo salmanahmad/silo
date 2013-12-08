@@ -13,8 +13,6 @@ package silo.lang.expressions;
 
 import silo.lang.*;
 
-import org.objectweb.asm.commons.GeneratorAdapter;
-
 public class LiteralDouble implements Expression {
 
     public final double value;
@@ -23,8 +21,8 @@ public class LiteralDouble implements Expression {
         this.value = value;
     }
 
-    public void emit(CompilationContext context, GeneratorAdapter generator) {
-        context.operandStack.push(Double.TYPE);
-        generator.push(value);
+    public void emit(CompilationContext context) {
+        context.currentFrame().operandStack.push(Double.TYPE);
+        context.currentFrame().generator.push(value);
     }
 }

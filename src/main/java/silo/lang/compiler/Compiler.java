@@ -18,109 +18,26 @@ import silo.lang.expressions.*;
 import java.util.Vector;
 import java.util.HashMap;
 
-import org.objectweb.asm.*;
-import org.objectweb.asm.commons.*;
-import org.objectweb.asm.util.*;
+public class Compiler {
 
-
-
-
-
-import java.io.ByteArrayOutputStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.io.PrintStream;
-
-
-
-
-
-public class Compiler implements Opcodes {
-
-    public static HashMap<String, Class> primitives = new HashMap<String, Class>();
+    public static HashMap<Symbol, Class> primitives = new HashMap<Symbol, Class>();
     static {
-        primitives.put("boolean", Boolean.TYPE);
-        primitives.put("char", Character.TYPE);
-        primitives.put("byte", Byte.TYPE);
-        primitives.put("short", Short.TYPE);
-        primitives.put("int", Integer.TYPE);
-        primitives.put("long", Long.TYPE);
-        primitives.put("float", Float.TYPE);
-        primitives.put("double", Double.TYPE);
-        primitives.put("void", Void.TYPE);
+        primitives.put(new Symbol("boolean"), Boolean.TYPE);
+        primitives.put(new Symbol("char"), Character.TYPE);
+        primitives.put(new Symbol("byte"), Byte.TYPE);
+        primitives.put(new Symbol("short"), Short.TYPE);
+        primitives.put(new Symbol("int"), Integer.TYPE);
+        primitives.put(new Symbol("long"), Long.TYPE);
+        primitives.put(new Symbol("float"), Float.TYPE);
+        primitives.put(new Symbol("double"), Double.TYPE);
+        primitives.put(new Symbol("void"), Void.TYPE);
     }
 
-    public static Vector<Node> compile(Runtime runtime, Node node) {
-        
-        System.out.println(node);
-        
+    public static Vector<Class> compile(CompilationContext context, Node node) {
         Expression expression = buildExpression(node);
+        expression.emit(context);
 
-        CompilationContext context = new CompilationContext(runtime);
-        GeneratorAdapter generator = null;
-
-        ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
-        cw.visit(V1_1, ACC_PUBLIC, "Example", null, "java/lang/Object", null);
-
-        Method m = Method.getMethod("void <init> ()");
-        generator = new GeneratorAdapter(ACC_PUBLIC, m, null, null, cw);
-        generator.loadThis();
-        generator.invokeConstructor(Type.getType(Object.class), m);
-        generator.returnValue();
-        generator.endMethod();
-
-        m = Method.getMethod("void main ()");
-        generator = new GeneratorAdapter(ACC_PUBLIC + ACC_STATIC, m, null, null, cw);
-        expression.emit(context, generator);
-        generator.returnValue();
-        generator.endMethod();
-
-        cw.visitEnd();
-
-        byte[] code = cw.toByteArray();
-        Class klass = runtime.loader().loadClass(code);
-
-
-
-
-
-
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-
-        ClassReader classReader = new ClassReader(code);
-        PrintWriter printWriter = new PrintWriter(outputStream);
-        TraceClassVisitor traceClassVisitor = new TraceClassVisitor(printWriter);
-        classReader.accept(traceClassVisitor, ClassReader.SKIP_DEBUG);
-
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
-        CheckClassAdapter.verify(new ClassReader(code), false, pw);
-
-
-        System.out.println(sw.toString());
-
-        System.out.println();
-        System.out.println(outputStream.toString());
-        System.out.println();
-        System.out.println();
-
-
-
-
-
-
-
-
-
-        try {
-            klass.getMethod("main").invoke(null);
-        } catch(Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("Error!");
-        }
-        
-
-        return null;
+        return context.classes;
 
         /*
         node = expandMacros(node);

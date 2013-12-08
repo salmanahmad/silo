@@ -44,19 +44,20 @@ public class Invoke implements Expression {
         this.arguments = arguments;
     }
 
-    public void emit(CompilationContext context, GeneratorAdapter generator) {
+    public void emit(CompilationContext context) {
 
+        GeneratorAdapter generator = context.currentFrame().generator;
 
         generator.getStatic(Type.getType(System.class), "out", Type.getType(PrintStream.class));
 
         for(Expression e : arguments) {
-            e.emit(context, generator);
+            e.emit(context);
         }
 
         generator.invokeVirtual(Type.getType(PrintStream.class), Method.getMethod("void println (int)"));
 
         for(Expression e : arguments) {
-            context.operandStack.pop();
+            context.currentFrame().operandStack.pop();
         }
     }
 }

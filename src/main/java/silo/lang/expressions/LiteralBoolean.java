@@ -13,8 +13,6 @@ package silo.lang.expressions;
 
 import silo.lang.*;
 
-import org.objectweb.asm.commons.GeneratorAdapter;
-
 public class LiteralBoolean implements Expression {
 
     public final boolean value;
@@ -23,8 +21,8 @@ public class LiteralBoolean implements Expression {
         this.value = value;
     }
 
-    public void emit(CompilationContext context, GeneratorAdapter generator) {
-        context.operandStack.push(Boolean.TYPE);
-        generator.push(value);
+    public void emit(CompilationContext context) {
+        context.currentFrame().operandStack.push(Boolean.TYPE);
+        context.currentFrame().generator.push(value);
     }
 }

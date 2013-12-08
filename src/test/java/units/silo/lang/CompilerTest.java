@@ -19,13 +19,23 @@ import silo.lang.compiler.*;
 import silo.lang.compiler.Compiler;
 import silo.lang.compiler.grammar.*;
 
+import org.objectweb.asm.Type;
+
 public class CompilerTest {
 
     @Test
     public void testSimple() {
         Runtime runtime = new Runtime();
 
-        Node program = Parser.parse("print(5 + 4)");
-        Compiler.compile(runtime, program);
+        Node program = Parser.parse("print(5 + 6)");
+        java.util.Vector<Class> classes = runtime.compile(program);
+
+        try {
+            Class klass = classes.get(0);
+            ((Function)klass.newInstance()).methodHandle().invoke(null);
+        } catch(Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error!");
+        }
     }
 }

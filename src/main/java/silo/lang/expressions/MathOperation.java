@@ -74,17 +74,17 @@ public class MathOperation implements Expression {
         this.operation = operation;
     }
 
-    public void emit(CompilationContext context, GeneratorAdapter generator) {
-        this.e1.emit(context, generator);
-        this.e2.emit(context, generator);
+    public void emit(CompilationContext context) {
+        this.e1.emit(context);
+        this.e2.emit(context);
 
         // TODO: Implicit conversion rules
 
-        generator.math(this.operation, Type.INT_TYPE);
+        context.currentFrame().generator.math(this.operation, Type.INT_TYPE);
 
-        context.operandStack.pop();
-        context.operandStack.pop();
-        context.operandStack.push(Integer.TYPE);
+        context.currentFrame().operandStack.pop();
+        context.currentFrame().operandStack.pop();
+        context.currentFrame().operandStack.push(Integer.TYPE);
     }
 }
     

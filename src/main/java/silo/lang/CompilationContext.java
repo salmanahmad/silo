@@ -12,25 +12,37 @@
 package silo.lang;
 
 import java.util.Stack;
+import java.util.Vector;
 
 public class CompilationContext {
 
-    Runtime runtime;
+    public final Runtime runtime;
+    public final Stack<CompilationFrame> frames;
+    public final Vector<Class> classes;
 
-    public Stack<Class> operandStack = new Stack<Class>();
     int uniqueIdentifierCounter = 0;
 
     public CompilationContext(Runtime runtime) {
         this.runtime = runtime;
+        this.frames = new Stack<CompilationFrame>();
+        this.classes = new Vector<Class>();
     }
 
-    public Runtime runtime() {
-        return runtime;
+    public CompilationFrame currentFrame() {
+        return frames.peek();
     }
 
     public Symbol uniqueIdentifier(String tag) {
+        if(tag == null) {
+            tag = "";
+        }
+
         uniqueIdentifierCounter += 1;
         return new Symbol("__" + tag + "__" + uniqueIdentifierCounter);
     }
 
+    public void clear() {
+        this.frames.clear();
+        this.classes.clear();
+    }
 }

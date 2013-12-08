@@ -16,9 +16,6 @@ import silo.lang.compiler.Compiler;
 
 import java.util.Vector;
 
-import org.objectweb.asm.Type;
-import org.objectweb.asm.commons.GeneratorAdapter;
-
 public class Block implements Expression {
 
     public final Vector<Expression> expressions;
@@ -37,16 +34,18 @@ public class Block implements Expression {
         this.expressions = expressions;
     }
 
-    public void emit(CompilationContext context, GeneratorAdapter generator) {
+    public void emit(CompilationContext context) {
+        CompilationFrame frame = context.currentFrame();
+
         if(expressions != null) {
             for(Expression expression : expressions) {
                 // TODO - When do I want to cascade the last value up the tree? Conditional statements and loops?
 
-                int size = context.operandStack.size();
+                int size = frame.operandStack.size();
 
-                expression.emit(context, generator);
+                expression.emit(context);
 
-                size = context.operandStack.size() - size;
+                size = frame.operandStack.size() - size;
 
                 if(size > 1) {
                     // TODO - How do I handle multiple return values?
@@ -55,8 +54,8 @@ public class Block implements Expression {
 
                 for(int i = 0; i < size; i++) {
                     // TODO - What if the value on the stack is a category2 type? I need to pop more than just 1, right?
-                    context.operandStack.pop();
-                    generator.pop();
+                    frame.operandStack.pop();
+                    frame.generator.pop();
                 }
             }
         }

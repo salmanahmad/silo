@@ -18,20 +18,24 @@ import java.util.Vector;
 
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.GeneratorAdapter;
+import org.objectweb.asm.*;
+import org.objectweb.asm.commons.*;
+import org.objectweb.asm.util.*;
+
 
 // TODO: Should I rename all of the other expressions so that they have the "Expression" suffix?
 
-public class FunctionExpression implements Expression {
+public class FunctionExpression implements Expression, Opcodes {
 
     Symbol name;
-    Vector<Node> inputs;
-    Vector<Node> outputs;
+    Vector inputs;
+    Vector outputs;
     Block body;
 
     public static FunctionExpression build(Node node) {
         Symbol name = null;
-        Vector<Node> inputs = null;
-        Vector<Node> outputs = null;
+        Vector inputs = null;
+        Vector outputs = null;
         Block body = null;
 
         Node n = null;
@@ -72,7 +76,7 @@ public class FunctionExpression implements Expression {
         this.body = body;
     }
 
-    public void emit(CompilationContext context, GeneratorAdapter generator) {
+    public void emit(CompilationContext context) {
 
         if(name == null) {
             name = context.uniqueIdentifier("function");
@@ -101,7 +105,79 @@ public class FunctionExpression implements Expression {
             }
         }
 
-        
+        Vector<Type> inputTypes = new Vector<Type>();
+        for(Object o : inputs) {
+            // TODO: Add these inputs to the local variables
 
+            if(o instanceof Symbol) {
+                // TODO: Change this to "Var"
+                inputTypes.add(Type.INT_TYPE);
+            } else if(o instanceof Node) {
+                Node node = (Node)o;
+
+                // TODO: What about generics or arrays or scoped types?
+                Symbol symbol = (Symbol)node.getSecondChild();
+                Class klass = Compiler.primitives.get(symbol);
+
+                if(klass == null) {
+                    throw new RuntimeException("Only primitives are supported right now.");
+                } else {
+                    inputTypes.add(Type.getType(klass));
+                }
+            } else {
+                throw new RuntimeException("Invalid input specification for function: " + o);
+            }
+        }
+
+        Type outputType = Type.VOID_TYPE;
+        if(outputs.size() == 1) {
+            Symbol symbol = (Symbol)outputs.get(0);
+            Class klass = Compiler.primitives.get(symbol);
+
+            if(klass == null) {
+                throw new RuntimeException("Only primitives are supported right now.");
+            } else {
+                outputType = Type.getType(klass);
+            }
+        }
+
+        GeneratorAdapter g;
+        AnnotationVisitor av;
+        Method m;
+
+        // The function class definition
+        // TODO - Figure out how to propagate the file name
+        ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+        cw.visitSource("app", null);
+        cw.visit(V1_6, ACC_PUBLIC + ACC_SUPER, name.toString(), null, Type.getType(Function.class).getInternalName(), null);
+        av = cw.visitAnnotation(Type.getType(Function.Definition.class).getDescriptor(), true);
+        av.visitEnd();
+
+        // Default constructor
+        m = Method.getMethod("void <init> ()");
+        g = new GeneratorAdapter(ACC_PUBLIC, m, null, null, cw);
+        g.loadThis();
+        g.invokeConstructor(Type.getType(Function.class), m);
+        g.returnValue();
+        g.endMethod();
+
+        // Static invoke method
+        m = new Method("invoke", outputType, inputTypes.toArray(new Type[0]));
+        g = new GeneratorAdapter(ACC_PUBLIC + ACC_STATIC, m, null, null, cw);
+        av = g.visitAnnotation(Type.getType(Function.Body.class).getDescriptor(), true);
+        av.visitEnd();
+
+        context.frames.push(new CompilationFrame(g));
+        body.emit(context);
+        context.frames.pop();
+
+        g.returnValue();
+        g.endMethod();
+
+        cw.visitEnd();
+
+        byte[] code = cw.toByteArray();
+        Class klass = context.runtime.loader.loadClass(code);
+        context.classes.add(klass);
     }
 }

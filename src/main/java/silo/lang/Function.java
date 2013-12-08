@@ -22,14 +22,11 @@ import java.lang.annotation.RetentionPolicy;
 public class Function {
 
     @Retention(RetentionPolicy.RUNTIME)
-    public @interface FunctionDefinition {
-        String name();
-        String[] params() default {};
+    public static @interface Definition {
     }
 
     @Retention(RetentionPolicy.RUNTIME)
-    public @interface FunctionBody {
-
+    public static @interface Body {
     }
 
     Method methodHandle;
@@ -43,7 +40,7 @@ public class Function {
         if(methodHandle == null) {
             Method[] methods = this.getClass().getMethods();
             for(Method method : methods) {
-                if(method.getAnnotation(FunctionBody.class) != null) {
+                if(method.getAnnotation(Body.class) != null) {
                     methodHandle = method;
                     break;
                 }
@@ -57,10 +54,13 @@ public class Function {
         return methodHandle;
     }
 
+    // TODO: Emit a highly efficient version of invoke in FunctionExpression that does not rely
+    // on java refliection method handles which are really slow...
+
     // TODO: Invoke should be broken up into a bunch of overloaded invoke methods
     // so that it can be dispatch by airity very efficiently without having to go through the
     // Java reflection API which is slow
-        public Object invoke(Object[] args, ExecutionContext context) {
+    public Object invoke(Object[] args, ExecutionContext context) {
         if(args == null) {
             args = new Object[0];
         }

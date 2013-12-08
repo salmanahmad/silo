@@ -16,5 +16,5 @@ import silo.lang.*;
 import org.objectweb.asm.commons.GeneratorAdapter;
 
 public interface Expression {
-    public void emit(CompilationContext context, GeneratorAdapter generator);
+    public void emit(CompilationContext context);
 }

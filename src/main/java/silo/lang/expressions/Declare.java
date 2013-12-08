@@ -28,7 +28,7 @@ public class Declare implements Expression {
         
     }
 
-    public void emit(CompilationContext context, GeneratorAdapter generator) {
+    public void emit(CompilationContext context) {
         
     }
 }

@@ -13,8 +13,6 @@ package silo.lang.expressions;
 
 import silo.lang.*;
 
-import org.objectweb.asm.commons.GeneratorAdapter;
-
 public class LiteralInteger implements Expression {
 
     public final int value;
@@ -23,8 +21,8 @@ public class LiteralInteger implements Expression {
         this.value = value;
     }
 
-    public void emit(CompilationContext context, GeneratorAdapter generator) {
-        context.operandStack.push(Integer.TYPE);
-        generator.push(value);
+    public void emit(CompilationContext context) {
+        context.currentFrame().operandStack.push(Integer.TYPE);
+        context.currentFrame().generator.push(value);
     }
 }
