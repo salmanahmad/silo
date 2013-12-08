@@ -18,6 +18,8 @@ import silo.lang.expressions.*;
 import java.util.Vector;
 import java.util.HashMap;
 
+// TODO: Consider moving Compiler and Parser out of the 'compiler' package and simply into the 'lang' package instead.
+
 public class Compiler {
 
     public static HashMap<Symbol, Class> primitives = new HashMap<Symbol, Class>();
