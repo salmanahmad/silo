@@ -13,7 +13,7 @@ package silo.lang;
 
 import silo.lang.compiler.Compiler;
 
-import java.util.*;
+import java.util.Vector;
 import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
 
@@ -34,6 +34,18 @@ public class Runtime {
     public Runtime(RuntimeClassLoader loader) {
         this.loader = loader;
         this.compilationContext = new CompilationContext(this);
+    }
+
+    public Object eval(Node node) {
+        Class klass = this.compile(node).lastElement();
+
+        try {
+            return ((Function)klass.newInstance()).methodHandle().invoke(null);
+        } catch(Exception e) {
+            // TODO: Better error handling.
+            e.printStackTrace();
+            throw new RuntimeException("Error!");
+        }
     }
 
     public Vector<Class> compile(Node node) {
