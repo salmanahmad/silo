@@ -64,10 +64,16 @@ public class Node {
         this.children.addAll(children);
     }
 
+    public void addChildren(Node node) {
+        this.children.addAll(node.children);
+    }
+
     public Vector getChildren() {
+        // TODO: Optimize this. Use persistent data structures.
         return new Vector(children);
     }
 
+    // TODO: Should the following methods also be static so that it makes jav interop seamless?
     public Node getChildNode(Symbol name) {
         for(Object child : children) {
             if(child instanceof Node) {
@@ -91,6 +97,99 @@ public class Node {
 
     public Object getLastChild() {
         return children.lastElement();
+    }
+
+    // TODO: Move this to a standard library that is accessible by the runtime.
+    // Additionally, even implement the chainExpressions as a macro. Keep in mind,
+    // that if I do implement it as a macro, the algorithm would be slightly different
+    // because I need to reverse the entire tree and not just case case down an
+    // element.
+    public static Node cascadeNode(Node element, Object object) {
+
+        if(object instanceof Node) {
+            Node node = (Node)object;
+
+            if(node.getChildren().get(1) instanceof Node) {
+                Node child = (Node)node.getChildren().get(1);
+
+                if(child.getLabel().equals(new Symbol("|")) ||
+                   child.getLabel().equals(new Symbol(".")) ||
+                   child.getLabel().equals(new Symbol("::"))) {
+                       return new Node(
+                           node.getLabel(),
+                           node.getChildren().get(0),
+                           Node.cascadeNode(element, child)
+                       );
+                 }
+            }
+
+            return new Node(
+                node.getLabel(),
+                node.getChildren().get(0),
+                new Node(
+                    element.getLabel(),
+                    node.getChildren().get(1),
+                    element.getChildren().get(0)
+                )
+            );
+        } else {
+            return new Node(element.getLabel(), object, element.getChildren().get(0));
+        }
+    }
+
+    public static Node chainNodes(Object label, Object... elements) {
+        if(elements == null || elements.length == 0) {
+            return new Node(label);
+        }
+
+        Node node = new Node(label, elements[elements.length - 1], null);
+
+        for(int i = elements.length - 2; i >= 0; i--) {
+            Object element = elements[i];
+            node = new Node(label, elements, node);
+        }
+
+        return node;
+    }
+
+    public static Node flattenTree(Node node) {
+        Node buffer = new Node(null);
+        for(Object o : node.children) {
+            if(o instanceof Node) {
+                buffer.addChildren(flattenTree((Node)o));
+            } else {
+                buffer.addChild(o);
+            }
+        }
+
+        return buffer;
+    }
+
+    public static Node splitChain(Node node, Object chainLabel) {
+        if(node.getLabel().equals(chainLabel)) {
+            if(node.getSecondChild() instanceof Node) {
+                Node split = splitChain((Node)node.getSecondChild(), chainLabel);
+
+                Node chain = new Node(null);
+                chain.addChild(node.getFirstChild());
+                chain.addChildren((Node)split.getFirstChild());
+
+                return new Node(null,
+                    chain,
+                    split.getSecondChild()
+                );
+            } else {
+                return new Node(null,
+                    new Node(null, node.getFirstChild(), node.getSecondChild()),
+                    null
+                );
+            }
+        } else {
+            return new Node(null,
+                new Node(null),
+                node
+            );
+        }
     }
 
     public String toString() {

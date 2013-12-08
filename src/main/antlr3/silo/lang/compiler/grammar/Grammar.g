@@ -131,7 +131,7 @@ chainExpression returns [Object value]
 @init { Node parent = null; Node child = null; }
   : n1=primaryExpression               { $value = $n1.value; }
     ( op=chainOperator
-      n2=chainExpression               { $value = Helper.cascadeNode(new Node(new Symbol($op.text), $n1.value), $n2.value); }
+      n2=chainExpression               { $value = Node.cascadeNode(new Node(new Symbol($op.text), $n1.value), $n2.value); }
     )?
   ;
 

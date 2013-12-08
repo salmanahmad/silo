@@ -22,44 +22,6 @@ import org.apache.commons.lang3.StringEscapeUtils;
 
 public class Helper {
 
-    // TODO: Move this to a standard library that is accessible by the runtime.
-    // Additionally, even implement the chainExpressions as a macro. Keep in mind,
-    // that if I do implement it as a macro, the algorithm would be slightly different
-    // because I need to reverse the entire tree and not just case case down an
-    // element.
-    public static Node cascadeNode(Node element, Object object) {
-
-        if(object instanceof Node) {
-            Node node = (Node)object;
-
-            if(node.getChildren().get(1) instanceof Node) {
-                Node child = (Node)node.getChildren().get(1);
-
-                if(child.getLabel().equals(new Symbol("|")) ||
-                   child.getLabel().equals(new Symbol(".")) ||
-                   child.getLabel().equals(new Symbol("::"))) {
-                       return new Node(
-                           node.getLabel(),
-                           node.getChildren().get(0),
-                           Helper.cascadeNode(element, child)
-                       );
-                 }
-            }
-
-            return new Node(
-                node.getLabel(),
-                node.getChildren().get(0),
-                new Node(
-                    element.getLabel(),
-                    node.getChildren().get(1),
-                    element.getChildren().get(0)
-                )
-            );
-        } else {
-            return new Node(element.getLabel(), object, element.getChildren().get(0));
-        }
-    }
-
     public static int hashCode(Object object) {
         if(object == null) {
             return 0;
