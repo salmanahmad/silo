@@ -116,11 +116,11 @@ binaryExpression returns [Object value]
   ;
 
 consExpression returns [Object value]
-: n1=unaryExpresion                    { $value = $n1.value; }
-  ( op=consOperator
-    n2=consExpression                  { $value = new Node(new Symbol($op.text), $n1.value, $n2.value); }
-  )?
-;
+  : n1=unaryExpresion                    { $value = $n1.value; }
+    ( op=consOperator
+      n2=consExpression                  { $value = new Node(new Symbol($op.text), $n1.value, $n2.value); }
+    )?
+  ;
 
 unaryExpresion returns [Object value]
   : op=unaryOperator n1=unaryExpresion { $value = new Node(new Symbol($op.text), $n1.value); }
@@ -159,16 +159,16 @@ nodeExpression returns [Node value]
   ;
 
 accessExpression returns [Object value]
-: n1=literalExpression                 { $value = $n1.value; }
-  ( op=accessOperator
-    ( paren=parenExpression            { $value = new Node(new Symbol($op.text), $value, $paren.value); }
-    | literal=literalExpression        { $value = new Node(new Symbol($op.text), $value, $literal.value); }
-    )
+  : n1=literalExpression                 { $value = $n1.value; }
+    ( op=accessOperator
+      ( paren=parenExpression            { $value = new Node(new Symbol($op.text), $value, $paren.value); }
+      | literal=literalExpression        { $value = new Node(new Symbol($op.text), $value, $literal.value); }
+      )
 
-    //n2=accessExpression              { $value = new Node(new Symbol($op.text), $n1.value, $n2.value); }
-    //n2=literalExpression             { $value = new Node(new Symbol($op.text), $value, $n2.value); }
-  )*
-;
+      //n2=accessExpression              { $value = new Node(new Symbol($op.text), $n1.value, $n2.value); }
+      //n2=literalExpression             { $value = new Node(new Symbol($op.text), $value, $n2.value); }
+    )*
+  ;
 
 // TODO: Consider making brakets "[]" literals as well. Follow groovy and make a empty map "[:]"
 
@@ -194,13 +194,13 @@ parenExpression returns [Node value]
   ;
 
 blockExpression returns [Node value]
- : OPEN_BRACE                         { $value = new Node(new Symbol("do")); }
-   terminator?
-   ( expressions                      { $value = new Node(new Symbol("do"), $expressions.value.getChildren()); }
-   )?
-   terminator?
-   CLOSE_BRACE
- ;
+  : OPEN_BRACE                         { $value = new Node(new Symbol("do")); }
+    terminator?
+    ( expressions                      { $value = new Node(new Symbol("do"), $expressions.value.getChildren()); }
+    )?
+    terminator?
+    CLOSE_BRACE
+  ;
 
 // TODO: Once I decide on the standard library names for operators as well as if
 // operators should be functions or traits, I should update these rules to return
