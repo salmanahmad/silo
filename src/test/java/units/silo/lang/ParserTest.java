@@ -100,6 +100,15 @@ public class ParserTest {
     }
 
     @Test
+    public void testOptionalSpace() {
+        Node program = Parser.parse("foo   ()");
+
+        Node expected = new Node(null, new Node(new Symbol("foo")));
+
+        Assert.assertEquals(expected, program);
+    }
+
+    @Test
     public void testChildlessNode() {
         Parser.parse("foo()");
     }

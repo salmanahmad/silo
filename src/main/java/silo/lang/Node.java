@@ -178,6 +178,7 @@ public class Node {
         return this.toPrettyString(0);
     }
 
+    // TODO: I should prettyPrint the label if it is a node to make the pretty printing a bit easier to understand.
     private String toPrettyString(int indent) {
         StringBuffer buffer = new StringBuffer();
 

@@ -16,3 +16,4 @@ TODO List
 - Make symbol also encode all the operators so that I can use operators as literal symbol values... this makes it possible to do: +(5,5)...i think...
 - Support newlines with operator expressions so that I can do things like "foo\n.bar\n.baz\n.zap" and also with pipe operators "foo\n| bar\n| baz"
 
+- Should the form `(foo).(bar).(baz)` be left associative or right associative?
