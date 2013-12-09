@@ -65,7 +65,7 @@ public class Node {
     }
 
     public void addChildren(Node node) {
-        this.children.addAll(node.children);
+        this.children.addAll(node.getChildren());
     }
 
     public Vector getChildren() {

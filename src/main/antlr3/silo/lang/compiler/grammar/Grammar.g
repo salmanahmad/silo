@@ -143,17 +143,18 @@ primaryExpression returns [Object value]
 
 // - I allow parenExpression between accessOperators to make the grammar liberal. The default implementation of
 //   the "dot" operator will reject this but I do not reject it here because it may be useful for macro-developers
+// - TODO: Make block expression also able to be separated by a 'dot'.
 nodeExpression returns [Node value]
   :                                    { $value = new Node(null); }
-    ( n1=accessExpression              { $value = new Node($n1.value); }
+    ( access=accessExpression          { $value = new Node($access.value); }
     )?
 
-    head=parenExpression               { $value.addChildren($head.value.getChildren()); }
+    paren=parenExpression              { $value.addChildren($paren.value); }
 
-    ( ( tail=parenExpression           { $value = new Node($value); $value.addChildren($tail.value.getChildren()); }
+    ( ( paren=parenExpression          { $value = new Node($value); $value.addChildren($paren.value); }
       | op=accessOperator
-        ( n3=parenExpression           { $value = new Node(new Symbol($op.text), $value, $n3.value); }
-        | n2=literalExpression         { $value = new Node(new Symbol($op.text), $value, $n2.value); }
+        ( paren=parenExpression        { $value = new Node(new Symbol($op.text), $value, $paren.value); }
+        | literal=literalExpression    { $value = new Node(new Symbol($op.text), $value, $literal.value); }
         )
       )
     )*
@@ -162,8 +163,8 @@ nodeExpression returns [Node value]
 accessExpression returns [Object value]
 : n1=literalExpression                 { $value = $n1.value; }
   ( op=accessOperator
-    ( n3=parenExpression               { $value = new Node(new Symbol($op.text), $value, $n3.value); }
-    | n2=literalExpression             { $value = new Node(new Symbol($op.text), $value, $n2.value); }
+    ( paren=parenExpression            { $value = new Node(new Symbol($op.text), $value, $paren.value); }
+    | literal=literalExpression        { $value = new Node(new Symbol($op.text), $value, $literal.value); }
     )
 
     //n2=accessExpression              { $value = new Node(new Symbol($op.text), $n1.value, $n2.value); }
