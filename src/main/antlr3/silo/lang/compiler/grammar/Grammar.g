@@ -138,12 +138,10 @@ chainExpression returns [Object value]
 primaryExpression returns [Object value]
   : nodeExpression                     { $value = $nodeExpression.value; }
   | accessExpression                   { $value = $accessExpression.value; }
-  | blockExpression                    { $value = $blockExpression.value; }
   ;
 
 // - I allow parenExpression between accessOperators to make the grammar liberal. The default implementation of
 //   the "dot" operator will reject this but I do not reject it here because it may be useful for macro-developers
-// - TODO: Make block expression also able to be separated by a 'dot'.
 nodeExpression returns [Node value]
   :                                    { $value = new Node(null); }
     ( access=accessExpression          { $value = new Node($access.value); }
@@ -172,23 +170,7 @@ accessExpression returns [Object value]
   )*
 ;
 
-parenExpression returns [Node value]
-  : OPEN_PAREN                    { $value = new Node(null); }
-    terminator?
-    ( expressions                 { $value = $expressions.value; }
-    )?
-    terminator?
-    CLOSE_PAREN
-  ;
-
-blockExpression returns [Node value]
-  : OPEN_BRACE                         { $value = new Node(new Symbol("do")); }
-    terminator?
-    ( expressions                      { $value = new Node(new Symbol("do"), $expressions.value.getChildren()); }
-    )?
-    terminator?
-    CLOSE_BRACE
-  ;
+// TODO: Consider making brakets "[]" literals as well. Follow groovy and make a empty map "[:]"
 
 literalExpression returns [Object value]
   : NULL                               { $value = null; }
@@ -199,10 +181,30 @@ literalExpression returns [Object value]
   | INTEGER                            { $value = Integer.parseInt($text); }
   | FLOAT                              { $value = Float.parseFloat($text); }
   | DOUBLE                             { $value = Double.parseDouble($text); }
+  | blockExpression                    { $value = $blockExpression.value; }
   ;
 
+parenExpression returns [Node value]
+  : OPEN_PAREN                    { $value = new Node(null); }
+    terminator?
+    ( expressions                 { $value = $expressions.value; }
+    )?
+    terminator?
+    CLOSE_PAREN
+  ;
+
+blockExpression returns [Node value]
+ : OPEN_BRACE                         { $value = new Node(new Symbol("do")); }
+   terminator?
+   ( expressions                      { $value = new Node(new Symbol("do"), $expressions.value.getChildren()); }
+   )?
+   terminator?
+   CLOSE_BRACE
+ ;
+
 // TODO: Once I decide on the standard library names for operators as well as if
-// operators should be functions or traits, I should update these rules.
+// operators should be functions or traits, I should update these rules to return
+// the proper symbol representation...
 
 relationalOperator returns [Symbol symbol]
   : EQUAL

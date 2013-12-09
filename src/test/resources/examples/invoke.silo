@@ -18,3 +18,10 @@ foo.true.(baz).sad
 
 (foo).(bar)
 
+foo.{}
+foo.(do())
+
+{}.{}
+
+
+
