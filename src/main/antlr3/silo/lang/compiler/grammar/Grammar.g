@@ -128,38 +128,56 @@ unaryExpresion returns [Object value]
   ;
 
 chainExpression returns [Object value]
-@init { Node parent = null; Node child = null; }
   : n1=primaryExpression               { $value = $n1.value; }
     ( op=chainOperator
-      n2=chainExpression               { $value = Node.cascadeNode(new Node(new Symbol($op.text), $n1.value), $n2.value); }
+      n2=chainExpression               { $value = new Node(new Symbol($op.text), $n1.value, $n2.value); }
     )?
   ;
 
+// These rules are left associative, unlike the rest of the grammar
 primaryExpression returns [Object value]
   : nodeExpression                     { $value = $nodeExpression.value; }
+  | accessExpression                   { $value = $accessExpression.value; }
   | blockExpression                    { $value = $blockExpression.value; }
-  | literalExpression                  { $value = $literalExpression.value; }
   ;
 
+// - I allow parenExpression between accessOperators to make the grammar liberal. The default implementation of
+//   the "dot" operator will reject this but I do not reject it here because it may be useful for macro-developers
 nodeExpression returns [Node value]
   :                                    { $value = new Node(null); }
-    ( literalExpression                { $value = new Node($literalExpression.value); }
+    ( n1=accessExpression              { $value = new Node($n1.value); }
     )?
 
-    OPEN_PAREN
+    head=parenExpression               { $value.addChildren($head.value.getChildren()); }
+
+    ( ( tail=parenExpression           { $value = new Node($value); $value.addChildren($tail.value.getChildren()); }
+      | op=accessOperator
+        ( n3=parenExpression           { $value = new Node(new Symbol($op.text), $value, $n3.value); }
+        | n2=literalExpression         { $value = new Node(new Symbol($op.text), $value, $n2.value); }
+        )
+      )
+    )*
+  ;
+
+accessExpression returns [Object value]
+: n1=literalExpression                 { $value = $n1.value; }
+  ( op=accessOperator
+    ( n3=parenExpression               { $value = new Node(new Symbol($op.text), $value, $n3.value); }
+    | n2=literalExpression             { $value = new Node(new Symbol($op.text), $value, $n2.value); }
+    )
+
+    //n2=accessExpression              { $value = new Node(new Symbol($op.text), $n1.value, $n2.value); }
+    //n2=literalExpression             { $value = new Node(new Symbol($op.text), $value, $n2.value); }
+  )*
+;
+
+parenExpression returns [Node value]
+  : OPEN_PAREN                    { $value = new Node(null); }
     terminator?
-    ( head=expressions                 { $value.addChildren($head.value.getChildren()); }
+    ( expressions                 { $value = $expressions.value; }
     )?
     terminator?
     CLOSE_PAREN
-
-    ( OPEN_PAREN                       { $value = new Node($value); }
-      terminator?
-      ( tail=expressions               { $value.addChildren($tail.value.getChildren()); }
-      )?
-      terminator?
-      CLOSE_PAREN
-    )*
   ;
 
 blockExpression returns [Node value]
@@ -218,9 +236,12 @@ consOperator returns [Symbol symbol]
   ;
 
 chainOperator returns [Symbol symbol]
+  : PIPE
+  ;
+
+accessOperator returns [Symbol symbol]
   : SCOPE
   | DOT
-  | PIPE
   ;
 
 terminator

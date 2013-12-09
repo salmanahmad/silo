@@ -54,21 +54,34 @@ public class ParserTest {
     }
 
     @Test
-    public void testChain() throws Exception {
+    public void testLeftAssociativity() throws Exception {
         Node program = Parser.parse("a.b.c.d");
 
         Node expected = new Node(null, new Node(
             new Symbol("."),
-            new Symbol("d"),
             new Node(
                 new Symbol("."),
-                new Symbol("c"),
                 new Node(
                     new Symbol("."),
-                    new Symbol("b"),
-                    new Symbol("a")
-                )
-            )
+                    new Symbol("a"),
+                    new Symbol("b")
+                ),
+                new Symbol("c")
+            ),
+            new Symbol("d")
+        ));
+
+        Assert.assertEquals(expected, program);
+    }
+
+    @Test
+    public void testOptionalCommas() throws Exception {
+        Node program = Parser.parse("a(x,,y z,,,,,)");
+
+        Node expected = new Node(null, new Node(new Symbol("a"),
+            new Symbol("x"),
+            new Symbol("y"),
+            new Symbol("z")
         ));
 
         Assert.assertEquals(expected, program);
