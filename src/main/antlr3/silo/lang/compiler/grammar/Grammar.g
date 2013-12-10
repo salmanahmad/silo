@@ -170,7 +170,7 @@ accessExpression returns [Object value]
     )*
   ;
 
-// TODO: Consider making brakets "[]" literals as well. Follow groovy and make a empty map "[:]"
+// TODO: Consider making brakets "[]" "<>" literals as well. Follow groovy and make a empty map "[:]"
 
 literalExpression returns [Object value]
   : NULL                               { $value = null; }

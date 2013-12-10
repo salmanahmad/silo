@@ -97,6 +97,10 @@ public class Compiler {
             Node node = (Node)value;
             Object label = node.getLabel();
 
+            // TODO: Create an "ExpressionBuilder" interface that all the Expressions have
+            // as a nested class. Then, just create a list of "ExpressionBuilder" as "Special-Forms"
+            // and literate over them instead of having this huge if-else statement.
+
             if(node.getLabel() == null) {
                 return Block.build(node);
             } else if(label.equals(new Symbol("do"))) {
@@ -105,6 +109,8 @@ public class Compiler {
                 return FunctionExpression.build(node);
             } else if(label.equals(new Symbol("declare"))) {
                 return Declare.build(node);
+            } else if(label.equals(new Symbol("."))) {
+                return Access.build(node);
             } else if(MathOperation.accepts(node.getLabel())) {
                 return MathOperation.build(node);
             } else {
