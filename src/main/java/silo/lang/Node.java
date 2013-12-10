@@ -87,6 +87,10 @@ public class Node {
         return null;
     }
 
+    public Object getChild(int index) {
+        return children.get(index);
+    }
+
     public Object getFirstChild() {
         return children.get(0);
     }
@@ -132,31 +136,51 @@ public class Node {
         return null;
     }
 
-    public static Node splitChain(Node node, Object chainLabel) {
-        if(node.getLabel().equals(chainLabel)) {
-            if(node.getSecondChild() instanceof Node) {
-                Node split = splitChain((Node)node.getSecondChild(), chainLabel);
+    public static Node splitAccessChain(Node node, Object... labels) {
+        return splitLeftChain(node, labels);
+    }
 
-                Node chain = new Node(null);
-                chain.addChild(node.getFirstChild());
-                chain.addChildren((Node)split.getFirstChild());
+    public static Node splitLeftChain(Node node, Object... labels) {
+        return splitChain(node, true, labels);
+    }
 
-                return new Node(null,
-                    chain,
-                    split.getSecondChild()
-                );
-            } else {
-                return new Node(null,
-                    new Node(null, node.getFirstChild(), node.getSecondChild()),
-                    null
-                );
-            }
+    public static Node splitRightChain(Node node, Object... labels) {
+        return splitChain(node, false, labels);
+    }
+
+    public static Node splitChain(Node node, boolean leftChain, Object... labels) {
+        int chainIndex;
+        int dataIndex;
+        if(leftChain) {
+            chainIndex = 0;
+            dataIndex = 1;
         } else {
-            return new Node(null,
-                new Node(null),
-                node
-            );
+            chainIndex = 1;
+            dataIndex = 0;
         }
+
+        for(Object label : labels) {
+            if(node.getLabel() != null && node.getLabel().equals(label)) {
+                if(node.getChild(chainIndex) instanceof Node) {
+                    Node split = splitChain((Node)node.getChild(chainIndex), leftChain, labels);
+
+                    Node chain = (Node)split.getFirstChild();
+                    chain.addChild(node.getChild(dataIndex));
+
+                    return new Node(null,
+                        chain,
+                        split.getSecondChild()
+                    );
+                } else {
+                    return new Node(null, new Node(null, node.getChild(chainIndex), node.getChild(dataIndex)), null);
+                }
+            }
+        }
+
+        return new Node(null,
+            new Node(null),
+            node
+        );
     }
 
     public String toString() {

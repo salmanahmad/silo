@@ -77,6 +77,16 @@ public class NodeTest {
         String expected = "print(\n  \"foo\"\n  add(\n    1\n    1\n  )\n  bar()\n)";
         Assert.assertEquals(expected, n1.toPrettyString());
     }
+
+    @Test
+    public void testSplitChain() {
+        // Get first child is needed because parse wraps everything in a node by default.
+        Node chain = (Node)Parser.parse("a.b.c.d").getFirstChild();
+        Node output = Node.splitAccessChain(chain, new Symbol("."));
+
+        Assert.assertEquals(output.getFirstChild(), new Node(null, new Symbol("a"), new Symbol("b"), new Symbol("c"), new Symbol("d")));
+    }
+
 }
 
 
