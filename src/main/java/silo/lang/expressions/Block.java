@@ -40,7 +40,9 @@ public class Block implements Expression {
         CompilationFrame frame = context.currentFrame();
 
         if(expressions != null) {
-            for(Expression expression : expressions) {
+            for(int i = 0; i < expressions.size(); i++) {
+                Expression expression = expressions.get(i);
+
                 // TODO - When do I want to cascade the last value up the tree? Conditional statements and loops?
 
                 int size = frame.operandStack.size();
@@ -54,10 +56,13 @@ public class Block implements Expression {
                     throw new RuntimeException("The operand stack should not change more than one for nodes.");
                 }
 
-                for(int i = 0; i < size - 1; i++) {
-                    // TODO - What if the value on the stack is a category2 type? I need to pop more than just 1, right?
-                    Class operand = frame.operandStack.pop();
-                    Compiler.pop(operand, frame.generator);
+                
+                if(i < (expressions.size() - 1)) {
+                    for(int j = 0; j < size; j++) {
+                        // TODO - What if the value on the stack is a category2 type? I need to pop more than just 1, right?
+                        Class operand = frame.operandStack.pop();
+                        Compiler.pop(operand, frame.generator);
+                    }
                 }
             }
         }

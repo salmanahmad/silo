@@ -12,17 +12,25 @@
 package silo.lang;
 
 import java.util.Stack;
+import java.util.HashMap;
+
 import org.objectweb.asm.commons.GeneratorAdapter;
 
 public class CompilationFrame {
 
     public final GeneratorAdapter generator;
-    public final Stack<Class> operandStack;
+
     public final Class outputClass;
+    public final Stack<Class> operandStack;
+    public final HashMap<Symbol, Integer> locals;
+    public final HashMap<Symbol, Class> localTypes;
 
     public CompilationFrame(GeneratorAdapter generator, Class outputClass) {
         this.generator = generator;
-        this.operandStack = new Stack<Class>();
         this.outputClass = outputClass;
+
+        this.operandStack = new Stack<Class>();
+        this.locals = new HashMap<Symbol, Integer>();
+        this.localTypes = new HashMap<Symbol, Class>();
     }
 }

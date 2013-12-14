@@ -1,0 +1,11 @@
+
+
+function(
+    name(test_variables)
+    outputs(int)
+    do(
+        a : int = 5
+        b : int = 20
+        a + b
+    )
+)

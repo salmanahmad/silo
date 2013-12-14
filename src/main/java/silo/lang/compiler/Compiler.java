@@ -118,6 +118,8 @@ public class Compiler {
                 return InvokeVirtual.build(node);
             } else if(label.equals(new Symbol("."))) {
                 return Access.build(node);
+            } else if(label.equals(new Symbol("="))) {
+                return Assign.build(node);
             } else if(MathOperation.accepts(node.getLabel())) {
                 return MathOperation.build(node);
             } else {
@@ -154,6 +156,14 @@ public class Compiler {
             generator.pop2();
         } else if(!klass.equals(Void.TYPE)) {
             generator.pop();
+        }
+    }
+
+    public static void dup(Class klass, GeneratorAdapter generator) {
+        if(isCategory2(klass)) {
+            generator.dup2();
+        } else if(!klass.equals(Void.TYPE)) {
+            generator.dup();
         }
     }
 

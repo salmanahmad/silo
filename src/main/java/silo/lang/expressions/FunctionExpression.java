@@ -138,6 +138,7 @@ public class FunctionExpression implements Expression, Opcodes {
         Class outputClass = Void.TYPE;
         if(outputs.size() == 1) {
             // TODO: Add special case for "null" as well...
+            // TODO: Handle non-primitive types and dot expressions...
 
             Symbol symbol = (Symbol)outputs.get(0);
             Class klass = Compiler.primitives.get(symbol);

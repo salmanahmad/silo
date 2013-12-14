@@ -122,6 +122,22 @@ public class Node {
         return node;
     }
 
+    // TODO: Should this utility functions be here or somewhere else?
+
+    public static Vector<Symbol> symbolListFromNode(Node node) {
+        Vector<Symbol> list = new Vector<Symbol>();
+
+        for(Object o : node.getChildren()) {
+            if(o instanceof Symbol) {
+                list.add((Symbol)o);
+            } else {
+                return null;
+            }
+        }
+
+        return list;
+    }
+
     public static Node flattenTree(Node node) {
         Node buffer = new Node(null);
         for(Object o : node.children) {

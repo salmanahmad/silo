@@ -1,7 +1,7 @@
 
 
 function(
-    name(test_return)
+    name(test_explicit_returns)
     outputs(int)
     do(
         return(40 + 1 + 1)

@@ -51,4 +51,14 @@ public class CompilerTest {
         Assert.assertEquals(new Integer(42), o);
     }
 
+    @Test
+    public void testSimpleVariables() {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/examples/variables.silo");
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+        Object o = runtime.eval(classes.get(0));
+
+        Assert.assertEquals(new Integer(25), o);
+    }
+
 }

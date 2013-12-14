@@ -20,10 +20,6 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.Method;
 import org.objectweb.asm.commons.GeneratorAdapter;
 
-
-import java.io.PrintStream;
-
-
 public class Access implements Expression {
 
     public final Expression head;
@@ -60,6 +56,8 @@ public class Access implements Expression {
     }
 
     public static Vector classAtPath(Vector<Symbol> path, Vector<String> packages, RuntimeClassLoader loader) {
+        // TODO: Abstract this method out and move it to the Compiler class, I think
+
         int index = 0;
         String name = null;
 
@@ -133,18 +131,31 @@ public class Access implements Expression {
 
             path = tail;
         } else {
-            // TODO: Handle local and imported variables
+            // TODO: Handle imported variables
 
-            Vector result = classAtPath(tail, importedPackages, loader);
+            if(frame.locals.containsKey(tail.get(0))) {
+                int local = frame.locals.get(tail.get(0)).intValue();
 
-            if(result == null) {
-                throw new RuntimeException("Could not find symbol: " + tail.toString());
+                scope = frame.localTypes.get(tail.get(0));
+                isStaticScope = false;
+
+                generator.loadLocal(local);
+                frame.operandStack.push(scope);
+
+                path = new Vector<Symbol>(tail);
+                path.remove(0);
+            } else {
+                Vector result = classAtPath(tail, importedPackages, loader);
+
+                if(result == null) {
+                    throw new RuntimeException("Could not find symbol: " + tail.toString());
+                }
+
+                scope = (Class)result.get(0);
+                isStaticScope = true;
+
+                path = (Vector<Symbol>)result.get(1);
             }
-
-            scope = (Class)result.get(0);
-            isStaticScope = true;
-
-            path = (Vector<Symbol>)result.get(1);
         }
 
         for(Symbol symbol : path) {
