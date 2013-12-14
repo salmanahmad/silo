@@ -26,6 +26,6 @@ public class CompilerTest {
     @Test
     public void testSimple() {
         Runtime runtime = new Runtime();
-        runtime.eval(Parser.parse("invoke(System.out, println(5 + 5))"));
+        runtime.eval(Parser.parse("invokevirtual(System.out, println(5 + 5))"));
     }
 }
