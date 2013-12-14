@@ -56,9 +56,11 @@ public class CompilerTest {
         Runtime runtime = new Runtime();
         String source = Helper.readResource("/examples/variables.silo");
         Vector<Class> classes = runtime.compile(Parser.parse(source));
-        Object o = runtime.eval(classes.get(0));
 
-        Assert.assertEquals(new Integer(25), o);
+        for(int i = 0; i < classes.size() - 1; i++) {
+            Object o = runtime.eval(classes.get(i));
+            Assert.assertEquals(new Integer(25 + i), o);
+        }
     }
 
 }

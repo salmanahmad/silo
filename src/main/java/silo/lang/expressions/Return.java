@@ -22,13 +22,15 @@ import org.objectweb.asm.commons.GeneratorAdapter;
 public class Return implements Expression {
 
     public final Expression value;
+    public final boolean explicit;
 
     public static Return build(Node node) {
-        return new Return(Block.build(node));
+        return new Return(Block.build(node), true);
     }
 
-    public Return(Expression value) {
+    public Return(Expression value, boolean explicit) {
         this.value = value;
+        this.explicit = explicit;
     }
 
     public void emit(CompilationContext context) {
@@ -50,7 +52,9 @@ public class Return implements Expression {
                 g.push((String)null);
                 g.returnValue();
             } else {
-                throw new RuntimeException("Expecting a return type but there isn't any.");
+                if(explicit) {
+                    throw new RuntimeException("Expecting a return type but there isn't any.");
+                }
             }
         } else if(context.currentFrame().operandStack.size() == 1) {
             Class operand = context.currentFrame().operandStack.pop();

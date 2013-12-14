@@ -186,10 +186,10 @@ public class FunctionExpression implements Expression, Opcodes {
 
         context.frames.push(frame);
         body.emit(context);
-        Return.build(new Node("return")).emit(context);
+        (new Return(null, false)).emit(context);
         context.frames.pop();
 
-        g.returnValue();
+        //g.returnValue();
         g.endMethod();
 
         cw.visitEnd();

@@ -1,11 +1,38 @@
 
 
 function(
-    name(test_variables)
     outputs(int)
     do(
         a : int = 5
         b : int = 20
-        a + b
+        return(a + b)
+    )
+)
+
+function(
+    outputs(int)
+    do(
+        a : int = 5
+        b : int = 20
+        (((a + b + 1)))
+    )
+)
+
+function(
+    outputs(int)
+    do(
+        a : int = 5
+        b : int = 20
+        (a + b + 2)
+    )
+)
+
+
+function(
+    outputs(int)
+    do(
+        a : int = 5
+        b : int = 20
+        a + b + 3
     )
 )
