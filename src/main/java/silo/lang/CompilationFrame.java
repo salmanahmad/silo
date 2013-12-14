@@ -18,9 +18,11 @@ public class CompilationFrame {
 
     public final GeneratorAdapter generator;
     public final Stack<Class> operandStack;
+    public final Class outputClass;
 
-    public CompilationFrame(GeneratorAdapter generator) {
+    public CompilationFrame(GeneratorAdapter generator, Class outputClass) {
         this.generator = generator;
         this.operandStack = new Stack<Class>();
+        this.outputClass = outputClass;
     }
 }

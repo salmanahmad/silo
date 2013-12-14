@@ -111,6 +111,8 @@ public class Compiler {
                 return FunctionExpression.build(node);
             } else if(label.equals(new Symbol("declare"))) {
                 return Declare.build(node);
+            } else if(label.equals(new Symbol("return"))) {
+                return Return.build(node);
             } else if(label.equals(new Symbol("invokevirtual"))) {
                 // TODO: Add macro called "dispatch" to wrap this...
                 return InvokeVirtual.build(node);
@@ -125,6 +127,14 @@ public class Compiler {
             int i = ((Integer)value).intValue();
             return new LiteralInteger(i);
         } else if(value instanceof Symbol) {
+            if(value.equals(new Symbol("return"))) {
+                return Return.build(new Node(new Symbol("return")));
+            } else if(value.equals(new Symbol("break"))) {
+                // TODO
+            } else if(value.equals(new Symbol("continue"))) {
+                // TODO
+            }
+
             return Access.build((Symbol)value);
         } else {
             throw new RuntimeException("Unhandled case..." + value.toString());

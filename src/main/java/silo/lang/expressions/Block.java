@@ -23,8 +23,10 @@ public class Block implements Expression {
     public static Block build(Node node) {
         Vector<Expression> arguments = new Vector();
 
-        for(Object child : node.getChildren()) {
-            arguments.add(Compiler.buildExpression(child));
+        if(node.getChildren() != null) {
+            for(Object child : node.getChildren()) {
+                arguments.add(Compiler.buildExpression(child));
+            }
         }
 
         return new Block(arguments);

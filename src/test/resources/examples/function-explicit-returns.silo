@@ -1,0 +1,10 @@
+
+
+function(
+    name(test_return)
+    outputs(int)
+    do(
+        return(40 + 1 + 1)
+        5 + 90
+    )
+)
