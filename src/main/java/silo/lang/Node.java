@@ -70,7 +70,11 @@ public class Node {
 
     public Vector getChildren() {
         // TODO: Optimize this. Use persistent data structures.
-        return new Vector(children);
+        if(children == null) {
+            return null;
+        } else {
+            return new Vector(children);
+        }
     }
 
     // TODO: Should the following methods also be static so that it makes jav interop seamless?
@@ -133,7 +137,22 @@ public class Node {
 
     // TODO - Update this so it takes an anonymous function instead...
     public static Node flattenTree(Node node, Object... labels) {
-        return null;
+        Node buffer = new Node(null);
+        for(Object o : node.children) {
+            if(o instanceof Node) {
+                for(Object l : labels) {
+                    Node n = (Node)node;
+                    if(n.getLabel().equals(l)) {
+                        buffer.addChildren(flattenTree(n, labels));
+                        continue;
+                    }
+                }
+            }
+
+            buffer.addChild(o);
+        }
+
+        return buffer;
     }
 
     public static Node splitAccessChain(Node node, Object... labels) {

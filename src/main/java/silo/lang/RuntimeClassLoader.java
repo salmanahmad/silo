@@ -11,6 +11,9 @@
 
 package silo.lang;
 
+import java.util.Set;
+import java.util.HashSet;
+
 import java.net.URLClassLoader;
 import java.net.URL;
 
@@ -37,6 +40,31 @@ public class RuntimeClassLoader extends URLClassLoader {
         }
 
         return klass;
+    }
+
+    public Class<?> findClass(String name) throws ClassNotFoundException {
+        // TODO: Should I override this to try to compile a name if it is not found when doing the forward declaration? It will not work for mututally recursive functions but it could make this nicer. Or atleast have a look-aside cache.
+        return super.findClass(name);
+    }
+
+
+    public Package getPackage(String name) {
+        return super.getPackage(name);
+    }
+
+    public Package[] getPackages() {
+        return super.getPackages();
+    }
+
+    public Set getPackagesSet() {
+        Package[] list = getPackages();
+        Set packages = new HashSet();
+
+        for(Package p : list) {
+            packages.add(p.getName());
+        }
+
+        return packages;
     }
 }
 

@@ -30,4 +30,4 @@ foo  ()
 a + b + c + d
 
 
-system.out.println("bar")
+system.out.println("bar").baz

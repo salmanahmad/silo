@@ -22,6 +22,11 @@ import org.objectweb.asm.*;
 import org.objectweb.asm.commons.*;
 import org.objectweb.asm.util.*;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.io.PrintStream;
+
 
 // TODO: Should I rename all of the other expressions so that they have the "Expression" suffix?
 
@@ -177,6 +182,27 @@ public class FunctionExpression implements Expression, Opcodes {
         cw.visitEnd();
 
         byte[] code = cw.toByteArray();
+
+        /*
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+        ClassReader classReader = new ClassReader(code);
+        PrintWriter printWriter = new PrintWriter(outputStream);
+        TraceClassVisitor traceClassVisitor = new TraceClassVisitor(printWriter);
+        classReader.accept(traceClassVisitor, ClassReader.SKIP_DEBUG);
+
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        CheckClassAdapter.verify(new ClassReader(code), false, pw);
+
+        System.out.println(sw.toString());
+
+        System.out.println();
+        System.out.println(outputStream.toString());
+        System.out.println();
+        System.out.println();
+        */
+
         Class klass = context.runtime.loader.loadClass(code);
         context.classes.add(klass);
     }

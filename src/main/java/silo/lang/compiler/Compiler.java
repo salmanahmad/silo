@@ -109,6 +109,8 @@ public class Compiler {
                 return FunctionExpression.build(node);
             } else if(label.equals(new Symbol("declare"))) {
                 return Declare.build(node);
+            } else if(label.equals(new Symbol("invoke"))) {
+                return InvokeVirtual.build(node);
             } else if(label.equals(new Symbol("."))) {
                 return Access.build(node);
             } else if(MathOperation.accepts(node.getLabel())) {
@@ -120,8 +122,10 @@ public class Compiler {
         } else if(value instanceof Integer) {
             int i = ((Integer)value).intValue();
             return new LiteralInteger(i);
+        } else if(value instanceof Symbol) {
+            return Access.build((Symbol)value);
         } else {
-            throw new RuntimeException("Unhandled case...");
+            throw new RuntimeException("Unhandled case..." + value.toString());
         }
     }
 
