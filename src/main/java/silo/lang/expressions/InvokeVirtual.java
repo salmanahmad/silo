@@ -28,6 +28,10 @@ public class InvokeVirtual implements Expression {
     public final Vector<Expression> arguments;
 
     public static InvokeVirtual build(Node node) {
+        if(node.getChildren().size() != 2) {
+            throw new RuntimeException("invokevirtual requires two arguments.");
+        }
+
         Expression receiver = Compiler.buildExpression(node.getFirstChild());
 
         Vector<Expression> arguments = new Vector<Expression>();
