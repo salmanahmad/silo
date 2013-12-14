@@ -135,7 +135,10 @@ public class FunctionExpression implements Expression, Opcodes {
         }
 
         Type outputType = Type.VOID_TYPE;
+        Class outputClass = Void.TYPE;
         if(outputs.size() == 1) {
+            // TODO: Add special case for "null" as well...
+
             Symbol symbol = (Symbol)outputs.get(0);
             Class klass = Compiler.primitives.get(symbol);
 
@@ -143,7 +146,13 @@ public class FunctionExpression implements Expression, Opcodes {
                 throw new RuntimeException("Only primitives are supported right now.");
             } else {
                 outputType = Type.getType(klass);
+                outputClass = klass;
             }
+        }
+
+        if(outputType.equals(Type.VOID_TYPE)) {
+            // TODO: make this var when you implement vars and traits
+            outputType = Type.getType(Object.class);
         }
 
         GeneratorAdapter g;
@@ -173,7 +182,44 @@ public class FunctionExpression implements Expression, Opcodes {
         av.visitEnd();
 
         context.frames.push(new CompilationFrame(g));
+
         body.emit(context);
+
+        // TODO: Branch statements needs to be careful to always return a Var if the types do not agree with one another...
+
+        if(context.currentFrame().operandStack.size() == 0) {
+            if(outputClass.equals(Object.class)) {
+                // TODO: AKA Var.class. Change this if statement for Vars
+                g.push((String)null);
+                g.returnValue();
+            } else if(outputClass.equals(Void.TYPE)) {
+                g.push((String)null);
+                g.returnValue();
+            } else {
+                throw new RuntimeException("Expecting a return type but there isn't any.");
+            }
+        } else if(context.currentFrame().operandStack.size() == 1) {
+            Class operand = context.currentFrame().operandStack.pop();
+
+            if(outputClass.equals(Object.class)) {
+                // TODO: AKA Var.class. Change this if statement for Vars
+                g.valueOf(Type.getType(operand));
+                g.returnValue();
+            } else if(outputClass.equals(Void.TYPE)) {
+                Compiler.pop(operand, g);
+                g.push((String)null);
+                g.returnValue();
+            } else {
+                if(outputClass.isAssignableFrom(operand)) {
+                    g.returnValue();
+                } else {
+                    throw new RuntimeException("Invalid return type from function.");
+                }
+            }
+        } else {
+            throw new RuntimeException("Too many things on the operand stack when returning from a function.");
+        }
+
         context.frames.pop();
 
         g.returnValue();

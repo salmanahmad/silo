@@ -52,10 +52,10 @@ public class Block implements Expression {
                     throw new RuntimeException("The operand stack should not change more than one for nodes.");
                 }
 
-                for(int i = 0; i < size; i++) {
+                for(int i = 0; i < size - 1; i++) {
                     // TODO - What if the value on the stack is a category2 type? I need to pop more than just 1, right?
-                    frame.operandStack.pop();
-                    frame.generator.pop();
+                    Class operand = frame.operandStack.pop();
+                    Compiler.pop(operand, frame.generator);
                 }
             }
         }

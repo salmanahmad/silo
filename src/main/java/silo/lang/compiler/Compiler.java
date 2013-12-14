@@ -18,6 +18,8 @@ import silo.lang.expressions.*;
 import java.util.Vector;
 import java.util.HashMap;
 
+import org.objectweb.asm.commons.GeneratorAdapter;
+
 // TODO: Consider moving Compiler and Parser out of the 'compiler' package and simply into the 'lang' package instead.
 
 public class Compiler {
@@ -132,6 +134,19 @@ public class Compiler {
     public static void emit(Node node) {
         
     }
+
+    public static boolean isCategory2(Class klass) {
+        return klass.equals(Double.TYPE) || klass.equals(Long.TYPE);
+    }
+
+    public static void pop(Class klass, GeneratorAdapter generator) {
+        if(isCategory2(klass)) {
+            generator.pop2();
+        } else if(!klass.equals(Void.TYPE)) {
+            generator.pop();
+        }
+    }
+
 }
 
 

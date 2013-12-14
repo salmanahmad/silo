@@ -38,7 +38,10 @@ public class Runtime {
 
     public Object eval(Node node) {
         Class klass = this.compile(node).lastElement();
+        return eval(klass);
+    }
 
+    public Object eval(Class klass) {
         try {
             return ((Function)klass.newInstance()).methodHandle().invoke(null);
         } catch(Exception e) {

@@ -21,6 +21,8 @@ import silo.lang.compiler.grammar.*;
 
 import org.objectweb.asm.Type;
 
+import silo.util.Helper;
+
 public class CompilerTest {
 
     @Test
@@ -28,4 +30,15 @@ public class CompilerTest {
         Runtime runtime = new Runtime();
         runtime.eval(Parser.parse("invokevirtual(System.out, println(5 + 5))"));
     }
+
+    @Test
+    public void testFunctionImplicitReturns() {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/examples/function-implicit-returns.silo");
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+        Object o = runtime.eval(classes.get(0));
+
+        Assert.assertEquals(new Integer(95), o);
+    }
+
 }
