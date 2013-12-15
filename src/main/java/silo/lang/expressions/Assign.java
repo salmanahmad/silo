@@ -17,6 +17,7 @@ import silo.lang.compiler.Compiler;
 import java.util.Vector;
 
 import org.objectweb.asm.Type;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.commons.Method;
 import org.objectweb.asm.commons.GeneratorAdapter;
 
@@ -104,17 +105,15 @@ public class Assign implements Expression {
                 typeClass = Object.class;
             }
 
-            local = generator.newLocal(Type.getType(typeClass));
-            frame.locals.put(identifier, new Integer(local));
-            frame.localTypes.put(identifier, typeClass);
+            local = frame.newLocal(identifier, typeClass);
         } else {
             // If it is defined, make sure the types match up.
 
             local = frame.locals.get(identifier).intValue();
 
             if(typeClass != null) {
-                Type type = generator.getLocalType(local);
-                if(!type.equals(Type.getType(typeClass))) {
+                Class klass = frame.localTypes.get(identifier);
+                if(!klass.equals(typeClass)) {
                     throw new RuntimeException("Attempting to re-define variable " + identifier.toString() + " with a different type.");
                 }
             }
@@ -129,6 +128,6 @@ public class Assign implements Expression {
         Compiler.dup(frame.operandStack.peek(), generator);
 
         // Perform assignment keeping one of the values on the stack
-        generator.storeLocal(local);
+        generator.visitVarInsn(Type.getType(typeClass).getOpcode(Opcodes.ISTORE), local);
     }
 }
