@@ -13,20 +13,20 @@ package silo.lang.expressions;
 
 import silo.lang.*;
 
-public class LiteralByte implements Expression {
+public class LiteralLong implements Expression {
 
-    public final byte value;
+    public final long value;
 
-    public LiteralByte(byte value) {
+    public LiteralLong(long value) {
         this.value = value;
     }
 
-    public LiteralByte(Byte value) {
-        this.value = value.byteValue();
+    public LiteralLong(Long value) {
+        this.value = value.longValue();
     }
 
     public void emit(CompilationContext context) {
-        context.currentFrame().operandStack.push(Byte.TYPE);
+        context.currentFrame().operandStack.push(Long.TYPE);
         context.currentFrame().generator.push(value);
     }
 }

@@ -127,11 +127,6 @@ public class Compiler {
             } else {
                 return Invoke.build(node);
             }
-        } else if(value instanceof Integer) {
-            int i = ((Integer)value).intValue();
-            return new LiteralInteger(i);
-        } else if(value instanceof String) {
-            return new LiteralString((String)value);
         } else if(value instanceof Symbol) {
             if(value.equals(new Symbol("return"))) {
                 return Return.build(new Node(new Symbol("return")));
@@ -142,6 +137,26 @@ public class Compiler {
             }
 
             return Access.build((Symbol)value);
+        } else if(value instanceof Boolean) {
+            return new LiteralBoolean((Boolean)value);
+        } else if(value instanceof Byte) {
+            return new LiteralByte((Byte)value);
+        } else if(value instanceof Character) {
+            return new LiteralCharacter((Character)value);
+        } else if(value instanceof Short) {
+            return new LiteralShort((Short)value);
+        } else if(value instanceof Integer) {
+            return new LiteralInteger((Integer)value);
+        } else if(value instanceof Long) {
+            return new LiteralLong((Long)value);
+        } else if(value instanceof Float) {
+            return new LiteralFloat((Float)value);
+        } else if(value instanceof Double) {
+            return new LiteralDouble((Double)value);
+        } else if(value instanceof String) {
+            return new LiteralString((String)value);
+        } else if(value == null) {
+            return new LiteralNull();
         } else {
             throw new RuntimeException("Unhandled case..." + value.toString());
         }
