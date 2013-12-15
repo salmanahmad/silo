@@ -116,6 +116,8 @@ public class Compiler {
             } else if(label.equals(new Symbol("invokevirtual"))) {
                 // TODO: Add macro called "dispatch" to wrap this...
                 return InvokeVirtual.build(node);
+            } else if(label.equals(new Symbol("#"))) {
+                return InvokeVirtual.build(node);
             } else if(label.equals(new Symbol("."))) {
                 return Access.build(node);
             } else if(label.equals(new Symbol("="))) {
@@ -128,6 +130,8 @@ public class Compiler {
         } else if(value instanceof Integer) {
             int i = ((Integer)value).intValue();
             return new LiteralInteger(i);
+        } else if(value instanceof String) {
+            return new LiteralString((String)value);
         } else if(value instanceof Symbol) {
             if(value.equals(new Symbol("return"))) {
                 return Return.build(new Node(new Symbol("return")));

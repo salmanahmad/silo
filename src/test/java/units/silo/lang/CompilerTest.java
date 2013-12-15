@@ -63,4 +63,12 @@ public class CompilerTest {
         }
     }
 
+    @Test
+    public void testInvokeVirtual() {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/examples/invokevirtual.silo");
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+
+        Object o = runtime.eval(classes.get(0));
+    }
 }

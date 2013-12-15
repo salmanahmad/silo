@@ -240,6 +240,7 @@ consOperator returns [Symbol symbol]
 
 chainOperator returns [Symbol symbol]
   : PIPE
+  | HASH
   ;
 
 accessOperator returns [Symbol symbol]
@@ -307,6 +308,7 @@ SCOPE:              '::';
 COLON:              ':';
 DOT:                '.';
 PIPE:               '|';
+HASH:               '#';
 
 SEMICOLON:          ';';
 COMMA:              ',';
