@@ -1,0 +1,43 @@
+
+
+function(
+    name(branch_test)
+    outputs(int)
+    do(
+        branch(true {
+            return(5)
+        } {
+            return(10)
+        })
+    )
+)
+
+
+
+
+function(
+    name(branch_2)
+    outputs(int)
+    do(
+        branch(false {
+            return(5)
+        } {
+            return(10)
+        })
+    )
+)
+
+
+
+
+function(
+    name(branch_3)
+    outputs(int)
+    do(
+        branch(false {
+            (5)
+        } {
+            (10)
+        })
+    )
+)

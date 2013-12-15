@@ -14,13 +14,18 @@ package silo.lang;
 import java.util.Stack;
 import java.util.HashMap;
 
+import org.objectweb.asm.commons.Method;
+import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.commons.GeneratorAdapter;
 
 public class CompilationFrame {
 
     private int nextLocal = 0;
 
-    public final GeneratorAdapter generator;
+    public final int access;
+    public final Method method;
+
+    public GeneratorAdapter generator;
 
     public final Class outputClass;
     public final Stack<Class> operandStack;
@@ -28,7 +33,10 @@ public class CompilationFrame {
     public final HashMap<Symbol, Integer> locals;
     public final HashMap<Symbol, Class> localTypes;
 
-    public CompilationFrame(GeneratorAdapter generator, Class outputClass) {
+    public CompilationFrame(int access, Method method, GeneratorAdapter generator, Class outputClass) {
+        this.access = access;
+        this.method = method;
+
         this.generator = generator;
         this.outputClass = outputClass;
 
@@ -55,4 +63,12 @@ public class CompilationFrame {
 
         return local;
     }
+
+    // TODO: Do I want to support this? The only use cases are math operation, correct?
+    public GeneratorAdapter useTempGenerator(MethodNode node) {
+        GeneratorAdapter current = generator;
+        this.generator = new GeneratorAdapter(access, method, node);
+        return current;
+    }
+
 }

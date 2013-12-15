@@ -92,4 +92,19 @@ public class CompilerTest {
         Assert.assertEquals(new Double(95.5), o);
     }
 
+    @Test
+    public void testBranch() {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/examples/branch.silo");
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+
+        Object o = runtime.eval(classes.get(0));
+        Assert.assertEquals(new Integer(5), o);
+
+        o = runtime.eval(classes.get(1));
+        Assert.assertEquals(new Integer(10), o);
+
+        o = runtime.eval(classes.get(1));
+        Assert.assertEquals(new Integer(10), o);
+    }
 }

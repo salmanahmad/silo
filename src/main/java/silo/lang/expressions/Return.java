@@ -33,6 +33,21 @@ public class Return implements Expression {
         this.explicit = explicit;
     }
 
+    public static boolean isBoxClass(Class klass) {
+        // TODO: Include var in this list...
+        return (
+            klass.equals(Object.class) ||
+            klass.equals(Boolean.class) ||
+            klass.equals(Character.class) ||
+            klass.equals(Byte.class) ||
+            klass.equals(Short.class) ||
+            klass.equals(Integer.class) ||
+            klass.equals(Long.class) ||
+            klass.equals(Float.class) ||
+            klass.equals(Double.class)
+        );
+    }
+
     public void emit(CompilationContext context) {
         if(value != null) {
             value.emit(context);
@@ -57,7 +72,9 @@ public class Return implements Expression {
                 }
             }
         } else if(context.currentFrame().operandStack.size() == 1) {
-            Class operand = context.currentFrame().operandStack.pop();
+            // This is peek instead of pop because the compiler may have this after it even though
+            // the JVM will not allow it. Will this cause errors with the JVM verifier?
+            Class operand = context.currentFrame().operandStack.peek();
 
             if(outputClass.equals(Object.class)) {
                 // TODO: AKA Var.class. Change this if statement for Vars
@@ -70,6 +87,9 @@ public class Return implements Expression {
             } else {
                 if(outputClass.isAssignableFrom(operand)) {
                     g.returnValue();
+                } else if(outputClass.isPrimitive() && isBoxClass(operand)) {
+                    // TODO: This statement above should be: "equals object OR var"
+                    g.unbox(Type.getType(outputClass));
                 } else {
                     // TODO: Implicit conversion. Aka returning float form a double, etc. Not sure I want to support that yet.
                     throw new RuntimeException("Invalid return type from function.");

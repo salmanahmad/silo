@@ -182,7 +182,7 @@ public class FunctionExpression implements Expression, Opcodes {
         av = g.visitAnnotation(Type.getType(Function.Body.class).getDescriptor(), true);
         av.visitEnd();
 
-        CompilationFrame frame = new CompilationFrame(g, outputClass);
+        CompilationFrame frame = new CompilationFrame(ACC_PUBLIC + ACC_STATIC, m, g, outputClass);
 
         context.frames.push(frame);
         body.emit(context);
