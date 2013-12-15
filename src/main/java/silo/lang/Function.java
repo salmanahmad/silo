@@ -36,19 +36,20 @@ public class Function {
         throw new RuntimeException("Unimplemented");
     }
 
+    public static Method methodHandle(Class klass) {
+        Method[] methods = klass.getMethods();
+        for(Method method : methods) {
+            if(method.getAnnotation(Body.class) != null) {
+                return method;
+            }
+        }
+
+        throw new RuntimeException("Could not find method handle");
+    }
+
     public Method methodHandle() {
         if(methodHandle == null) {
-            Method[] methods = this.getClass().getMethods();
-            for(Method method : methods) {
-                if(method.getAnnotation(Body.class) != null) {
-                    methodHandle = method;
-                    break;
-                }
-            }
-
-            if(methodHandle == null) {
-                throw new RuntimeException("Could not find method handle");
-            }
+            methodHandle = methodHandle(this.getClass());
         }
 
         return methodHandle;

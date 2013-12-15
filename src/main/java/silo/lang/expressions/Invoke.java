@@ -115,7 +115,19 @@ public class Invoke implements Expression {
 
                 if(path.size() == 0) {
                     // Native function
-                    // TODO
+
+                    java.lang.reflect.Method method = Function.methodHandle(klass);
+
+                    compileArguments(arguments, context);
+                    generator.invokeStatic(Type.getType(klass), Method.getMethod(method));
+
+                    for(Expression e : arguments) {
+                        frame.operandStack.pop();
+                    }
+
+                    frame.operandStack.push(method.getReturnType());
+
+                    return;
                 } else if(path.size() == 1) {
                     // Java static method
 

@@ -1,0 +1,17 @@
+
+function(
+    name(foo)
+    outputs(int)
+    do (
+        5 + 5
+    )
+)
+
+function(
+    name(bar)
+    outputs(int)
+    do (
+        5 + foo()
+    )
+)
+

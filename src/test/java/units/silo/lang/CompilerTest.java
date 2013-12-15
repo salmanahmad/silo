@@ -71,4 +71,14 @@ public class CompilerTest {
 
         Object o = runtime.eval(classes.get(0));
     }
+
+    @Test
+    public void testFunctionCall() {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/examples/function-call.silo");
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+
+        Object o = runtime.eval(classes.get(1));
+        Assert.assertEquals(new Integer(15), o);
+    }
 }
