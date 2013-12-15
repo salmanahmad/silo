@@ -81,4 +81,15 @@ public class CompilerTest {
         Object o = runtime.eval(classes.get(1));
         Assert.assertEquals(new Integer(15), o);
     }
+
+    @Test
+    public void testMath() {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/examples/math-test.silo");
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+
+        Object o = runtime.eval(classes.get(0));
+        Assert.assertEquals(new Double(95.5), o);
+    }
+
 }

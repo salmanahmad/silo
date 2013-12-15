@@ -71,6 +71,7 @@ public class Return implements Expression {
                 if(outputClass.isAssignableFrom(operand)) {
                     g.returnValue();
                 } else {
+                    // TODO: Implicit conversion. Aka returning float form a double, etc. Not sure I want to support that yet.
                     throw new RuntimeException("Invalid return type from function.");
                 }
             }
