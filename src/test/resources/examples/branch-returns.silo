@@ -1,0 +1,15 @@
+
+function(
+    name(branch_test)
+    outputs(int)
+    {
+        i : int = branch(true {
+            5
+        } {
+            10
+        })
+
+        return(i)
+    }
+)
+

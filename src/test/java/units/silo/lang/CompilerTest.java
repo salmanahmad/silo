@@ -107,4 +107,14 @@ public class CompilerTest {
         o = runtime.eval(classes.get(1));
         Assert.assertEquals(new Integer(10), o);
     }
+
+    @Test
+    public void testBranchReturns() {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/examples/branch-returns.silo");
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+
+        Object o = runtime.eval(classes.get(0));
+        Assert.assertEquals(new Integer(5), o);
+    }
 }

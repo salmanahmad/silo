@@ -54,9 +54,6 @@ public class Branch implements Expression {
         CompilationFrame frame = context.currentFrame();
         GeneratorAdapter generator = frame.generator;
 
-        // TODO: Make this var
-        Class outputType = Object.class;
-
         Label falseLabel = generator.newLabel();
         Label endLabel = generator.newLabel();
 
@@ -72,11 +69,46 @@ public class Branch implements Expression {
             generator.ifNull(falseLabel);
         }
 
-        if(trueBranch != null) {
-            trueBranch.emit(context);
 
-            // TODO: Box into a var
-            generator.box(Type.getType(frame.operandStack.pop()));
+        // TODO: Make this var
+        Class outputType = Object.class;
+
+        MethodNode trueBranchInstructions = new MethodNode();
+        MethodNode falseBranchInstructions = new MethodNode();
+
+        Class trueClass = null;
+        Class falseClass = null;
+
+        boolean shouldBox = true;
+
+        if(trueBranch != null) {
+            frame.useTempGenerator(trueBranchInstructions);
+            trueBranch.emit(context);
+            trueClass = frame.operandStack.pop();
+        }
+
+        if(falseBranch != null) {
+            frame.useTempGenerator(falseBranchInstructions);
+            falseBranch.emit(context);
+            falseClass = frame.operandStack.pop();
+        }
+
+        if(trueBranch != null && falseBranch != null) {
+            if(trueClass.equals(falseClass)) {
+                shouldBox = false;
+                outputType = trueClass;
+            } else {
+                // TODO: Should this throw an error?
+            }
+        }
+
+        if(trueBranch != null) {
+            trueBranchInstructions.instructions.accept(generator);
+
+            if(shouldBox) {
+                // TODO: Box into a var
+                generator.box(Type.getType(trueClass));
+            }
         } else {
             generator.push((String)null);
         }
@@ -84,10 +116,12 @@ public class Branch implements Expression {
 
         generator.mark(falseLabel);
         if(falseBranch != null) {
-            falseBranch.emit(context);
+            falseBranchInstructions.instructions.accept(generator);
 
-            // TODO: Box into a var
-            generator.box(Type.getType(frame.operandStack.pop()));
+            if(shouldBox) {
+                // TODO: Box into a var
+                generator.box(Type.getType(falseClass));
+            }
         } else {
             generator.push((String)null);
         }
@@ -95,5 +129,6 @@ public class Branch implements Expression {
         generator.mark(endLabel);
 
         frame.operandStack.push(outputType);
+        frame.generator = generator;
     }
 }
