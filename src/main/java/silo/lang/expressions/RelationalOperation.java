@@ -19,7 +19,7 @@ import java.util.HashMap;
 import org.objectweb.asm.*;
 import org.objectweb.asm.commons.*;
 
-public class MathOperation implements Expression {
+public class RelationalOperation implements Expression {
 
     public final Expression e1;
     public final Expression e2;
@@ -29,13 +29,14 @@ public class MathOperation implements Expression {
 
     static {
         // TODO: Should I put the follow lines as well?
-        //opcodes.put(new Symbol("add"), GeneratorAdapter.ADD);
+        //opcodes.put(new Symbol("equals"), GeneratorAdapter.EQ);
 
-        opcodes.put(new Symbol("+"), GeneratorAdapter.ADD);
-        opcodes.put(new Symbol("-"), GeneratorAdapter.SUB);
-        opcodes.put(new Symbol("*"), GeneratorAdapter.MUL);
-        opcodes.put(new Symbol("/"), GeneratorAdapter.DIV);
-        opcodes.put(new Symbol("%"), GeneratorAdapter.REM);
+        opcodes.put(new Symbol("=="), GeneratorAdapter.EQ);
+        opcodes.put(new Symbol("!="), GeneratorAdapter.NE);
+        opcodes.put(new Symbol(">="), GeneratorAdapter.GE);
+        opcodes.put(new Symbol(">"), GeneratorAdapter.GT);
+        opcodes.put(new Symbol("<="), GeneratorAdapter.LE);
+        opcodes.put(new Symbol("<"), GeneratorAdapter.LT);
     }
 
     public static boolean accepts(Object value) {
@@ -47,7 +48,7 @@ public class MathOperation implements Expression {
         return false;
     }
 
-    public static MathOperation build(Node node) {
+    public static RelationalOperation build(Node node) {
 
         if(node.getLabel() instanceof Symbol) {
             Symbol symbol = (Symbol)node.getLabel();
@@ -58,47 +59,25 @@ public class MathOperation implements Expression {
                     throw new RuntimeException("Binary operation '" + symbol + "' must have 2 operands.");
                 }
 
-                return new MathOperation(
+                return new RelationalOperation(
                     Compiler.buildExpression(node.getChildren().get(0)),
                     Compiler.buildExpression(node.getChildren().get(1)),
                     opcode.intValue());
             }
         }
 
-        throw new RuntimeException("Invalid math operation.");
+        throw new RuntimeException("Invalid relational operation.");
     }
 
-    public MathOperation(Expression e1, Expression e2, int operation) {
+    public RelationalOperation(Expression e1, Expression e2, int operation) {
         this.e1 = e1;
         this.e2 = e2;
         this.operation = operation;
     }
 
-    public static Class implicitConversion(Class klass1, Class klass2) {
-        HashMap<Class, Integer> supportedTypes = new HashMap<Class, Integer>();
-        supportedTypes.put(Byte.TYPE, 0);
-        supportedTypes.put(Short.TYPE, 1);
-        supportedTypes.put(Character.TYPE, 2);
-        supportedTypes.put(Integer.TYPE, 3);
-        supportedTypes.put(Long.TYPE, 4);
-        supportedTypes.put(Float.TYPE, 5);
-        supportedTypes.put(Double.TYPE, 6);
-
-        if(supportedTypes.containsKey(klass1) && supportedTypes.containsKey(klass2)) {
-            int index1 = supportedTypes.get(klass1);
-            int index2 = supportedTypes.get(klass2);
-
-            if(index1 > index2) {
-                return klass1;
-            } else {
-                return klass2;
-            }
-        }
-
-        return null;
-    }
-
     public void emit(CompilationContext context) {
+        // TODO: Add support for non-primitive types.
+
         Class operand1 = null;
         Class operand2 = null;
 
@@ -108,7 +87,10 @@ public class MathOperation implements Expression {
         this.e2.emit(context);
         operand2 = context.currentFrame().operandStack.peek();
 
-        Class outputType = implicitConversion(operand1, operand2);
+        // TODO: if !(operand1.isPrimitive()) and !(operand2.isPrimitive())
+        // TODO: if !(oeprand1.isPrimitive()) and operand2.isPrimitive() .... auto boxing...?
+
+        Class outputType = MathOperation.implicitConversion(operand1, operand2);
         if(outputType == null) {
             throw new RuntimeException("Invalid math operation. Cannot perform operation on a " + operand1 + " and a " + operand2);
         }
@@ -130,12 +112,20 @@ public class MathOperation implements Expression {
             context.currentFrame().generator.swap(Type.getType(outputType), Type.getType(outputType));
         }
 
-        context.currentFrame().generator.math(this.operation, Type.getType(outputType));
+        Label trueLabel = context.currentFrame().generator.newLabel();
+        Label endLabel = context.currentFrame().generator.newLabel();
+
+        context.currentFrame().generator.ifCmp(Type.getType(outputType), this.operation, trueLabel);
+        context.currentFrame().generator.push(false);
+        context.currentFrame().generator.goTo(endLabel);
+        context.currentFrame().generator.mark(trueLabel);
+        context.currentFrame().generator.push(true);
+        context.currentFrame().generator.mark(endLabel);
 
         context.currentFrame().operandStack.pop();
         context.currentFrame().operandStack.pop();
 
-        context.currentFrame().operandStack.push(outputType);
+        context.currentFrame().operandStack.push(Boolean.TYPE);
     }
 }
     

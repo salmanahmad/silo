@@ -159,6 +159,6 @@ public class Invoke implements Expression {
         // Dynamic function invocation
         // TODO: Remain cases...
 
-        return;
+        throw new RuntimeException("Dynamic invocation has not been implemented.");
     }
 }

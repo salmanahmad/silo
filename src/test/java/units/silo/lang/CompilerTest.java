@@ -117,4 +117,17 @@ public class CompilerTest {
         Object o = runtime.eval(classes.get(0));
         Assert.assertEquals(new Integer(5), o);
     }
+
+    @Test
+    public void testRelationalOperators() {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/examples/relational.silo");
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+
+        Object o = runtime.eval(classes.get(0));
+        Assert.assertEquals(new Boolean(true), o);
+
+        o = runtime.eval(classes.get(1));
+        Assert.assertEquals(new Boolean(false), o);
+    }
 }

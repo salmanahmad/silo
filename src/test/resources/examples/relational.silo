@@ -1,0 +1,27 @@
+
+function(
+    name(relational)
+    outputs(boolean)
+    do(
+        i : int = 5
+        branch(i < 10 {
+            true
+        } {
+            false
+        })
+    )
+)
+
+function(
+    name(relational_2)
+    outputs(boolean)
+    do(
+        i : int = 15
+        branch(i < 10.0 {
+            true
+        } {
+            false
+        })
+    )
+)
+

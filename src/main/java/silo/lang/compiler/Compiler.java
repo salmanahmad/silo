@@ -126,6 +126,8 @@ public class Compiler {
                 return Assign.build(node);
             } else if(MathOperation.accepts(node.getLabel())) {
                 return MathOperation.build(node);
+            } else if(RelationalOperation.accepts(node.getLabel())) {
+                return RelationalOperation.build(node);
             } else {
                 return Invoke.build(node);
             }
