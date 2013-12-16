@@ -118,6 +118,10 @@ public class MathOperation implements Expression {
             // to a MethodVisitor rather than returning an InsnList so I cannot tell what the type is ahead of time.
             // Once I figure out how to unify those APIs I should optimze this. Or, replace them with a bunch of Static calls
             // to runtime methods that handle the math for me if unifying the APIs ais not worth it...
+            
+            // TODO: The other issue that I should keep in mind here is that returning an InsnList may mess up if one of the operators
+            // is a function call that needs to be weaved. That would screw a bunch of stuff up because the frame.operandStack no longer
+            // matches reality. And I cannot re-run the compilation because I may be emitting custom classes.
             context.currentFrame().generator.cast(Type.getType(operand2), Type.getType(outputType));
             context.currentFrame().generator.swap(Type.getType(operand1), Type.getType(outputType));
             context.currentFrame().generator.cast(Type.getType(operand1), Type.getType(outputType));
