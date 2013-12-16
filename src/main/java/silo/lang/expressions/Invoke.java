@@ -158,6 +158,7 @@ public class Invoke implements Expression {
 
         // Dynamic function invocation
         // TODO: Remain cases...
+        // TODO: Remember to throw exceptions if the symbol is legit not found.
 
         throw new RuntimeException("Dynamic invocation has not been implemented.");
     }

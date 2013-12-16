@@ -1,0 +1,18 @@
+
+function(
+    name(adds5)
+    inputs(i : int)
+    outputs(int)
+    do (
+        5 + i
+    )
+)
+
+function(
+    name(bar)
+    outputs(int)
+    do (
+        adds5(45)
+    )
+)
+

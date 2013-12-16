@@ -130,4 +130,17 @@ public class CompilerTest {
         o = runtime.eval(classes.get(1));
         Assert.assertEquals(new Boolean(false), o);
     }
+
+    @Test
+    public void testArguments() {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/examples/arguments.silo");
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+
+        Object o = runtime.eval(classes.get(1));
+        Assert.assertEquals(new Integer(50), o);
+
+        o = runtime.eval(classes.get(0), new Object[] {104});
+        Assert.assertEquals(new Integer(109), o);
+    }
 }

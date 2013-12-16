@@ -17,6 +17,7 @@ import silo.lang.compiler.Compiler;
 import java.util.Vector;
 
 import org.objectweb.asm.Type;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.commons.Method;
 import org.objectweb.asm.commons.GeneratorAdapter;
 
@@ -139,7 +140,7 @@ public class Access implements Expression {
                 scope = frame.localTypes.get(tail.get(0));
                 isStaticScope = false;
 
-                generator.loadLocal(local);
+                generator.visitVarInsn(Type.getType(scope).getOpcode(Opcodes.ILOAD), local);
                 frame.operandStack.push(scope);
 
                 path = new Vector<Symbol>(tail);

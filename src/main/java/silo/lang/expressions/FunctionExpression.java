@@ -111,16 +111,23 @@ public class FunctionExpression implements Expression, Opcodes {
         }
 
         Vector<Type> inputTypes = new Vector<Type>();
+        Vector<Class> inputClasses = new Vector<Class>();
+        Vector<Symbol> inputNames = new Vector<Symbol>();
         for(Object o : inputs) {
             // TODO: Add these inputs to the local variables
 
             if(o instanceof Symbol) {
+                // This is the case where the user did not supply any type information
+
                 // TODO: Change this to "Var"
-                inputTypes.add(Type.INT_TYPE);
+                inputTypes.add(Type.getType(Object.class));
+                inputClasses.add(Object.class);
+                inputNames.add((Symbol)o);
             } else if(o instanceof Node) {
                 Node node = (Node)o;
 
                 // TODO: What about generics or arrays or scoped types?
+                Symbol name = (Symbol)node.getFirstChild();
                 Symbol symbol = (Symbol)node.getSecondChild();
                 Class klass = Compiler.primitives.get(symbol);
 
@@ -128,6 +135,8 @@ public class FunctionExpression implements Expression, Opcodes {
                     throw new RuntimeException("Only primitives are supported right now.");
                 } else {
                     inputTypes.add(Type.getType(klass));
+                    inputClasses.add(klass);
+                    inputNames.add(name);
                 }
             } else {
                 throw new RuntimeException("Invalid input specification for function: " + o);
@@ -185,6 +194,15 @@ public class FunctionExpression implements Expression, Opcodes {
         CompilationFrame frame = new CompilationFrame(ACC_PUBLIC + ACC_STATIC, m, g, outputClass);
 
         context.frames.push(frame);
+
+        if(inputClasses.size() == inputNames.size()) {
+            for(int i = 0; i < inputClasses.size(); i++) {
+                frame.newLocal(inputNames.get(i), inputClasses.get(i));
+            }
+        } else {
+            throw new RuntimeException("Internal error. The length of the input names and types should be the same.");
+        }
+
         body.emit(context);
         (new Return(null, false)).emit(context);
         context.frames.pop();

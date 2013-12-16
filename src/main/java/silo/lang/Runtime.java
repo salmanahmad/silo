@@ -41,9 +41,9 @@ public class Runtime {
         return eval(klass);
     }
 
-    public Object eval(Class klass) {
+    public Object eval(Class klass, Object... args) {
         try {
-            return ((Function)klass.newInstance()).methodHandle().invoke(null);
+            return ((Function)klass.newInstance()).methodHandle().invoke(null, args);
         } catch(Exception e) {
             // TODO: Better error handling.
             e.printStackTrace();
