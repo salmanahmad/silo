@@ -130,6 +130,8 @@ public class Compiler {
                 return Access.build(node);
             } else if(label.equals(new Symbol("="))) {
                 return Assign.build(node);
+            } else if(LogicalOperation.accepts(node.getLabel())) {
+                return LogicalOperation.build(node);
             } else if(MathOperation.accepts(node.getLabel())) {
                 return MathOperation.build(node);
             } else if(RelationalOperation.accepts(node.getLabel())) {

@@ -153,4 +153,17 @@ public class CompilerTest {
         Object o = runtime.eval(classes.get(0));
         Assert.assertEquals(new Integer(10), o);
     }
+
+    @Test
+    public void testLogicalOperators() {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/examples/logical-operators.silo");
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+
+        Object o = runtime.eval(classes.get(0));
+        Assert.assertEquals(new Boolean(true), o);
+
+        o = runtime.eval(classes.get(2), new Boolean(true));
+        Assert.assertEquals(new Boolean(true), o);
+    }
 }

@@ -1,0 +1,40 @@
+
+
+function(
+    name(temp)
+    outputs(boolean)
+    {
+        i : int = 0
+
+        branch(i < 10 && i > -10 {
+            return(true)
+        } {
+            return(false)
+        })
+    }
+)
+
+function(
+    name(switchero)
+    inputs(a : boolean)
+    outputs(boolean)
+    {
+        not(a)
+    }
+)
+
+
+function(
+    name(test_3)
+    inputs(a : boolean)
+    outputs(boolean)
+    {
+        i : int = 0
+        j : int = 5
+        branch((i < 10 && j > 10) || (i < 100 && j > 3) {
+            true
+        } {
+            false
+        })
+    }
+)
