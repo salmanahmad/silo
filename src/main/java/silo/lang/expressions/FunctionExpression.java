@@ -133,11 +133,11 @@ public class FunctionExpression implements Expression, Opcodes {
 
                 if(klass == null) {
                     throw new RuntimeException("Only primitives are supported right now.");
-                } else {
-                    inputTypes.add(Type.getType(klass));
-                    inputClasses.add(klass);
-                    inputNames.add(name);
                 }
+
+                inputTypes.add(Type.getType(klass));
+                inputClasses.add(klass);
+                inputNames.add(name);
             } else {
                 throw new RuntimeException("Invalid input specification for function: " + o);
             }

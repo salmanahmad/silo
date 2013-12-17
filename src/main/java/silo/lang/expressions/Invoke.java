@@ -107,7 +107,7 @@ public class Invoke implements Expression {
             importedPackages.add("java.util");
             importedPackages.add("java.io");
 
-            Vector result = Access.classAtPath(identifier, importedPackages, loader);
+            Vector result = Compiler.resolveAccessPath(identifier, importedPackages, loader);
 
             if(result != null) {
                 Class klass = (Class)result.get(0);

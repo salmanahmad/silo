@@ -56,51 +56,6 @@ public class Access implements Expression {
         return new Access(head, tail);
     }
 
-    public static Vector classAtPath(Vector<Symbol> path, Vector<String> packages, RuntimeClassLoader loader) {
-        // TODO: Abstract this method out and move it to the Compiler class, I think
-
-        int index = 0;
-        String name = null;
-
-        for(Symbol symbol : path) {
-            index++;
-
-            if(name == null) {
-                name = symbol.toString();
-            } else {
-                name += "." + symbol.toString();
-            }
-
-            for(String p : packages) {
-                try {
-                    String qualifiedName = p;
-                    if(qualifiedName.equals("")) {
-                        qualifiedName = name;
-                    } else {
-                        qualifiedName += "." + name;
-                    }
-
-                    Class klass = loader.loadClass(qualifiedName);
-
-                    Vector remaining = new Vector();
-                    for(int i = index; i < path.size(); i++) {
-                        remaining.add(path.get(i));
-                    }
-
-                    Vector vec = new Vector();
-                    vec.add(klass);
-                    vec.add(remaining);
-
-                    return vec;
-                } catch(ClassNotFoundException e) {
-                    // Ignore
-                }
-            }
-        }
-
-        return null;
-    }
-
     public Access(Expression head, Vector<Symbol> tail) {
         this.head = head;
         this.tail = tail;
@@ -124,6 +79,7 @@ public class Access implements Expression {
         importedPackages.add("java.lang");
         importedPackages.add("java.util");
         importedPackages.add("java.io");
+        importedPackages.add("silo.core");
 
         if(head != null) {
             head.emit(context);
@@ -146,7 +102,7 @@ public class Access implements Expression {
                 path = new Vector<Symbol>(tail);
                 path.remove(0);
             } else {
-                Vector result = classAtPath(tail, importedPackages, loader);
+                Vector result = Compiler.resolveAccessPath(tail, importedPackages, loader);
 
                 if(result == null) {
                     throw new RuntimeException("Could not find symbol: " + tail.toString());
