@@ -143,4 +143,14 @@ public class CompilerTest {
         o = runtime.eval(classes.get(0), new Object[] {104});
         Assert.assertEquals(new Integer(109), o);
     }
+
+    @Test
+    public void testLoop() {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/examples/loop-test.silo");
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+
+        Object o = runtime.eval(classes.get(0));
+        Assert.assertEquals(new Integer(10), o);
+    }
 }

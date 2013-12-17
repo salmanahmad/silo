@@ -73,14 +73,20 @@ public class Branch implements Expression {
         // TODO: Make this var
         Class outputType = Object.class;
 
+        // TODO: Bring this back? I really want primitive types to be optimized
+        // by the branch statement but the issue is that using another generator messes
+        // with labels used by nested branches and loops.
+        /*
         MethodNode trueBranchInstructions = new MethodNode();
         MethodNode falseBranchInstructions = new MethodNode();
+        */
 
         Class trueClass = null;
         Class falseClass = null;
 
         boolean shouldBox = true;
 
+        /*
         if(trueBranch != null) {
             frame.useTempGenerator(trueBranchInstructions);
             trueBranch.emit(context);
@@ -101,9 +107,13 @@ public class Branch implements Expression {
                 // TODO: Should this throw an error?
             }
         }
+        */
 
         if(trueBranch != null) {
-            trueBranchInstructions.instructions.accept(generator);
+            //trueBranchInstructions.instructions.accept(generator);
+
+            trueBranch.emit(context);
+            trueClass = frame.operandStack.pop();
 
             if(shouldBox) {
                 // TODO: Box into a var
@@ -116,7 +126,10 @@ public class Branch implements Expression {
 
         generator.mark(falseLabel);
         if(falseBranch != null) {
-            falseBranchInstructions.instructions.accept(generator);
+            //falseBranchInstructions.instructions.accept(generator);
+
+            falseBranch.emit(context);
+            falseClass = frame.operandStack.pop();
 
             if(shouldBox) {
                 // TODO: Box into a var
@@ -129,6 +142,6 @@ public class Branch implements Expression {
         generator.mark(endLabel);
 
         frame.operandStack.push(outputType);
-        frame.generator = generator;
+        //frame.generator = generator;
     }
 }

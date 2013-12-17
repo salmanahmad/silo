@@ -1,0 +1,16 @@
+function(
+    name(branch_test)
+    outputs(int)
+    do(
+        i : int = 0
+        loop(
+            branch(i < 10 {
+                i = i + 1
+            } {
+                break
+            })
+        )
+
+        i
+    )
+)

@@ -39,7 +39,7 @@ public class Block implements Expression {
     public void emit(CompilationContext context) {
         CompilationFrame frame = context.currentFrame();
 
-        if(expressions != null) {
+        if(expressions != null && expressions.size() > 0) {
             for(int i = 0; i < expressions.size(); i++) {
                 Expression expression = expressions.get(i);
 
@@ -56,15 +56,24 @@ public class Block implements Expression {
                     throw new RuntimeException("The operand stack should not change more than one for nodes.");
                 }
 
-                
                 if(i < (expressions.size() - 1)) {
                     for(int j = 0; j < size; j++) {
                         // TODO - What if the value on the stack is a category2 type? I need to pop more than just 1, right?
                         Class operand = frame.operandStack.pop();
                         Compiler.pop(operand, frame.generator);
                     }
+                } else {
+                    if(size == 0) {
+                        // TODO: This should be var.
+                        frame.operandStack.push(Object.class);
+                        frame.generator.push((String)null);
+                    }
                 }
             }
+        } else {
+            // TODO: Is this necessary here? Does this impact performance or code-size in any meaningful way?
+            frame.operandStack.push(Object.class);
+            frame.generator.push((String)null);
         }
     }
 }

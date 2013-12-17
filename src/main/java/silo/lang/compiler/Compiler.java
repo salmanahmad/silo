@@ -103,6 +103,8 @@ public class Compiler {
             // as a nested class. Then, just create a list of "ExpressionBuilder" as "Special-Forms"
             // and literate over them instead of having this huge if-else statement.
 
+            // TODO: If you do not create an ExpressionBuilder atleast re-organize this switch table...
+
             if(node.getLabel() == null) {
                 return Block.build(node);
             } else if(label.equals(new Symbol("do"))) {
@@ -111,6 +113,10 @@ public class Compiler {
                 return FunctionExpression.build(node);
             } else if(label.equals(new Symbol("declare"))) {
                 return Declare.build(node);
+            } else if(label.equals(new Symbol("loop"))) {
+                return Loop.build(node);
+            } else if(label.equals(new Symbol("break"))) {
+                return Break.build(node);
             } else if(label.equals(new Symbol("branch"))) {
                 return Branch.build(node);
             } else if(label.equals(new Symbol("return"))) {
@@ -135,7 +141,7 @@ public class Compiler {
             if(value.equals(new Symbol("return"))) {
                 return Return.build(new Node(new Symbol("return")));
             } else if(value.equals(new Symbol("break"))) {
-                // TODO
+                return Break.build(new Node(new Symbol("break")));
             } else if(value.equals(new Symbol("continue"))) {
                 // TODO
             }

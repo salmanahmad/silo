@@ -48,6 +48,7 @@ public class Assign implements Expression {
             if(first instanceof Symbol) {
                 identifier = (Symbol)first;
             } else {
+                // TODO: Implement nested assignment.
                 throw new RuntimeException("Invalid assignment form. Nested assignments are not implemented yet. The variable name must be a symbol for now.");
             }
 
@@ -116,6 +117,10 @@ public class Assign implements Expression {
                 if(!klass.equals(typeClass)) {
                     throw new RuntimeException("Attempting to re-define variable " + identifier.toString() + " with a different type.");
                 }
+            }
+
+            if(typeClass == null) {
+                typeClass = frame.localTypes.get(identifier);
             }
         }
 

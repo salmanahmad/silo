@@ -14,6 +14,7 @@ package silo.lang;
 import java.util.Stack;
 import java.util.HashMap;
 
+import org.objectweb.asm.Label;
 import org.objectweb.asm.commons.Method;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.commons.GeneratorAdapter;
@@ -33,6 +34,9 @@ public class CompilationFrame {
     public final HashMap<Symbol, Integer> locals;
     public final HashMap<Symbol, Class> localTypes;
 
+    public final Stack<Label> iterationFrameStartLabels;
+    public final Stack<Label> iterationFrameEndLabels;
+
     public CompilationFrame(int access, Method method, GeneratorAdapter generator, Class outputClass) {
         this.access = access;
         this.method = method;
@@ -43,6 +47,9 @@ public class CompilationFrame {
         this.operandStack = new Stack<Class>();
         this.locals = new HashMap<Symbol, Integer>();
         this.localTypes = new HashMap<Symbol, Class>();
+
+        this.iterationFrameStartLabels = new Stack<Label>();
+        this.iterationFrameEndLabels = new Stack<Label>();
     }
 
     public int newLocal(Symbol name, Class type) {
@@ -71,4 +78,13 @@ public class CompilationFrame {
         return current;
     }
 
+    public void pushIterationFrame(Label start, Label end) {
+        iterationFrameStartLabels.push(start);
+        iterationFrameEndLabels.push(end);
+    }
+
+    public void popIterationFrame() {
+        iterationFrameStartLabels.pop();
+        iterationFrameEndLabels.pop();
+    }
 }
