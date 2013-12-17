@@ -57,6 +57,9 @@ public class Branch implements Expression {
         Label falseLabel = generator.newLabel();
         Label endLabel = generator.newLabel();
 
+        Label falseEndLabel = generator.newLabel();
+        Label trueEndLabel = generator.newLabel();
+
         condition.emit(context);
         Class klass = context.currentFrame().operandStack.pop();
 
@@ -70,34 +73,37 @@ public class Branch implements Expression {
         }
 
 
+
         // TODO: Make this var
         Class outputType = Object.class;
-
-        // TODO: Bring this back? I really want primitive types to be optimized
-        // by the branch statement but the issue is that using another generator messes
-        // with labels used by nested branches and loops.
-        /*
-        MethodNode trueBranchInstructions = new MethodNode();
-        MethodNode falseBranchInstructions = new MethodNode();
-        */
 
         Class trueClass = null;
         Class falseClass = null;
 
         boolean shouldBox = true;
 
-        /*
+
+
         if(trueBranch != null) {
-            frame.useTempGenerator(trueBranchInstructions);
             trueBranch.emit(context);
+            generator.goTo(trueEndLabel);
             trueClass = frame.operandStack.pop();
+        } else {
+            generator.push((String)null);
+            generator.goTo(trueEndLabel);
         }
 
+        generator.mark(falseLabel);
         if(falseBranch != null) {
-            frame.useTempGenerator(falseBranchInstructions);
             falseBranch.emit(context);
+            generator.goTo(falseEndLabel);
             falseClass = frame.operandStack.pop();
+        } else {
+            generator.push((String)null);
+            generator.goTo(falseEndLabel);
         }
+
+
 
         if(trueBranch != null && falseBranch != null) {
             if(trueClass.equals(falseClass)) {
@@ -107,41 +113,25 @@ public class Branch implements Expression {
                 // TODO: Should this throw an error?
             }
         }
-        */
 
-        if(trueBranch != null) {
-            //trueBranchInstructions.instructions.accept(generator);
 
-            trueBranch.emit(context);
-            trueClass = frame.operandStack.pop();
 
-            if(shouldBox) {
-                // TODO: Box into a var
-                generator.box(Type.getType(trueClass));
-            }
-        } else {
-            generator.push((String)null);
+        generator.mark(trueEndLabel);
+        if(shouldBox) {
+            // TODO: Box into a var
+            generator.box(Type.getType(trueClass));
         }
         generator.goTo(endLabel);
 
-        generator.mark(falseLabel);
-        if(falseBranch != null) {
-            //falseBranchInstructions.instructions.accept(generator);
-
-            falseBranch.emit(context);
-            falseClass = frame.operandStack.pop();
-
-            if(shouldBox) {
-                // TODO: Box into a var
-                generator.box(Type.getType(falseClass));
-            }
-        } else {
-            generator.push((String)null);
+        generator.mark(falseEndLabel);
+        if(shouldBox) {
+            // TODO: Box into a var
+            generator.box(Type.getType(falseClass));
         }
+        generator.goTo(endLabel);
 
         generator.mark(endLabel);
 
         frame.operandStack.push(outputType);
-        //frame.generator = generator;
     }
 }
