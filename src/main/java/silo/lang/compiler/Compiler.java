@@ -261,7 +261,7 @@ public class Compiler {
         }
     }
 
-    public static Vector resolveAccessPath(Vector<Symbol> path, Vector<String> packages, RuntimeClassLoader loader) {
+    public static Vector resolveIdentifierPath(Vector<Symbol> path, Vector<String> packages, RuntimeClassLoader loader) {
         int index = 0;
         String name = null;
 

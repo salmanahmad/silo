@@ -102,7 +102,7 @@ public class Access implements Expression {
                 path = new Vector<Symbol>(tail);
                 path.remove(0);
             } else {
-                Vector result = Compiler.resolveAccessPath(tail, importedPackages, loader);
+                Vector result = Compiler.resolveIdentifierPath(tail, importedPackages, loader);
 
                 if(result == null) {
                     throw new RuntimeException("Could not find symbol: " + tail.toString());
