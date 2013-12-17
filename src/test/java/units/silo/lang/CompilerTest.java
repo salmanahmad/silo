@@ -21,8 +21,6 @@ import silo.lang.compiler.grammar.*;
 
 import org.objectweb.asm.Type;
 
-import silo.util.Helper;
-
 public class CompilerTest {
 
     @Test

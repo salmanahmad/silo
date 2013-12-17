@@ -11,7 +11,6 @@ options {
 package silo.lang.compiler.grammar;
 
 import silo.lang.*;
-import silo.util.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,7 +22,6 @@ import java.util.Arrays;
 package silo.lang.compiler.grammar;
 
 import silo.lang.*;
-import silo.util.*;
 }
 
 @parser::members {

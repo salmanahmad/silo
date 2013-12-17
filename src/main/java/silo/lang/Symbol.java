@@ -11,8 +11,6 @@
 
 package silo.lang;
 
-import silo.util.Helper;
-
 public class Symbol {
 
     public final String name;

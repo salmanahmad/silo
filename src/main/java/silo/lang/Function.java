@@ -11,8 +11,6 @@
 
 package silo.lang;
 
-import silo.util.Helper;
-
 import java.util.Arrays;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;

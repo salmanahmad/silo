@@ -13,7 +13,6 @@
 import org.junit.*;
 import java.util.*;
 
-import silo.util.Helper;
 import silo.lang.*;
 import silo.lang.compiler.*;
 import silo.lang.compiler.grammar.*;

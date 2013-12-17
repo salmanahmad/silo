@@ -11,8 +11,6 @@
 
 package silo.lang;
 
-import silo.util.Helper;
-
 import java.util.Vector;
 import java.util.Arrays;
 import org.apache.commons.lang3.StringUtils;
