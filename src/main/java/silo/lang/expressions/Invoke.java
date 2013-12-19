@@ -105,7 +105,7 @@ public class Invoke implements Expression {
                 Vector<Symbol> path = (Vector<Symbol>)result.get(1);
 
                 if(path.size() == 0) {
-                    // Native function
+                    // Native function or Constructor
 
                     java.lang.reflect.Method method = Function.methodHandle(klass);
 
@@ -128,6 +128,7 @@ public class Invoke implements Expression {
                     java.lang.reflect.Method method = null;
 
                     try {
+                        // TODO: Does this work well for subclasses? If a method takes "object, object", will that accept "string, string"
                         method = klass.getMethod(symbol.toString(), types.toArray(new Class[0]));
                     } catch(NoSuchMethodException e) {
                         throw new RuntimeException("Could not find function: " + symbol.toString());

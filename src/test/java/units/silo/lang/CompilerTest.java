@@ -164,4 +164,17 @@ public class CompilerTest {
         o = runtime.eval(classes.get(2), new Boolean(true));
         Assert.assertEquals(new Boolean(true), o);
     }
+
+    @Test
+    public void testTypes() {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/examples/types.silo");
+
+        try {
+             Vector<Class> classes = runtime.compile(Parser.parse(source));
+             Object o = runtime.eval(classes.get(0));
+        } catch (Exception e) {
+            Assert.assertEquals(e.toString(), "java.lang.RuntimeException: Invalid assignment from type double to int");
+        }
+    }
 }

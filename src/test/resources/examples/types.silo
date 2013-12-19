@@ -1,0 +1,9 @@
+
+
+function(
+    name(foo)
+    {
+        d : double = 4.2
+        i : int = d
+    }
+)

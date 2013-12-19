@@ -125,6 +125,16 @@ public class Assign implements Expression {
         // Compile the value
         if(value != null) {
             value.emit(context);
+        } else {
+            generator.push((String)null);
+            frame.operandStack.push(Object.class);
+        }
+
+        Class valueClass = frame.operandStack.peek();
+
+        if(!typeClass.isAssignableFrom(valueClass)) {
+            // TODO: Abstract this out so that it handles things likes autoboxing, and conversion, etc.
+            throw new RuntimeException("Invalid assignment from type " + valueClass + " to " + typeClass);
         }
 
         // Return the value from the assignment for cascading assigments
