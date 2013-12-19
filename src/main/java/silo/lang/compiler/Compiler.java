@@ -24,26 +24,17 @@ import org.objectweb.asm.commons.GeneratorAdapter;
 
 public class Compiler {
 
-    public static HashMap<Symbol, Class> primitives = new HashMap<Symbol, Class>();
+    public static HashMap<String, Class> primitives = new HashMap<String, Class>();
     static {
-        primitives.put(new Symbol("silo.core.boolean"), Boolean.TYPE);
-        primitives.put(new Symbol("silo.core.char"), Character.TYPE);
-        primitives.put(new Symbol("silo.core.byte"), Byte.TYPE);
-        primitives.put(new Symbol("silo.core.short"), Short.TYPE);
-        primitives.put(new Symbol("silo.core.int"), Integer.TYPE);
-        primitives.put(new Symbol("silo.core.long"), Long.TYPE);
-        primitives.put(new Symbol("silo.core.float"), Float.TYPE);
-        primitives.put(new Symbol("silo.core.double"), Double.TYPE);
-        primitives.put(new Symbol("silo.core.void"), Void.TYPE);
-        primitives.put(new Symbol("boolean"), Boolean.TYPE);
-        primitives.put(new Symbol("char"), Character.TYPE);
-        primitives.put(new Symbol("byte"), Byte.TYPE);
-        primitives.put(new Symbol("short"), Short.TYPE);
-        primitives.put(new Symbol("int"), Integer.TYPE);
-        primitives.put(new Symbol("long"), Long.TYPE);
-        primitives.put(new Symbol("float"), Float.TYPE);
-        primitives.put(new Symbol("double"), Double.TYPE);
-        primitives.put(new Symbol("void"), Void.TYPE);
+        primitives.put("silo.core.boolean", Boolean.TYPE);
+        primitives.put("silo.core.char", Character.TYPE);
+        primitives.put("silo.core.byte", Byte.TYPE);
+        primitives.put("silo.core.short", Short.TYPE);
+        primitives.put("silo.core.int", Integer.TYPE);
+        primitives.put("silo.core.long", Long.TYPE);
+        primitives.put("silo.core.float", Float.TYPE);
+        primitives.put("silo.core.double", Double.TYPE);
+        primitives.put("silo.core.void", Void.TYPE);
     }
 
     public static Vector<Class> compile(CompilationContext context, Node node) {
@@ -209,14 +200,19 @@ public class Compiler {
 
     public static Class resolveType(String qualifiedName, RuntimeClassLoader loader) {
         try {
-            // TODO: Add primitives here?
-            return loader.loadClass(qualifiedName);
+            Class klass = Compiler.primitives.get(qualifiedName);
+
+            if(klass == null) {
+                klass = loader.loadClass(qualifiedName);
+            }
+
+            return klass;
         } catch(ClassNotFoundException e) {
             return null;
         }
     }
 
-    public static Class resolveType(Vector<Symbol> path, Vector<String> packages, RuntimeClassLoader loader) {
+    public static Class resolveType(Vector<Symbol> path, CompilationContext context) {
         String name = null;
         for(Symbol symbol : path) {
             if(name == null) {
@@ -226,7 +222,7 @@ public class Compiler {
             }
         }
 
-        for(String p : packages) {
+        for(String p : context.imports) {
             String qualifiedName = p;
             if(qualifiedName.equals("")) {
                 qualifiedName = name;
@@ -234,7 +230,7 @@ public class Compiler {
                 qualifiedName += "." + name;
             }
 
-            Class klass = resolveType(qualifiedName, loader);
+            Class klass = resolveType(qualifiedName, context.runtime.loader);
 
             if(klass != null) {
                 return klass;
@@ -244,24 +240,34 @@ public class Compiler {
         return null;
     }
 
-    public static Class resolveType(Symbol name, Vector<String> packages, RuntimeClassLoader loader) {
+    public static Class resolveType(Symbol name, CompilationContext context) {
         Vector<Symbol> path = new Vector<Symbol>();
         path.add(name);
 
-        return resolveType(path, packages, loader);
+        return resolveType(path, context);
     }
 
-    public static Class resolveType(Node node, Vector<String> packages, RuntimeClassLoader loader) {
+    public static Class resolveType(Node node, CompilationContext context) {
         Vector<Symbol> path = Node.symbolListFromNode(Node.flattenTree(node, new Symbol(".")));
 
         if(path == null) {
             throw new RuntimeException("Invalid type identifier: " + node.toString());
         } else {
-            return resolveType(path, packages, loader);
+            return resolveType(path, context);
         }
     }
 
-    public static Vector resolveIdentifierPath(Vector<Symbol> path, Vector<String> packages, RuntimeClassLoader loader) {
+    public static Class resolveType(Object o, CompilationContext context) {
+        if(o instanceof Symbol) {
+            return resolveType((Symbol)o, context);
+        } else if(o instanceof Node) {
+            return resolveType((Node)o, context);
+        } else {
+            throw new RuntimeException("Could not resolve symbol: " + o + " of type: " + o.getClass());
+        }
+    }
+
+    public static Vector resolveIdentifierPath(Vector<Symbol> path, CompilationContext context) {
         int index = 0;
         String name = null;
 
@@ -274,7 +280,7 @@ public class Compiler {
                 name += "." + symbol.toString();
             }
 
-            for(String p : packages) {
+            for(String p : context.imports) {
                 String qualifiedName = p;
                 if(qualifiedName.equals("")) {
                     qualifiedName = name;
@@ -282,7 +288,7 @@ public class Compiler {
                     qualifiedName += "." + name;
                 }
 
-                Class klass = resolveType(qualifiedName, loader);
+                Class klass = resolveType(qualifiedName, context.runtime.loader);
 
                 if(klass != null) {
                     Vector remaining = new Vector();

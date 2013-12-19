@@ -1,7 +1,7 @@
 
 TODO List
 
-- `return 5` is parsed differently from `return(5)` and could be really confusing to many people. I should add error reporting for this case.
+- `return 5` is parsed differently from `return(5)` and could be really confusing to many people. I should add error reporting for this case. The same goes for things like `import()`
 
 - flexible pattern matching is really important in the language. perhaps even go beyond what erlang / scala provide and provide a full blow parser combinator DSL.
 
@@ -17,3 +17,6 @@ TODO List
 - Support newlines with operator expressions so that I can do things like "foo\n.bar\n.baz\n.zap" and also with pipe operators "foo\n| bar\n| baz"
 
 - Should the form `(foo).(bar).(baz)` be left associative or right associative?
+
+- Should macro have access to "CompilationContext"? In that case, I could implement things like `import` using macro instead of a special form.
+

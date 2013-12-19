@@ -71,16 +71,6 @@ public class Access implements Expression {
 
         Vector<Symbol> path;
 
-        // TODO: Report importedPackages in the CompilationContext.
-        // TODO: Abstract out the imported packages out of this scope here so the list can be used by others.
-        // TODO: Probably make import a special form.
-        Vector<String> importedPackages = new Vector<String>();
-        importedPackages.add(""); // This is really important, actually...
-        importedPackages.add("java.lang");
-        importedPackages.add("java.util");
-        importedPackages.add("java.io");
-        importedPackages.add("silo.core");
-
         if(head != null) {
             head.emit(context);
             scope = frame.operandStack.peek();
@@ -102,7 +92,7 @@ public class Access implements Expression {
                 path = new Vector<Symbol>(tail);
                 path.remove(0);
             } else {
-                Vector result = Compiler.resolveIdentifierPath(tail, importedPackages, loader);
+                Vector result = Compiler.resolveIdentifierPath(tail, context);
 
                 if(result == null) {
                     throw new RuntimeException("Could not find symbol: " + tail.toString());

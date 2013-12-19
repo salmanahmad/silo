@@ -88,12 +88,10 @@ public class Assign implements Expression {
         // Resolve the type's class
         Class typeClass = null;
         if(type != null) {
-            // TODO: Handle non-primitive types and dot expressions...
-
-            typeClass = Compiler.primitives.get(type.get(0));
+            typeClass = Compiler.resolveType(type, context);
 
             if(typeClass == null) {
-                throw new RuntimeException("Only primitives are supported right now. Could not find type: " + type.toString());
+                throw new RuntimeException("Could not find symbol: " + type.toString());
             }
         }
 

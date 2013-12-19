@@ -98,16 +98,7 @@ public class Invoke implements Expression {
         if(receiver == null) {
             // TODO: Handle local and imported variables
 
-            // TODO: Report importedPackages in the CompilationContext.
-            // TODO: Abstract out the imported packages out of this scope here so the list can be used by others.
-            // TODO: Probably make import a special form.
-            Vector<String> importedPackages = new Vector<String>();
-            importedPackages.add(""); // This is really important, actually...
-            importedPackages.add("java.lang");
-            importedPackages.add("java.util");
-            importedPackages.add("java.io");
-
-            Vector result = Compiler.resolveIdentifierPath(identifier, importedPackages, loader);
+            Vector result = Compiler.resolveIdentifierPath(identifier, context);
 
             if(result != null) {
                 Class klass = (Class)result.get(0);

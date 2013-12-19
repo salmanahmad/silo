@@ -126,13 +126,14 @@ public class FunctionExpression implements Expression, Opcodes {
             } else if(o instanceof Node) {
                 Node node = (Node)o;
 
-                // TODO: What about generics or arrays or scoped types?
+                // TODO: What about generics or arrays?
                 Symbol name = (Symbol)node.getFirstChild();
-                Symbol symbol = (Symbol)node.getSecondChild();
-                Class klass = Compiler.primitives.get(symbol);
+                Object symbol = node.getSecondChild();
+
+                Class klass = Compiler.resolveType(symbol, context);
 
                 if(klass == null) {
-                    throw new RuntimeException("Only primitives are supported right now.");
+                    throw new RuntimeException("Could not find symbol: " + symbol.toString());
                 }
 
                 inputTypes.add(Type.getType(klass));
@@ -148,16 +149,17 @@ public class FunctionExpression implements Expression, Opcodes {
         if(outputs.size() == 1) {
             // TODO: Add special case for "null" as well...
             // TODO: Handle non-primitive types and dot expressions...
+            // TODO: Multiple outputs?
 
-            Symbol symbol = (Symbol)outputs.get(0);
-            Class klass = Compiler.primitives.get(symbol);
+            Object symbol = outputs.get(0);
+            Class klass = Compiler.resolveType(symbol, context);
 
             if(klass == null) {
-                throw new RuntimeException("Only primitives are supported right now.");
-            } else {
-                outputType = Type.getType(klass);
-                outputClass = klass;
+                throw new RuntimeException("Could not find symbol: " + symbol.toString());
             }
+
+            outputType = Type.getType(klass);
+            outputClass = klass;
         }
 
         if(outputType.equals(Type.VOID_TYPE)) {
