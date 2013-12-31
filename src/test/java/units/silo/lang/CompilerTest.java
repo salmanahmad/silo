@@ -177,4 +177,17 @@ public class CompilerTest {
             Assert.assertEquals(e.toString(), "java.lang.RuntimeException: Invalid assignment from type double to int");
         }
     }
+
+    @Test
+    public void testInvalidParameters() {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/examples/invalid-parameters.silo");
+
+        try {
+             Vector<Class> classes = runtime.compile(Parser.parse(source));
+             Object o = runtime.eval(classes.get(0));
+        } catch (Exception e) {
+            Assert.assertEquals(e.toString(), "java.lang.RuntimeException: Parameter mismatch. Expected: int Provided: double");
+        }
+    }
 }

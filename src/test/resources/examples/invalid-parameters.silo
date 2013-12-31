@@ -1,0 +1,19 @@
+
+
+function(
+    name(foo)
+    inputs(i : int)
+    {
+        
+    }
+)
+
+
+
+function(
+    name(bar)
+    {
+        foo(42.0)
+    }
+)
+

@@ -107,9 +107,26 @@ public class Invoke implements Expression {
                 if(path.size() == 0) {
                     // Native function or Constructor
 
+                    // TODO: Handle arity overloading - Method.html#isVarArgs()
+                    // TODO: Should I support type overloading?
+
                     java.lang.reflect.Method method = Function.methodHandle(klass);
 
-                    compileArguments(arguments, context);
+                    Vector<Class> types = compileArguments(arguments, context);
+
+                    if(types.size() != method.getParameterTypes().length) {
+                        throw new RuntimeException("Arity mismatch.");
+                    }
+
+                    for(int i = 0; i < types.size(); i++) {
+                        Class expectedType = method.getParameterTypes()[i];
+                        Class providedType = types.get(i);
+
+                        if(!(expectedType.isAssignableFrom(providedType))) {
+                            throw new RuntimeException("Parameter mismatch. Expected: " + expectedType + " Provided: " + providedType);
+                        }
+                    }
+
                     generator.invokeStatic(Type.getType(klass), Method.getMethod(method));
 
                     for(Expression e : arguments) {
@@ -121,6 +138,9 @@ public class Invoke implements Expression {
                     return;
                 } else if(path.size() == 1) {
                     // Java static method
+
+                    // TODO: Handle arity overloading - Method.html#isVarArgs()
+                    // TODO: Handle support type overloading. Even though native functions may not support them, java methods should.
 
                     Symbol symbol = path.get(0);
                     Vector<Class> types = compileArguments(arguments, context);
