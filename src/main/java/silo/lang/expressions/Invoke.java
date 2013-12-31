@@ -159,6 +159,38 @@ public class Invoke implements Expression {
         return method;
     }
 
+    public static java.lang.reflect.Method getMethod(Class klass, String name, boolean isStatic, Class[] args) {
+        java.lang.reflect.Method method = null;
+
+        java.lang.reflect.Method[] methods = klass.getMethods();
+
+        for(java.lang.reflect.Method m : methods) {
+            if(java.lang.reflect.Modifier.isStatic(m.getModifiers()) != isStatic) {
+                continue;
+            }
+
+            if(m.getName().equals(name)) {
+                Class[] expected = m.getParameterTypes();
+
+                if(typesMatch(expected, args)) {
+                    if(method == null) {
+                        method = m;
+                    } else {
+                        method = moreSpecificMethod(method, m);
+
+                        if(method == null) {
+                            break;
+                        } else {
+                            method = m;
+                        }
+                    }
+                }
+            }
+        }
+
+        return method;
+    }
+
     public void emit(CompilationContext context) {
         GeneratorAdapter generator = context.currentFrame().generator;
         RuntimeClassLoader loader = context.runtime.loader;
@@ -212,31 +244,8 @@ public class Invoke implements Expression {
 
                     Symbol symbol = path.get(0);
                     Vector<Class> types = compileArguments(arguments, context);
-                    Class[] provided = types.toArray(new Class[0]);
 
-                    java.lang.reflect.Method method = null;
-
-                    java.lang.reflect.Method[] methods = klass.getMethods();
-
-                    for(java.lang.reflect.Method m : methods) {
-                        if(m.getName().equals(symbol.toString())) {
-                            Class[] expected = m.getParameterTypes();
-
-                            if(typesMatch(expected, provided)) {
-                                if(method == null) {
-                                    method = m;
-                                } else {
-                                    method = moreSpecificMethod(method, m);
-
-                                    if(method == null) {
-                                        break;
-                                    } else {
-                                        method = m;
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    java.lang.reflect.Method method = getMethod(klass, symbol.toString(), true, types.toArray(new Class[0]));
 
                     if(method == null) {
                         throw new RuntimeException("Could not find function: " + symbol.toString());
