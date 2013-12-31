@@ -90,6 +90,75 @@ public class Invoke implements Expression {
         return types;
     }
 
+    public static boolean typesMatch(Class[] expected, Class[] provided) {
+        if(expected.length != provided.length) {
+            return false;
+        }
+
+        for(int i = 0; i < expected.length; i++) {
+            Class e = expected[i];
+            Class p = provided[i];
+
+            if(!(e.isAssignableFrom(p))) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public static Class moreSpecificClass(Class c1, Class c2) {
+        if(c1.equals(c2)) {
+            return null;
+        }
+
+        if(c1.isAssignableFrom(c2)) {
+            return c2;
+        }
+
+        if(c2.isAssignableFrom(c1)) {
+            return c1;
+        }
+
+        return null;
+    }
+
+    public static java.lang.reflect.Method moreSpecificMethod(java.lang.reflect.Method m1, java.lang.reflect.Method m2) {
+        java.lang.reflect.Method method = null;
+
+        Class[] argsM1 = m1.getParameterTypes();
+        Class[] argsM2 = m2.getParameterTypes();
+
+        for(int i = 0; i < argsM1.length; i++) {
+            Class classM1 = argsM1[i];
+            Class classM2 = argsM2[i];
+
+            Class klass = moreSpecificClass(classM1, classM2);
+
+            if(klass != null) {
+                if(classM1.equals(klass)) {
+                    if(method == null) {
+                        method = m1;
+                    } else {
+                        if(!method.equals(m1)) {
+                            return null;
+                        }
+                    }
+                } else if(classM2.equals(klass)) {
+                    if(method == null) {
+                        method = m2;
+                    } else {
+                        if(!method.equals(m2)) {
+                            return null;
+                        }
+                    }
+                }
+            }
+        }
+
+        return method;
+    }
+
     public void emit(CompilationContext context) {
         GeneratorAdapter generator = context.currentFrame().generator;
         RuntimeClassLoader loader = context.runtime.loader;
@@ -140,20 +209,38 @@ public class Invoke implements Expression {
                     // Java static method
 
                     // TODO: Handle arity overloading - Method.html#isVarArgs()
-                    // TODO: Handle support type overloading. Even though native functions may not support them, java methods should.
 
                     Symbol symbol = path.get(0);
                     Vector<Class> types = compileArguments(arguments, context);
+                    Class[] provided = types.toArray(new Class[0]);
 
                     java.lang.reflect.Method method = null;
 
-                    try {
-                        // TODO: Does this work well for subclasses? If a method takes "object, object", will that accept "string, string"
-                        method = klass.getMethod(symbol.toString(), types.toArray(new Class[0]));
-                    } catch(NoSuchMethodException e) {
+                    java.lang.reflect.Method[] methods = klass.getMethods();
+
+                    for(java.lang.reflect.Method m : methods) {
+                        if(m.getName().equals(symbol.toString())) {
+                            Class[] expected = m.getParameterTypes();
+
+                            if(typesMatch(expected, provided)) {
+                                if(method == null) {
+                                    method = m;
+                                } else {
+                                    method = moreSpecificMethod(method, m);
+
+                                    if(method == null) {
+                                        break;
+                                    } else {
+                                        method = m;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    if(method == null) {
                         throw new RuntimeException("Could not find function: " + symbol.toString());
                     }
-                    
 
                     generator.invokeStatic(Type.getType(klass), Method.getMethod(method));
 
