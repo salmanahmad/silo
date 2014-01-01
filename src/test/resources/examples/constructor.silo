@@ -1,0 +1,13 @@
+
+function(
+    name(foo)
+    outputs(Object)
+    {
+        a : java.util.HashMap = java.util.HashMap()
+        invokevirtual(a, put("foo", "bar"))
+        invokevirtual(a, get("foo"))
+
+        invokevirtual(a, put("foo", "baz"))
+        invokevirtual(a, get("foo"))
+    }
+)

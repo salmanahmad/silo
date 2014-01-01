@@ -154,16 +154,24 @@ public class Node {
         Node buffer = new Node(null);
         for(Object o : node.children) {
             if(o instanceof Node) {
+                Node n = (Node)o;
+                boolean matches = false;
+
                 for(Object l : labels) {
-                    Node n = (Node)node;
                     if(n.getLabel().equals(l)) {
-                        buffer.addChildren(flattenTree(n, labels));
-                        continue;
+                        matches = true;
+                        break;
                     }
                 }
-            }
 
-            buffer.addChild(o);
+                if(matches) {
+                    buffer.addChildren(flattenTree(n, labels));
+                } else {
+                    buffer.addChild(n);
+                }
+            } else {
+                buffer.addChild(o);
+            }
         }
 
         return buffer;

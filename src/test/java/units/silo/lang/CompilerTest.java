@@ -190,4 +190,15 @@ public class CompilerTest {
             Assert.assertEquals(e.toString(), "java.lang.RuntimeException: Parameter mismatch. Expected: int Provided: double");
         }
     }
+
+    @Test
+    public void testConstructor() {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/examples/constructor.silo");
+
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+        Object o = runtime.eval(classes.get(0));
+
+        Assert.assertEquals("baz", o);
+    }
 }

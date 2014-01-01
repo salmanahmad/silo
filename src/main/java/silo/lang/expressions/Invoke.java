@@ -195,6 +195,10 @@ public class Invoke implements Expression {
                 continue;
             }
 
+            if(!java.lang.reflect.Modifier.isPublic(m.getModifiers())) {
+                continue;
+            }
+
             if(m.getName().equals(name)) {
                 Class[] expected = m.getParameterTypes();
 
@@ -205,9 +209,40 @@ public class Invoke implements Expression {
             }
         }
 
-        return methods.get(mostSpecificParameters(options));
+        int index = mostSpecificParameters(options);
+
+        if(index == -1) {
+            return null;
+        } else {
+            return methods.get(index);
+        }
     }
 
+    public static java.lang.reflect.Constructor getConstructor(Class klass, Class[] args) {
+        Vector<Class[]> options = new Vector<Class[]>();
+        Vector<java.lang.reflect.Constructor> ctors = new Vector<java.lang.reflect.Constructor>();
+
+        for(java.lang.reflect.Constructor c : klass.getConstructors()) {
+            if(!java.lang.reflect.Modifier.isPublic(c.getModifiers())) {
+                continue;
+            }
+
+            Class[] expected = c.getParameterTypes();
+
+            if(typesMatch(expected, args)) {
+                ctors.add(c);
+                options.add(expected);
+            }
+        }
+
+        int index = mostSpecificParameters(options);
+
+        if(index == -1) {
+            return null;
+        } else {
+            return ctors.get(index);
+        }
+    }
 
     public void emit(CompilationContext context) {
         GeneratorAdapter generator = context.currentFrame().generator;
@@ -229,10 +264,10 @@ public class Invoke implements Expression {
                     // TODO: Handle arity overloading - Method.html#isVarArgs()
                     // TODO: Should I support type overloading?
 
-                    Vector<Class> types = compileArguments(arguments, context);
-
                     if(Function.class.isAssignableFrom(klass)) {
                         java.lang.reflect.Method method = Function.methodHandle(klass);
+
+                        Vector<Class> types = compileArguments(arguments, context);
 
                         if(types.size() != method.getParameterTypes().length) {
                             throw new RuntimeException("Arity mismatch.");
@@ -259,6 +294,24 @@ public class Invoke implements Expression {
                     } else {
                         // TODO: Add another "else if" clause that checks for a "record" or "type"
 
+                        generator.newInstance(Type.getType(klass));
+                        Compiler.dup(klass, generator);
+                        frame.operandStack.push(klass);
+
+                        Vector<Class> types = compileArguments(arguments, context);
+
+                        java.lang.reflect.Constructor constructor = getConstructor(klass, types.toArray(new Class[0]));
+                        if(constructor == null) {
+                            throw new RuntimeException("Could not find constructor");
+                        }
+
+                        generator.invokeConstructor(Type.getType(klass), Method.getMethod(constructor));
+
+                        for(Expression e : arguments) {
+                            frame.operandStack.pop();
+                        }
+
+                        return;
                     }
                 } else if(path.size() == 1) {
                     // Java static method

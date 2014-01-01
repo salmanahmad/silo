@@ -56,7 +56,7 @@ public class Assign implements Expression {
                 type = new Vector<Symbol>();
                 type.add((Symbol)second);
             } else if(second instanceof Node) {
-                type = Node.symbolListFromNode(Node.flattenTree(node, new Symbol(".")));
+                type = Node.symbolListFromNode(Node.flattenTree((Node)second, new Symbol(".")));
 
                 if(type == null) {
                     throw new RuntimeException("Invalid type name");

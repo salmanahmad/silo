@@ -102,6 +102,8 @@ public class Access implements Expression {
                 isStaticScope = true;
 
                 path = (Vector<Symbol>)result.get(1);
+
+                // TODO: Return a class reference...
             }
         }
 
