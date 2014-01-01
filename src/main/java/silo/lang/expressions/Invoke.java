@@ -107,7 +107,7 @@ public class Invoke implements Expression {
         return true;
     }
 
-    public static Class moreSpecificClass(Class c1, Class c2) {
+    public static Class mostSpecificClass(Class c1, Class c2) {
         if(c1.equals(c2)) {
             return null;
         }
@@ -123,48 +123,74 @@ public class Invoke implements Expression {
         return null;
     }
 
-    public static java.lang.reflect.Method moreSpecificMethod(java.lang.reflect.Method m1, java.lang.reflect.Method m2) {
-        java.lang.reflect.Method method = null;
+    public static int mostSpecificParameters(Class[] p1, Class[] p2) {
+        int index = -1;
 
-        Class[] argsM1 = m1.getParameterTypes();
-        Class[] argsM2 = m2.getParameterTypes();
+        for(int i = 0; i < p1.length; i++) {
+            Class class1 = p1[i];
+            Class class2 = p2[i];
 
-        for(int i = 0; i < argsM1.length; i++) {
-            Class classM1 = argsM1[i];
-            Class classM2 = argsM2[i];
-
-            Class klass = moreSpecificClass(classM1, classM2);
+            Class klass = mostSpecificClass(class1, class2);
 
             if(klass != null) {
-                if(classM1.equals(klass)) {
-                    if(method == null) {
-                        method = m1;
+                if(class1.equals(klass)) {
+                    if(index == -1) {
+                        index = 0;
                     } else {
-                        if(!method.equals(m1)) {
-                            return null;
+                        if(index != 0) {
+                            return -1;
                         }
                     }
-                } else if(classM2.equals(klass)) {
-                    if(method == null) {
-                        method = m2;
+                } else if(class2.equals(klass)) {
+                    if(index == -1) {
+                        index = 1;
                     } else {
-                        if(!method.equals(m2)) {
-                            return null;
+                        if(index != 1) {
+                            return -1;
                         }
                     }
                 }
             }
         }
 
-        return method;
+        return index;
+    }
+
+    public static int mostSpecificParameters(Vector<Class[]> params) {
+        int index = -1;
+        int count = -1;
+
+        for(Class[] p : params) {
+            if(count == -1) {
+                count = p.length;
+            } else {
+                if(count != p.length) {
+                    // TODO: Fix this with varags
+                    throw new RuntimeException("Parameter list hold a different number of arguments.");
+                }
+            }
+        }
+
+        for(int i = 0; i < params.size(); i++) {
+            if(i == 0) {
+                index = 0;
+            } else {
+                index = mostSpecificParameters(params.get(index), params.get(i));
+
+                if(index == -1) {
+                    break;
+                }
+            }
+        }
+
+        return index;
     }
 
     public static java.lang.reflect.Method getMethod(Class klass, String name, boolean isStatic, Class[] args) {
-        java.lang.reflect.Method method = null;
+        Vector<Class[]> options = new Vector<Class[]>();
+        Vector<java.lang.reflect.Method> methods = new Vector<java.lang.reflect.Method>();
 
-        java.lang.reflect.Method[] methods = klass.getMethods();
-
-        for(java.lang.reflect.Method m : methods) {
+        for(java.lang.reflect.Method m : klass.getMethods()) {
             if(java.lang.reflect.Modifier.isStatic(m.getModifiers()) != isStatic) {
                 continue;
             }
@@ -173,23 +199,15 @@ public class Invoke implements Expression {
                 Class[] expected = m.getParameterTypes();
 
                 if(typesMatch(expected, args)) {
-                    if(method == null) {
-                        method = m;
-                    } else {
-                        method = moreSpecificMethod(method, m);
-
-                        if(method == null) {
-                            break;
-                        } else {
-                            method = m;
-                        }
-                    }
+                    methods.add(m);
+                    options.add(expected);
                 }
             }
         }
 
-        return method;
+        return methods.get(mostSpecificParameters(options));
     }
+
 
     public void emit(CompilationContext context) {
         GeneratorAdapter generator = context.currentFrame().generator;
@@ -211,32 +229,37 @@ public class Invoke implements Expression {
                     // TODO: Handle arity overloading - Method.html#isVarArgs()
                     // TODO: Should I support type overloading?
 
-                    java.lang.reflect.Method method = Function.methodHandle(klass);
-
                     Vector<Class> types = compileArguments(arguments, context);
 
-                    if(types.size() != method.getParameterTypes().length) {
-                        throw new RuntimeException("Arity mismatch.");
-                    }
+                    if(Function.class.isAssignableFrom(klass)) {
+                        java.lang.reflect.Method method = Function.methodHandle(klass);
 
-                    for(int i = 0; i < types.size(); i++) {
-                        Class expectedType = method.getParameterTypes()[i];
-                        Class providedType = types.get(i);
-
-                        if(!(expectedType.isAssignableFrom(providedType))) {
-                            throw new RuntimeException("Parameter mismatch. Expected: " + expectedType + " Provided: " + providedType);
+                        if(types.size() != method.getParameterTypes().length) {
+                            throw new RuntimeException("Arity mismatch.");
                         }
+
+                        for(int i = 0; i < types.size(); i++) {
+                            Class expectedType = method.getParameterTypes()[i];
+                            Class providedType = types.get(i);
+
+                            if(!(expectedType.isAssignableFrom(providedType))) {
+                                throw new RuntimeException("Parameter mismatch. Expected: " + expectedType + " Provided: " + providedType);
+                            }
+                        }
+
+                        generator.invokeStatic(Type.getType(klass), Method.getMethod(method));
+
+                        for(Expression e : arguments) {
+                            frame.operandStack.pop();
+                        }
+
+                        frame.operandStack.push(method.getReturnType());
+
+                        return;
+                    } else {
+                        // TODO: Add another "else if" clause that checks for a "record" or "type"
+
                     }
-
-                    generator.invokeStatic(Type.getType(klass), Method.getMethod(method));
-
-                    for(Expression e : arguments) {
-                        frame.operandStack.pop();
-                    }
-
-                    frame.operandStack.push(method.getReturnType());
-
-                    return;
                 } else if(path.size() == 1) {
                     // Java static method
 
