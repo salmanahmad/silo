@@ -187,7 +187,7 @@ public class CompilerTest {
              Vector<Class> classes = runtime.compile(Parser.parse(source));
              Object o = runtime.eval(classes.get(0));
         } catch (Exception e) {
-            Assert.assertEquals(e.toString(), "java.lang.RuntimeException: Parameter mismatch. Expected: int Provided: double");
+            Assert.assertEquals(e.toString(), "java.lang.RuntimeException: Parameter mismatch in class foo. Expected: int Provided: double");
         }
     }
 
