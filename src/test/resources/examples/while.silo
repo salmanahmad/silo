@@ -1,0 +1,15 @@
+
+function(
+    name(foo)
+    outputs(int)
+    {
+        i : int = 0
+
+        while(i < 5 {
+            //print(Integer(i))
+            i = i + 1
+        })
+
+        i
+    }
+)

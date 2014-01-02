@@ -278,7 +278,7 @@ public class Invoke implements Expression {
                             Class providedType = types.get(i);
 
                             if(!(expectedType.isAssignableFrom(providedType))) {
-                                throw new RuntimeException("Parameter mismatch. Expected: " + expectedType + " Provided: " + providedType);
+                                throw new RuntimeException("Parameter mismatch in " + klass + ". Expected: " + expectedType + " Provided: " + providedType);
                             }
                         }
 

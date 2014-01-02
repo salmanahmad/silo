@@ -26,6 +26,11 @@ public class Node {
     Object label;
     Vector children;
 
+    public Node(Object label) {
+        this.label = label;
+        this.children = new Vector();
+    }
+
     public Node(Object label, Vector<Object> children) {
         this.label = label;
         this.children = children;

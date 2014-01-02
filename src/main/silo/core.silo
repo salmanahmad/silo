@@ -8,3 +8,25 @@ function(
         return(value)
     }
 )
+
+function(
+    name(node)
+)
+
+function(
+    name(while)
+    macro
+    inputs(condition, body)
+    outputs(silo.lang.Node)
+    {
+        b : Vector = Vector()
+        b#add(condition)
+        b#add(body)
+        b#add(silo.lang.Node(silo.lang.Symbol("break")))
+
+        l : Vector = Vector()
+        l#add(silo.lang.Node(silo.lang.Symbol("branch"), b))
+
+        silo.lang.Node(silo.lang.Symbol("loop"), l)
+    }
+)

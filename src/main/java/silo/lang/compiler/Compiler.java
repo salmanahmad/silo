@@ -79,6 +79,7 @@ public class Compiler {
 
     public static Object expandMacrosOnce(Object o, CompilationContext context) {
         // TODO: Namespaces and packages with macros. How are those resolved or imported?
+        // TODO: I should make a special case and NOT attempt to macroExpand special forms - that said, I should expand their children...right?
 
         if(o instanceof Node) {
             Node node = (Node)o;
@@ -94,13 +95,15 @@ public class Compiler {
             }
 
             if(isMacro(klass)) {
-                return context.runtime.eval(klass);
+                o = context.runtime.eval(klass, children.toArray());
             } else {
                 node = new Node(expandMacrosOnce(label, context));
 
                 for(Object child : children) {
                     node.addChild(expandMacrosOnce(child, context));
                 }
+
+                o = node;
             }
         }
 

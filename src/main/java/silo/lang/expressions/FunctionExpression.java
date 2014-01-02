@@ -111,9 +111,10 @@ public class FunctionExpression implements Expression, Opcodes {
         }
 
         for(Object o : outputs) {
-            if(!(o instanceof Symbol)) {
-                // TODO: What about generics or arrays or scoped types?
-                throw new RuntimeException("Named output values is not supported. All outputs must be a symbol representing a type reference");
+            if(o instanceof Symbol) {
+            } else if(o instanceof Node) {
+            } else {
+                throw new RuntimeException("Invalid output specification. Must be an identifier.");
             }
         }
 
@@ -157,6 +158,7 @@ public class FunctionExpression implements Expression, Opcodes {
             // TODO: Add special case for "null" as well...
             // TODO: Handle non-primitive types and dot expressions...
             // TODO: Multiple outputs?
+            // TODO: What about generics or arrays?
 
             Object symbol = outputs.get(0);
             Class klass = Compiler.resolveType(symbol, context);

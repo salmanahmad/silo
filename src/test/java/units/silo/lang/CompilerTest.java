@@ -212,4 +212,15 @@ public class CompilerTest {
 
         Assert.assertEquals("FooBars", o);
     }
+
+    @Test
+    public void testWhile() {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/examples/while.silo");
+
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+        Object o = runtime.eval(classes.get(0));
+
+        Assert.assertEquals(5, o);
+    }
 }
