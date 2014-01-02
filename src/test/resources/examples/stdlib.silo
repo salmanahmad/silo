@@ -1,0 +1,8 @@
+
+function(
+    name(foo)
+    outputs(Object)
+    {
+        print("FooBars")
+    }
+)

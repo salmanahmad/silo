@@ -36,15 +36,21 @@ public class FunctionExpression implements Expression, Opcodes {
     Vector inputs;
     Vector outputs;
     Block body;
+    boolean macro;
 
     public static FunctionExpression build(Node node) {
         Symbol name = null;
         Vector inputs = null;
         Vector outputs = null;
         Block body = null;
+        boolean macro = false;
 
         Node n = null;
         Object o = null;
+
+
+        o = node.getChildNamed(new Symbol("macro"));
+        macro = o != null;
 
         n = node.getChildNode(new Symbol("name"));
         if(n != null) {
@@ -71,14 +77,15 @@ public class FunctionExpression implements Expression, Opcodes {
             body = Block.build(n);
         }
 
-        return new FunctionExpression(name, inputs, outputs, body);
+        return new FunctionExpression(name, inputs, outputs, body, macro);
     }
 
-    public FunctionExpression(Symbol name, Vector inputs, Vector outputs, Block body) {
+    public FunctionExpression(Symbol name, Vector inputs, Vector outputs, Block body, boolean macro) {
         this.name = name;
         this.inputs = inputs;
         this.outputs = outputs;
         this.body = body;
+        this.macro = macro;
     }
 
     public void emit(CompilationContext context) {
@@ -177,6 +184,9 @@ public class FunctionExpression implements Expression, Opcodes {
         cw.visitSource("app", null);
         cw.visit(V1_6, ACC_PUBLIC + ACC_SUPER, name.toString(), null, Type.getType(Function.class).getInternalName(), null);
         av = cw.visitAnnotation(Type.getType(Function.Definition.class).getDescriptor(), true);
+        if(macro) {
+            av.visit("macro", Boolean.TRUE);
+        }
         av.visitEnd();
 
         // Default constructor
@@ -238,5 +248,6 @@ public class FunctionExpression implements Expression, Opcodes {
 
         Class klass = context.runtime.loader.loadClass(code);
         context.classes.add(klass);
+        context.bytecode.add(code);
     }
 }

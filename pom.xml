@@ -129,22 +129,19 @@
           </execution>
           <execution>
             <id>build-standard-library</id>
-            <!--<phase>compile</phase>-->
-            <phase>none</phase>
+            <phase>compile</phase>
+            <!--<phase>none</phase>-->
             <configuration>
               <target>
                 <fileset id="files" dir="${basedir}/src/main/silo/" includes="*.silo"/>
                 <pathconvert pathsep=" " property="files" refid="files"/>
-                <java classname="silo.commands.Main" fork="true">
+                <java classname="silo.lang.Compile" fork="true">
                   <classpath>
                     <fileset dir="${project.build.directory}/dependency">
                       <include name="**/*.jar"/>
                     </fileset>
                     <pathelement location="${project.build.outputDirectory}"/>
                   </classpath>
-                  <arg value="compile" />
-                  <arg value="--classes" />
-                  <arg value="--output" />
                   <arg value="${project.build.outputDirectory}" />
                   <arg line="${files}" />
                 </java>

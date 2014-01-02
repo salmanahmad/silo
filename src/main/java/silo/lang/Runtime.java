@@ -11,6 +11,7 @@
 
 package silo.lang;
 
+import silo.lang.compiler.Parser;
 import silo.lang.compiler.Compiler;
 
 import java.util.Vector;
@@ -49,6 +50,11 @@ public class Runtime {
             e.printStackTrace();
             throw new RuntimeException("Error!");
         }
+    }
+
+    public CompilationContext contextByCompiling(String source) {
+         compile(Parser.parse(source));
+         return compilationContext;
     }
 
     public Vector<Class> compile(Node node) {

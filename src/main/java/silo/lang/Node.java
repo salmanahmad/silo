@@ -89,6 +89,23 @@ public class Node {
         return null;
     }
 
+    public Object getChildNamed(Symbol name) {
+        for(Object child : children) {
+            if(name.equals(child)) {
+                return child;
+            }
+
+            if(child instanceof Node) {
+                Node node = (Node)child;
+                if(node.getLabel().equals(name)) {
+                    return node;
+                }
+            }
+        }
+
+        return null;
+    }
+
     public Object getChild(int index) {
         return children.get(index);
     }

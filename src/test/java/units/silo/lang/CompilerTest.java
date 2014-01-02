@@ -201,4 +201,15 @@ public class CompilerTest {
 
         Assert.assertEquals("baz", o);
     }
+
+    @Test
+    public void testStdLib() {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/examples/stdlib.silo");
+
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+        Object o = runtime.eval(classes.get(0));
+
+        Assert.assertEquals("FooBars", o);
+    }
 }

@@ -20,3 +20,4 @@ TODO List
 
 - Should macro have access to "CompilationContext"? In that case, I could implement things like `import` using macro instead of a special form.
 
+- If I have a class that does not have any output types, it by default will to forcing a null return. Instead, it should probably return a var (or an object) and wrap / box as necessary.

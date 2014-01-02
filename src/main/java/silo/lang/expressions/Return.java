@@ -81,6 +81,7 @@ public class Return implements Expression {
                 g.valueOf(Type.getType(operand));
                 g.returnValue();
             } else if(outputClass.equals(Void.TYPE)) {
+                // TODO: This seems wrong. There will never be a Void function. At the veryleast it will be returning a "Var". Right now, a "var" means "object" but in either case, shouldn't I just return the operand straight out? Perhaps I first wrap it accordingly (into a var, or as a primitive). In particular, If I do not specify an output type, I think that it should just return the operand, not force return null...
                 Compiler.pop(operand, g);
                 g.push((String)null);
                 g.returnValue();

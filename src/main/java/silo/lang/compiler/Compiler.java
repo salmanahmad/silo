@@ -38,7 +38,8 @@ public class Compiler {
     }
 
     public static Vector<Class> compile(CompilationContext context, Node node) {
-        Expression expression = buildExpression(node);
+        Object expanded = expandMacros(node, context);
+        Expression expression = buildExpression(expanded);
         expression.emit(context);
 
         return context.classes;
@@ -51,21 +52,18 @@ public class Compiler {
 
         Vector<Node> containsUncompiledMacros(node)
 
-
-
         Object expressionTree = transformToExpressions(node);
 
         emit(expressionTree);
         */
     }
 
-    public static Object expandMacros(Object node) {
-        /*
+    public static Object expandMacros(Object node, CompilationContext context) {
         Object previous = null;
 
         while(true) {
             previous = node;
-            node = expandMacrosOnce(node);
+            node = expandMacrosOnce(node, context);
 
             if(previous.equals(node)) {
                 break;
@@ -73,17 +71,53 @@ public class Compiler {
         }
 
         return node;
-        */
-        return null;
     }
 
     private static void checkForDuplicates(Vector<Node> declarations) {
         
     }
 
-    public static Object expandMacrosOnce(Object node) {
-        // TODO
-        return null;
+    public static Object expandMacrosOnce(Object o, CompilationContext context) {
+        // TODO: Namespaces and packages with macros. How are those resolved or imported?
+
+        if(o instanceof Node) {
+            Node node = (Node)o;
+            Object label = node.getLabel();
+            Vector children = node.getChildren();
+
+            Class klass = null;
+
+            try {
+                klass = resolveType(label, context);
+            } catch(Exception e) {
+                klass = null;
+            }
+
+            if(isMacro(klass)) {
+                return context.runtime.eval(klass);
+            } else {
+                node = new Node(expandMacrosOnce(label, context));
+
+                for(Object child : children) {
+                    node.addChild(expandMacrosOnce(child, context));
+                }
+            }
+        }
+
+        return o;
+    }
+
+    public static boolean isMacro(Class klass) {
+        if(klass == null) {
+            return false;
+        } else {
+            Function.Definition definition = (Function.Definition)klass.getAnnotation(Function.Definition.class);
+            if(definition == null) {
+                return false;
+            } else {
+                return definition.macro();
+            }
+        }
     }
 
     private static boolean containsUncompiledMacros(Object value) {

@@ -20,6 +20,7 @@ public class CompilationContext {
     public final Stack<CompilationFrame> frames;
     public final Vector<Class> classes; // TODO: How do I handle temporary types and forwarded declarations?
     public final Vector<String> imports; // TODO: Make import a special form, probably. Alternatively, can I pass CompilationContext to macros?
+    public final Vector<byte[]> bytecode;
 
     int uniqueIdentifierCounter = 0;
 
@@ -28,6 +29,7 @@ public class CompilationContext {
         this.frames = new Stack<CompilationFrame>();
         this.classes = new Vector<Class>();
         this.imports = new Vector<String>();
+        this.bytecode = new Vector<byte[]>();
 
         this.imports.add("");
         this.imports.add("java.lang");
@@ -53,6 +55,7 @@ public class CompilationContext {
         this.frames.clear();
         this.classes.clear();
         this.imports.clear();
+        this.bytecode.clear();
 
         this.imports.add("");
         this.imports.add("java.lang");

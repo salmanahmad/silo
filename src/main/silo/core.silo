@@ -1,0 +1,10 @@
+
+function(
+    name(print)
+    inputs(value)
+    outputs(Object)
+    {
+        System.out#println(value)
+        return(value)
+    }
+)
