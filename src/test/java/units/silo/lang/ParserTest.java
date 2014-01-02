@@ -127,4 +127,9 @@ public class ParserTest {
         Parser.parse("foo(bar(), baz, qux())");
     }
 
+    @Test
+    public void testOperatorsInIdentifiers() {
+        Node n = Parser.parse("foo, ..., list* 5 +(1 2), 1 + 2");
+        // TODO: Assert the proper structure of the tree...
+    }
 }
