@@ -132,4 +132,42 @@ public class ParserTest {
         Node n = Parser.parse("foo, ..., list* 5 +(1 2), 1 + 2");
         // TODO: Assert the proper structure of the tree...
     }
+
+    @Test
+    public void testVarArgs() {
+        Node n = null;
+        Node e = null;
+
+        n = Parser.parse("fn(a ... {})");
+        e = new Node(null, new Node(new Symbol("fn"), new Symbol("a"), new Symbol("..."), new Node(new Symbol("do"))));
+        Assert.assertEquals(e, n);
+
+        n = Parser.parse("fn(a ... => int {})");
+        e = new Node(null, new Node(new Symbol("fn"), new Symbol("a"), new Node(new Symbol("=>"), new Symbol("..."), new Symbol("int")), new Node(new Symbol("do"))));
+        Assert.assertEquals(e, n);
+
+        n = Parser.parse("fn(a, ... {})");
+        e = new Node(null, new Node(new Symbol("fn"), new Symbol("a"), new Symbol("..."), new Node(new Symbol("do"))));
+        Assert.assertEquals(e, n);
+
+        n = Parser.parse("fn(a, ... => int {})");
+        e = new Node(null, new Node(new Symbol("fn"), new Symbol("a"), new Node(new Symbol("=>"), new Symbol("..."), new Symbol("int")), new Node(new Symbol("do"))));
+        Assert.assertEquals(e, n);
+
+        n = Parser.parse("fn(a : int ... {})");
+        e = new Node(null, new Node(new Symbol("fn"), new Node(new Symbol(":"), new Symbol("a"), new Symbol("int")), new Symbol("..."), new Node(new Symbol("do"))));
+        Assert.assertEquals(e, n);
+
+        n = Parser.parse("fn(a : int ... => int {})");
+        e = new Node(null, new Node(new Symbol("fn"), new Node(new Symbol(":"), new Symbol("a"), new Symbol("int")), new Node(new Symbol("=>"), new Symbol("..."), new Symbol("int")), new Node(new Symbol("do"))));
+        Assert.assertEquals(e, n);
+
+        n = Parser.parse("fn(a : int, ... {})");
+        e = new Node(null, new Node(new Symbol("fn"), new Node(new Symbol(":"), new Symbol("a"), new Symbol("int")), new Symbol("..."), new Node(new Symbol("do"))));
+        Assert.assertEquals(e, n);
+
+        n = Parser.parse("fn(a : int, ... => int {})");
+        e = new Node(null, new Node(new Symbol("fn"), new Node(new Symbol(":"), new Symbol("a"), new Symbol("int")), new Node(new Symbol("=>"), new Symbol("..."), new Symbol("int")), new Node(new Symbol("do"))));
+        Assert.assertEquals(e, n);
+    }
 }

@@ -21,3 +21,5 @@ TODO List
 - Should macro have access to "CompilationContext"? In that case, I could implement things like `import` using macro instead of a special form.
 
 - If I have a class that does not have any output types, it by default will to forcing a null return. Instead, it should probably return a var (or an object) and wrap / box as necessary.
+
+- The standard library from the runtime will emit anonymous functions with names like: `__function__1.class`. This could cause collisions with other runtime objects created in user-programs. How can I differentiate them? Embedding a timestamp could prevent collisions, but it could also make it difficult to deterministically re-compile portions of code, especially across different machines. WAIT! This is not actually a problem. You should use packages to scope out the different functions and identifiers. Perhaps, instead, I could initialize the Runtime with a package name to avoid this issue all together?

@@ -174,7 +174,6 @@ literalExpression returns [Object value]
   : NULL                               { $value = null; }
   | TRUE                               { $value = Boolean.TRUE; }
   | FALSE                              { $value = Boolean.FALSE; }
-  | (LETTER | UNDERSCORE | operator) (SYMBOL_CHAR | operator)*   { $value = new Symbol($text); }
   | SYMBOL                             { $value = new Symbol($SYMBOL.text); }
   | STRING                             { $value = $text; }
   | INTEGER                            { $value = Integer.parseInt($text); }
@@ -204,17 +203,6 @@ blockExpression returns [Node value]
 // TODO: Once I decide on the standard library names for operators as well as if
 // operators should be functions or traits, I should update these rules to return
 // the proper symbol representation...
-
-operator returns [Symbol symbol]
- : relationalOperator
- | additiveOperator
- | multiplicativeOperator
- | unaryOperator
- | binaryOperator
- | consOperator
- | chainOperator
- | accessOperator
- ;
 
 relationalOperator returns [Symbol symbol]
   : EQUAL
@@ -284,8 +272,6 @@ TRUE:               'true';
 FALSE:              'false';
 NULL:               'null';
 
-SYMBOL:             (LETTER | UNDERSCORE) SYMBOL_CHAR*;
-
 OPEN_BRACKET:       '[';
 CLOSE_BRACKET:      ']';
 OPEN_PAREN:         '(';
@@ -293,32 +279,89 @@ CLOSE_PAREN:        ')';
 OPEN_BRACE:         '{';
 CLOSE_BRACE:        '}';
 
-ASSIGN:             '=';
+ASSIGN: FRAGMENT_ASSIGN;
 
-AND:                '&&' | 'and';
-OR:                 '||' | 'or';
-NOT:                '!' | 'not';
+AND: FRAGMENT_AND;
+OR: FRAGMENT_OR;
+NOT: FRAGMENT_NOT;
 
-EQUAL:              '==';
-NOT_EQUAL:          '!=';
-LESS_THAN_EQUAL:    '<=';
-GREATER_THAN_EQUAL: '>=';
-LESS_THAN:          '<';
-GREATER_THAN:       '>';
+EQUAL: FRAGMENT_EQUAL;
+NOT_EQUAL: FRAGMENT_NOT_EQUAL;
+LESS_THAN_EQUAL: FRAGMENT_LESS_THAN_EQUAL;
+GREATER_THAN_EQUAL: FRAGMENT_GREATER_THAN_EQUAL;
+LESS_THAN: FRAGMENT_LESS_THAN;
+GREATER_THAN: FRAGMENT_GREATER_THAN;
 
-PLUS:               '+';
-MINUS:              '-';
+PLUS: FRAGMENT_PLUS;
+MINUS: FRAGMENT_MINUS;
 
-MULTIPLY:           '*';
-DIVIDE:             '/';
-MODULO:             '%';
+MULTIPLY: FRAGMENT_MULTIPLY;
+DIVIDE: FRAGMENT_DIVIDE;
+MODULO: FRAGMENT_MODULO;
 
-ARROW:              '=>';
-SCOPE:              '::';
-COLON:              ':';
-DOT:                '.';
-PIPE:               '|';
-HASH:               '#';
+ARROW: FRAGMENT_ARROW;
+SCOPE: FRAGMENT_SCOPE;
+COLON: FRAGMENT_COLON;
+DOT: FRAGMENT_DOT;
+PIPE: FRAGMENT_PIPE;
+HASH: FRAGMENT_HASH;
+
+fragment FRAGMENT_ASSIGN:             '=';
+
+fragment FRAGMENT_AND:                '&&';
+fragment FRAGMENT_OR:                 '||';
+fragment FRAGMENT_NOT:                '!';
+
+fragment FRAGMENT_EQUAL:              '==';
+fragment FRAGMENT_NOT_EQUAL:          '!=';
+fragment FRAGMENT_LESS_THAN_EQUAL:    '<=';
+fragment FRAGMENT_GREATER_THAN_EQUAL: '>=';
+fragment FRAGMENT_LESS_THAN:          '<';
+fragment FRAGMENT_GREATER_THAN:       '>';
+
+fragment FRAGMENT_PLUS:               '+';
+fragment FRAGMENT_MINUS:              '-';
+
+fragment FRAGMENT_MULTIPLY:           '*';
+fragment FRAGMENT_DIVIDE:             '/';
+fragment FRAGMENT_MODULO:             '%';
+
+fragment FRAGMENT_ARROW:              '=>';
+fragment FRAGMENT_SCOPE:              '::';
+fragment FRAGMENT_COLON:              ':';
+fragment FRAGMENT_DOT:                '.';
+fragment FRAGMENT_PIPE:               '|';
+fragment FRAGMENT_HASH:               '#';
+
+
+// TODO: Many of these fragments are completely redundant and uncessary. Both in the individual fragments (e.g. FRAGMENT_MULTIPLY) as well as the main FRAGMENT_OPERATOR. For example, I have '=' and '>' this makes it uncessary to have ">=" since it will be matched with FRAGMENT_OPERATOR+. I could reduce the number of rules and fragments here and also make it more intuitive how to add new "infix" operators in the future...
+
+
+fragment FRAGMENT_OPERATOR
+  : FRAGMENT_ASSIGN
+  | FRAGMENT_AND
+  | FRAGMENT_OR
+  | FRAGMENT_NOT
+  | FRAGMENT_EQUAL
+  | FRAGMENT_NOT_EQUAL
+  | FRAGMENT_LESS_THAN_EQUAL
+  | FRAGMENT_GREATER_THAN_EQUAL
+  | FRAGMENT_LESS_THAN
+  | FRAGMENT_GREATER_THAN
+  | FRAGMENT_PLUS
+  | FRAGMENT_MINUS
+  | FRAGMENT_MULTIPLY
+  | FRAGMENT_DIVIDE
+  | FRAGMENT_MODULO
+  | FRAGMENT_ARROW
+  | FRAGMENT_SCOPE
+  | FRAGMENT_COLON
+  | FRAGMENT_DOT
+  | FRAGMENT_PIPE
+  | FRAGMENT_HASH
+  ;
+
+SYMBOL:             ((LETTER | UNDERSCORE) SYMBOL_CHAR*) | FRAGMENT_OPERATOR+;
 
 SEMICOLON:          ';';
 COMMA:              ',';
@@ -344,7 +387,7 @@ fragment ESC
 
 fragment LETTER:      LOWER | UPPER;
 fragment NUMBER:      INTEGER | FLOAT | DOUBLE;
-fragment SYMBOL_CHAR: LETTER | DIGIT | UNDERSCORE;
+fragment SYMBOL_CHAR: LETTER | UNDERSCORE | DIGIT;
 fragment UNDERSCORE:  '_';
 fragment LOWER:       'a'..'z';
 fragment UPPER:       'A'..'Z';
