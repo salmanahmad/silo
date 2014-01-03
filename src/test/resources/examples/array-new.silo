@@ -1,0 +1,8 @@
+
+function(
+    name(foo1)
+    outputs(array(int))
+    {
+        arraynew(int, 4)
+    }
+)

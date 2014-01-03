@@ -17,6 +17,7 @@ import silo.lang.expressions.*;
 
 import java.util.Vector;
 import java.util.HashMap;
+import java.lang.reflect.Array;
 
 import org.objectweb.asm.commons.GeneratorAdapter;
 
@@ -146,6 +147,10 @@ public class Compiler {
                 return Block.build(node);
             } else if(label.equals(new Symbol("do"))) {
                 return Block.build(node);
+            } else if(label.equals(new Symbol("array"))) {
+                return LiteralArrayType.build(node);
+            } else if(label.equals(new Symbol("arraynew"))) {
+                return LiteralArray.build(node);
             } else if(label.equals(new Symbol("function"))) {
                 return FunctionExpression.build(node);
             } else if(label.equals(new Symbol("declare"))) {
@@ -285,12 +290,43 @@ public class Compiler {
     }
 
     public static Class resolveType(Node node, CompilationContext context) {
-        Vector<Symbol> path = Node.symbolListFromNode(Node.flattenTree(node, new Symbol(".")));
+        if(node.getLabel().equals(new Symbol("array"))) {
+            Vector children = node.getChildren();
 
-        if(path == null) {
-            throw new RuntimeException("Invalid type identifier: " + node.toString());
+            Object type = null;
+            int depth = 1;
+
+            if(children.size() == 1) {
+                type = children.get(0);
+            } else if(children.size() == 2) {
+                Object o = children.get(1);
+                if(!(o instanceof Integer)) {
+                    throw new RuntimeException("Invalid type identifier: " + node.toString());
+                }
+
+                type = children.get(0);
+                depth = ((Integer)o).intValue();
+            } else {
+                throw new RuntimeException("Invalid type identifier: " + node.toString());
+            }
+
+            Class temp = resolveType(type, context);
+
+            if(temp != null) {
+                for(int i = 0; i < depth; i++) {
+                    temp = Array.newInstance(temp, 0).getClass();
+                }
+            }
+
+            return temp;
         } else {
-            return resolveType(path, context);
+            Vector<Symbol> path = Node.symbolListFromNode(Node.flattenTree(node, new Symbol(".")));
+
+            if(path == null) {
+                throw new RuntimeException("Invalid type identifier: " + node.toString());
+            } else {
+                return resolveType(path, context);
+            }
         }
     }
 

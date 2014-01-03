@@ -173,6 +173,8 @@ public class Node {
 
     // TODO - Update this so it takes an anonymous function instead...
     public static Node flattenTree(Node node, Object... labels) {
+        // TODO: What are the semantics here. Should this check if node matches label before doing anything?
+
         Node buffer = new Node(null);
         for(Object o : node.children) {
             if(o instanceof Node) {

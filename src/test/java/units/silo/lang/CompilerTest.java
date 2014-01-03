@@ -223,4 +223,45 @@ public class CompilerTest {
 
         Assert.assertEquals(5, o);
     }
+
+    @Test
+    public void testArrayType() {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/examples/array-type.silo");
+
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+        Object o = null;
+
+        o = runtime.eval(classes.get(0));
+        Assert.assertEquals(int[].class, o);
+
+        o = runtime.eval(classes.get(1));
+        Assert.assertEquals(Integer[].class, o);
+
+        o = runtime.eval(classes.get(2));
+        Assert.assertEquals(int[][][][].class, o);
+
+        o = runtime.eval(classes.get(3));
+        Assert.assertEquals(int[][][][].class, o);
+    }
+
+    @Test
+    public void testArrayNew() {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/examples/array-new.silo");
+
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+        Object o = null;
+
+        o = runtime.eval(classes.get(0));
+        int[] a = new int[4];
+        int[] b = (int[])o;
+
+        Assert.assertTrue(java.util.Arrays.equals(a, b));
+        Assert.assertEquals(b[0], 0);
+        Assert.assertEquals(b[1], 0);
+        Assert.assertEquals(b[2], 0);
+        Assert.assertEquals(b[3], 0);
+        Assert.assertEquals(b.length, 4);
+    }
 }

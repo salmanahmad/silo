@@ -1,7 +1,7 @@
 
 TODO List
 
-- `return 5` is parsed differently from `return(5)` and could be really confusing to many people. I should add error reporting for this case. The same goes for things like `import()`
+- `return 5` is parsed differently from `return(5)` and could be really confusing to many people. I should add error reporting for this case. The same goes for things like `import()` --- THIS IS REALLY IMPORTANT. I HAVE MADE THIS MISTAKE MULTIPLE TIMES...
 
 - flexible pattern matching is really important in the language. perhaps even go beyond what erlang / scala provide and provide a full blow parser combinator DSL.
 
@@ -23,3 +23,5 @@ TODO List
 - If I have a class that does not have any output types, it by default will to forcing a null return. Instead, it should probably return a var (or an object) and wrap / box as necessary.
 
 - The standard library from the runtime will emit anonymous functions with names like: `__function__1.class`. This could cause collisions with other runtime objects created in user-programs. How can I differentiate them? Embedding a timestamp could prevent collisions, but it could also make it difficult to deterministically re-compile portions of code, especially across different machines. WAIT! This is not actually a problem. You should use packages to scope out the different functions and identifiers. Perhaps, instead, I could initialize the Runtime with a package name to avoid this issue all together?
+
+- Read up on the `visitLdcInsn` method in ASM. In particular this bit about method handles: `cst - the constant to be loaded on the stack. This parameter must be a non null Integer, a Float, a Long, a Double, a String, a Type of OBJECT or ARRAY sort for .class constants, for classes whose version is 49.0, a Type of METHOD sort or a Handle for MethodType and MethodHandle constants, for classes whose version is 51.0.`

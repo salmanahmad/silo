@@ -1,0 +1,32 @@
+
+function(
+    name(foo1)
+    outputs(Class)
+    {
+        array(int)
+    }
+)
+
+function(
+    name(foo2)
+    outputs(Class)
+    {
+        array(Integer)
+    }
+)
+
+function(
+    name(foo3)
+    outputs(Class)
+    {
+        array(int, 4)
+    }
+)
+
+function(
+    name(foo4)
+    outputs(Class)
+    {
+        array(array(array(array(int))))
+    }
+)

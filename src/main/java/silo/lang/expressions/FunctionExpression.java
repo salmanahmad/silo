@@ -29,6 +29,7 @@ import java.io.PrintStream;
 
 
 // TODO: Should I rename all of the other expressions so that they have the "Expression" suffix?
+// TODO: Should I call this a LiteralFunction? Or should I call LiteralArray ArrayExpression and ArrayTypeExpression?
 
 public class FunctionExpression implements Expression, Opcodes {
 
