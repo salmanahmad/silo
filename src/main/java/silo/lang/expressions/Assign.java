@@ -24,7 +24,7 @@ import org.objectweb.asm.commons.GeneratorAdapter;
 public class Assign implements Expression {
 
     public final Symbol identifier;
-    public final Vector<Symbol> type;
+    public final Object type;
     public final Expression value;
 
     public static Assign build(Node node) {
@@ -33,7 +33,7 @@ public class Assign implements Expression {
         }
 
         Symbol identifier = null;
-        Vector<Symbol> type = null;
+        Object type = null;
         Expression value = null;
 
         value = Compiler.buildExpression(node.getSecondChild());
@@ -42,16 +42,21 @@ public class Assign implements Expression {
         if(o instanceof Symbol) {
             identifier = (Symbol)o;
         } else if(o instanceof Node) {
-            Object first = ((Node)o).getFirstChild();
-            Object second = ((Node)o).getSecondChild();
+            if(((Node)o).getLabel().equals(new Symbol(":"))) {
+                Object first = ((Node)o).getFirstChild();
+                Object second = ((Node)o).getSecondChild();
 
-            if(first instanceof Symbol) {
-                identifier = (Symbol)first;
-            } else {
-                // TODO: Implement nested assignment.
-                throw new RuntimeException("Invalid assignment form. Nested assignments are not implemented yet. The variable name must be a symbol for now.");
+                if(first instanceof Symbol) {
+                    identifier = (Symbol)first;
+                } else {
+                    // TODO: Implement nested assignment.
+                    throw new RuntimeException("Invalid assignment form. Nested assignments are not implemented yet. The variable name must be a symbol for now.");
+                }
+
+                type = second;
             }
 
+            /*
             if(second instanceof Symbol) {
                 type = new Vector<Symbol>();
                 type.add((Symbol)second);
@@ -64,7 +69,7 @@ public class Assign implements Expression {
             } else {
                 throw new RuntimeException("Invalid type name");
             }
-
+            */
         } else {
             throw new RuntimeException("Invalid assignment form. The first argument must be a variable identifier or a typed expression");
         }
@@ -72,7 +77,7 @@ public class Assign implements Expression {
         return new Assign(identifier, type, value);
     }
 
-    public Assign(Symbol identifier, Vector<Symbol> type, Expression value) {
+    public Assign(Symbol identifier, Object type, Expression value) {
         this.identifier = identifier;
         this.type = type;
         this.value = value;

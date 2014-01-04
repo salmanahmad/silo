@@ -1,0 +1,20 @@
+
+function(
+    name(search)
+    inputs(data : array(int), needle : int)
+    outputs(boolean)
+    {
+        data(0) == needle
+    }
+)
+
+function(
+    name(foo)
+    {
+        a : array(int) = arraynew(int, 5)
+
+        x : int = a(0)
+        
+        System.out#println(x)
+    }
+)

@@ -174,6 +174,7 @@ public class Node {
     // TODO - Update this so it takes an anonymous function instead...
     public static Node flattenTree(Node node, Object... labels) {
         // TODO: What are the semantics here. Should this check if node matches label before doing anything?
+        // I think one example is flattenTree in Assign.java. Here we do NOT want to flatten the list before starting.
 
         Node buffer = new Node(null);
         for(Object o : node.children) {

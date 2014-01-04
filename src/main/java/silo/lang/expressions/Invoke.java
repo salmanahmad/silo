@@ -40,13 +40,14 @@ public class Invoke implements Expression {
             Node n = (Node)label;
 
             if(n.getLabel().equals(new Symbol("."))) {
-                Node components = Node.flattenTree(n, new Symbol("."));
-                identifier = Node.symbolListFromNode(components);
+                identifier = Node.symbolListFromNode(Node.flattenTree(n, new Symbol(".")));
 
                 if(identifier == null) {
+                    identifier = null;
                     receiver = Compiler.buildExpression(label);
                 }
             } else {
+                identifier = null;
                 receiver = Compiler.buildExpression(label);
             }
         } else {
@@ -250,7 +251,7 @@ public class Invoke implements Expression {
         CompilationFrame frame = context.currentFrame();
 
         if(receiver == null) {
-            // TODO: Handle local and imported variables
+            // TODO: Handle local and imported variables and closures --- but that isn't here, is it? I can handle that out side the `if(receiver == null)` block...
 
             Vector result = Compiler.resolveIdentifierPath(identifier, context);
 
@@ -340,10 +341,39 @@ public class Invoke implements Expression {
             }
         }
 
-        // Dynamic function invocation
-        // TODO: Remain cases...
-        // TODO: Remember to throw exceptions if the symbol is legit not found.
+        Expression expression =  null;
 
-        throw new RuntimeException("Dynamic invocation has not been implemented: " + identifier);
+        if(receiver == null) {
+            expression = new Access(null, identifier);
+        } else {
+            expression = receiver;
+        }
+
+        expression.emit(context);
+        Class operand = frame.operandStack.peek();
+
+        if(operand.isArray()) {
+            Vector<Class> classes = compileArguments(arguments, context);
+
+            if(classes.size() != 1) {
+                throw new RuntimeException("An array lookup requires a single parameter.");
+            }
+
+            if(!classes.get(0).equals(Integer.TYPE)) {
+                throw new RuntimeException("An array lookup requires a single integer parameter. Was provided: " + classes.get(0));
+            }
+
+            generator.arrayLoad(Type.getType(operand.getComponentType()));
+
+            frame.operandStack.pop();
+            frame.operandStack.pop();
+            frame.operandStack.push(operand.getComponentType());
+        } else {
+            // Dynamic function invocation
+            // TODO: Remain cases...
+            // TODO: Remember to throw exceptions if the symbol is legit not found.
+
+            throw new RuntimeException("Dynamic invocation has not been implemented: " + operand);
+        }
     }
 }

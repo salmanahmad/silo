@@ -330,6 +330,9 @@ public class Compiler {
         }
     }
 
+    // TODO: All of the methods that call this function should be prepared to catch the Exception
+    // so that they they can report a better error message to the user with the line number / context of the
+    // error...
     public static Class resolveType(Object o, CompilationContext context) {
         if(o instanceof Symbol) {
             return resolveType((Symbol)o, context);

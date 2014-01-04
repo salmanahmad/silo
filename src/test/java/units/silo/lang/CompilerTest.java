@@ -264,4 +264,15 @@ public class CompilerTest {
         Assert.assertEquals(b[3], 0);
         Assert.assertEquals(b.length, 4);
     }
+
+    @Test
+    public void testArray() {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/examples/array.silo");
+
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+        Object o = null;
+
+        o = runtime.eval(classes.get(1));
+    }
 }
