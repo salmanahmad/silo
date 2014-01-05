@@ -10,11 +10,11 @@ function(
 
 function(
     name(foo)
+    outputs(int)
     {
         a : array(int) = arraynew(int, 5)
+        a(0) = 5
 
-        x : int = a(0)
-        
-        System.out#println(x)
+        a(0)
     }
 )

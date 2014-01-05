@@ -274,5 +274,6 @@ public class CompilerTest {
         Object o = null;
 
         o = runtime.eval(classes.get(1));
+        Assert.assertEquals(new Integer(5), o);
     }
 }

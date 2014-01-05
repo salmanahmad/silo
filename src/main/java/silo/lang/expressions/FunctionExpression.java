@@ -135,6 +135,7 @@ public class FunctionExpression implements Expression, Opcodes {
             } else if(o instanceof Node) {
                 Node node = (Node)o;
 
+                // TODO: Should I make this label/child instead of firstChild/secondChild. So: name(string)?
                 // TODO: What about generics or arrays?
                 Symbol name = (Symbol)node.getFirstChild();
                 Object symbol = node.getSecondChild();
