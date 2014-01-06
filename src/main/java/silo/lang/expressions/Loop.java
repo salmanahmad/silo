@@ -57,7 +57,7 @@ public class Loop implements Expression {
         frame.popIterationFrame();
 
         // TODO: This should be var. I am adding to the operandstack here because I do not
-        // add to the operand stack in the branch expression since it would screw things up.
+        // add to the operand stack in the branch (is this a typo, should be break?) expression since it would screw things up.
         frame.operandStack.push(Object.class);
     }
 }

@@ -22,6 +22,7 @@ public class Function {
     @Retention(RetentionPolicy.RUNTIME)
     public static @interface Definition {
         boolean macro() default false;
+        boolean varargs() default false;
     }
 
     @Retention(RetentionPolicy.RUNTIME)

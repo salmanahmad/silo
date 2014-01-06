@@ -38,6 +38,7 @@ public class FunctionExpression implements Expression, Opcodes {
     Vector outputs;
     Block body;
     boolean macro;
+    boolean varargs;
 
     public static FunctionExpression build(Node node) {
         Symbol name = null;
@@ -45,6 +46,7 @@ public class FunctionExpression implements Expression, Opcodes {
         Vector outputs = null;
         Block body = null;
         boolean macro = false;
+        boolean varargs = false;
 
         Node n = null;
         Object o = null;
@@ -52,6 +54,9 @@ public class FunctionExpression implements Expression, Opcodes {
 
         o = node.getChildNamed(new Symbol("macro"));
         macro = o != null;
+
+        o = node.getChildNamed(new Symbol("varargs"));
+        varargs = o != null;
 
         n = node.getChildNode(new Symbol("name"));
         if(n != null) {
@@ -78,15 +83,16 @@ public class FunctionExpression implements Expression, Opcodes {
             body = Block.build(n);
         }
 
-        return new FunctionExpression(name, inputs, outputs, body, macro);
+        return new FunctionExpression(name, inputs, outputs, body, macro, varargs);
     }
 
-    public FunctionExpression(Symbol name, Vector inputs, Vector outputs, Block body, boolean macro) {
+    public FunctionExpression(Symbol name, Vector inputs, Vector outputs, Block body, boolean macro, boolean varargs) {
         this.name = name;
         this.inputs = inputs;
         this.outputs = outputs;
         this.body = body;
         this.macro = macro;
+        this.varargs = varargs;
     }
 
     public void emit(CompilationContext context) {
@@ -190,6 +196,10 @@ public class FunctionExpression implements Expression, Opcodes {
         av = cw.visitAnnotation(Type.getType(Function.Definition.class).getDescriptor(), true);
         if(macro) {
             av.visit("macro", Boolean.TRUE);
+        }
+        if(varargs) {
+            // TODO: Varargs should also create an actual overloaded varargs method that wraps a PersistentVector and calls the actual method..
+            av.visit("varargs", Boolean.TRUE);
         }
         av.visitEnd();
 
