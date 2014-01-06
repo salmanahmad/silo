@@ -25,59 +25,10 @@ import org.objectweb.asm.commons.GeneratorAdapter;
 
 public class Invoke implements Expression {
 
-    public final Expression receiver;
-    public final Vector<Symbol> identifier;
-    public final Vector<Expression> arguments;
+    public final Node node;
 
-    public static Invoke build(Node node) {
-        Expression receiver = null;
-        Vector<Symbol> identifier = null;
-        Vector<Expression> arguments = new Vector<Expression>();
-
-        Object label = node.getLabel();
-        if(label instanceof Symbol) {
-            identifier = new Vector<Symbol>();
-            identifier.add((Symbol)label);
-        } else if(label instanceof Node) {
-            Node n = (Node)label;
-
-            if(n.getLabel().equals(new Symbol("."))) {
-                identifier = Node.symbolListFromNode(Node.flattenTree(n, new Symbol(".")));
-
-                if(identifier == null) {
-                    identifier = null;
-                    receiver = Compiler.buildExpression(label);
-                }
-            } else {
-                identifier = null;
-                receiver = Compiler.buildExpression(label);
-            }
-        } else {
-            throw new RuntimeException("Unhandled case.");
-        }
-
-        if(node.getChildren() != null) {
-            arguments = new Vector<Expression>();
-            for(Object child : node.getChildren()) {
-                arguments.add(Compiler.buildExpression(child));
-            }
-        }
-
-        return new Invoke(receiver, identifier, arguments);
-    }
-
-    public Invoke(Expression receiver, Vector<Symbol> identifier, Vector<Expression> arguments) {
-        if(receiver != null && identifier != null) {
-            throw new RuntimeException("Receiver and identifier cannot both be non-null.");
-        }
-
-        if(receiver == null && identifier == null) {
-            throw new RuntimeException("Receiver and identifier cannot both be null.");
-        }
-
-        this.receiver = receiver;
-        this.identifier = identifier;
-        this.arguments = arguments;
+    public Invoke(Node node) {
+        this.node = node;
     }
 
     public static Vector<Class> compileArguments(Vector<Expression> arguments, CompilationContext context) {
@@ -91,23 +42,6 @@ public class Invoke implements Expression {
         }
 
         return types;
-    }
-
-    public static boolean typesMatch(Class[] expected, Class[] provided) {
-        if(expected.length != provided.length) {
-            return false;
-        }
-
-        for(int i = 0; i < expected.length; i++) {
-            Class e = expected[i];
-            Class p = provided[i];
-
-            if(!(e.isAssignableFrom(p))) {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     public static int mostSpecificClass(Class c1, Class c2) {
@@ -187,7 +121,24 @@ public class Invoke implements Expression {
 
         int i = 0;
         for(Class[] expected : parameters) {
-            if(typesMatch(expected, args)) {
+            boolean match = true;
+
+            if(expected.length != args.length) {
+                match = false;
+                i++;
+                continue;
+            }
+
+            for(int j = 0; j < expected.length; j++) {
+                Class e = expected[j];
+                Class p = args[j];
+
+                if(!(e.isAssignableFrom(p))) {
+                    match = false;
+                }
+            }
+
+            if(match) {
                 options.add(i);
             }
 
@@ -402,9 +353,32 @@ public class Invoke implements Expression {
         RuntimeClassLoader loader = context.runtime.loader;
         CompilationFrame frame = context.currentFrame();
 
-        if(receiver == null) {
-            // TODO: Handle local and imported variables and closures --- but that isn't here, is it? I can handle that out side the `if(receiver == null)` block...
 
+        Vector<Symbol> identifier = new Vector<Symbol>();
+        Vector<Expression> arguments = new Vector<Expression>();
+        Object label = node.getLabel();
+
+        if(node.getChildren() != null) {
+            for(Object child : node.getChildren()) {
+                arguments.add(Compiler.buildExpression(child));
+            }
+        }
+
+
+        if(label instanceof Symbol) {
+            identifier.add((Symbol)label);
+        } else if(label instanceof Node) {
+            Node n = (Node)label;
+            if(n.getLabel().equals(new Symbol("."))) {
+                identifier = Node.symbolListFromNode(Node.flattenTree(n, new Symbol(".")));
+            }
+        } else {
+            throw new RuntimeException("Invalid function invocation.");
+        }
+
+
+
+        if(identifier != null) {
             Vector result = Compiler.resolveIdentifierPath(identifier, context);
 
             if(result != null) {
@@ -493,17 +467,12 @@ public class Invoke implements Expression {
             }
         }
 
-        Expression expression =  null;
 
-        if(receiver == null) {
-            expression = new Access(null, identifier);
-        } else {
-            expression = receiver;
-        }
 
+        Expression expression = Compiler.buildExpression(label);
         expression.emit(context);
-        Class operand = frame.operandStack.peek();
 
+        Class operand = frame.operandStack.peek();
         if(operand.isArray()) {
             Vector<Class> classes = compileArguments(arguments, context);
 

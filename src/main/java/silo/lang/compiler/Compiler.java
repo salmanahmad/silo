@@ -179,7 +179,7 @@ public class Compiler {
             } else if(RelationalOperation.accepts(node.getLabel())) {
                 return RelationalOperation.build(node);
             } else {
-                return Invoke.build(node);
+                return new Invoke(node);
             }
         } else if(value instanceof Symbol) {
             if(value.equals(new Symbol("return"))) {
