@@ -547,14 +547,8 @@ public class Invoke implements Expression {
                         // Remove the class reference that was used to invoke the constructor
                         frame.operandStack.pop();
 
-                        if(shouldVarArgs) {
-                            for(int i = 0; i < params.length; i++) {
-                                frame.operandStack.pop();
-                            }
-                        } else {
-                            for(Expression e : arguments) {
-                                frame.operandStack.pop();
-                            }
+                        for(int i = 0; i < params.length; i++) {
+                            frame.operandStack.pop();
                         }
 
                         return;
