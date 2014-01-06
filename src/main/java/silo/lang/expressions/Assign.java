@@ -244,7 +244,7 @@ public class Assign implements Expression {
     }
 
     public Class type(CompilationContext context) {
-        return null;
+        return this.value.type(context);
     }
 
     public void emit(CompilationContext context) {
@@ -321,6 +321,9 @@ public class Assign implements Expression {
                     // In fact, is the AssignableTrait even possible? AccessibleTrait perhaps but does the assignable trait
                     // return the assigned value or the value was it was written into? Right now, it is the AssignedValue, but
                     // that makes this almost useless because you cannot get the mutated new value...
+
+                    // TODO: Remember to duplicate this.value and pop the return value from the AccessibleTrait to ensure that the
+                    // return type is ALWAYS this.value.
                     throw new RuntimeException("Vars and AssignableTrait are not yet supported...");
                 }
             }
