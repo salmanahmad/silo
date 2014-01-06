@@ -15,6 +15,7 @@ import silo.lang.*;
 import silo.lang.compiler.Compiler;
 
 import java.util.Vector;
+import java.lang.reflect.Field;
 
 import org.objectweb.asm.Type;
 import org.objectweb.asm.Opcodes;
@@ -23,42 +24,29 @@ import org.objectweb.asm.commons.GeneratorAdapter;
 
 public class Access implements Expression {
 
-    public final Expression head;
-    public final Vector<Symbol> tail;
+    Object value;
 
-    public static Access build(Symbol symbol) {
-        Vector<Symbol> tail = new Vector<Symbol>();
-        tail.add(symbol);
-
-        return new Access(null, tail);
+    public Access(Object value) {
+        // TODO: If I bring back the idea of a "ExpressionBuilder" I should use that here
+        // to validate the value before accepting it. This will make it less likely to have to
+        // check all issues in the emit.
+        this.value = value;
     }
 
-    public static Access build(Node node) {
-        Node components = Node.flattenTree(node, new Symbol("."));
+    public static void resolveSymbol(Symbol symbol, CompilationContext context) {
+        CompilationFrame frame = context.currentFrame();
+        GeneratorAdapter generator = frame.generator;
 
-        Expression head = null;
-        Vector<Symbol> tail = new Vector<Symbol>();
+        if(frame.locals.containsKey(symbol)) {
+            int local = frame.locals.get(symbol).intValue();
+            Class scope = frame.localTypes.get(symbol);
 
-        for(int i = 0; i < components.getChildren().size(); i++) {
-            Object component = components.getChildren().get(i);
-
-            if(component instanceof Symbol) {
-                tail.add((Symbol)component);
-            } else {
-                if(i == 0) {
-                    head = Compiler.buildExpression(component);
-                } else {
-                    throw new RuntimeException("The '.' operator must take a symbol to look up. It was provided: " + component);
-                }
-            }
+            generator.visitVarInsn(Type.getType(scope).getOpcode(Opcodes.ILOAD), local);
+            frame.operandStack.push(scope);
+        } else {
+            // TODO: Attempt to find Class reference by this name and return it
+            throw new RuntimeException("Could not find local variable: " + symbol);
         }
-
-        return new Access(head, tail);
-    }
-
-    public Access(Expression head, Vector<Symbol> tail) {
-        this.head = head;
-        this.tail = tail;
     }
 
     public void emit(CompilationContext context) {
@@ -66,67 +54,90 @@ public class Access implements Expression {
         RuntimeClassLoader loader = context.runtime.loader;
         CompilationFrame frame = context.currentFrame();
 
-        Class scope = null;
-        boolean isStaticScope = true;
 
-        Vector<Symbol> path;
+        // TODO: What about obscured packages? Do they stay obscured? In other words, suppose there are two class
+        // foo.bar.Baz.a.Car and foo.bar.Baz. If the class "Baz" does not have a field "a" the current implementation
+        // will throw an exception, it will not attempt to find package "foo.bar.Baz.a".
 
-        if(head != null) {
-            head.emit(context);
-            scope = frame.operandStack.peek();
-            isStaticScope = false;
 
-            path = tail;
-        } else {
-            // TODO: Handle imported variables
+        if(value instanceof Symbol) {
+            // Local variable or class reference...
+            resolveSymbol((Symbol)value, context);
+        } else if(value instanceof Node) {
+            Node node = (Node)value;
 
-            if(frame.locals.containsKey(tail.get(0))) {
-                int local = frame.locals.get(tail.get(0)).intValue();
-
-                scope = frame.localTypes.get(tail.get(0));
-                isStaticScope = false;
-
-                generator.visitVarInsn(Type.getType(scope).getOpcode(Opcodes.ILOAD), local);
-                frame.operandStack.push(scope);
-
-                path = new Vector<Symbol>(tail);
-                path.remove(0);
-            } else {
-                Vector result = Compiler.resolveIdentifierPath(tail, context);
-
-                if(result == null) {
-                    throw new RuntimeException("Could not find symbol: " + tail.toString());
-                }
-
-                scope = (Class)result.get(0);
-                isStaticScope = true;
-
-                path = (Vector<Symbol>)result.get(1);
-
-                // TODO: Return a class reference...
+            if(!(node.getSecondChild() instanceof Symbol)) {
+                throw new RuntimeException("The access operator must take a symbol to look up. It was provided: " + node.getSecondChild());
             }
-        }
 
-        for(Symbol symbol : path) {
-            try {
-                java.lang.reflect.Field field = scope.getField(symbol.toString());
+            Vector components = Node.flattenTree(node, new Symbol(".")).getChildren();
 
-                if(isStaticScope) {
-                    generator.getStatic(Type.getType(scope), field.getName(), Type.getType(field.getType()));
-                    frame.operandStack.push(field.getType());
-                    isStaticScope = false;
+            Vector<Symbol> path = new Vector<Symbol>();
+            for(Object component : components) {
+                if(component instanceof Symbol) {
+                    path.add((Symbol)component);
                 } else {
+                    path = null;
+                    break;
+                }
+            }
+
+            if(path != null) {
+                if(frame.locals.containsKey(path.get(0))) {
+                    // Compile first. getField on second.
+                    path = new Vector<Symbol>();
+                    path.add((Symbol)node.getSecondChild());
+
+                    Expression expression = Compiler.buildExpression(node.getFirstChild());
+                    expression.emit(context);
+                } else {
+                    Vector result = Compiler.resolveIdentifierPath(path, context);
+
+                    if(result == null) {
+                        throw new RuntimeException("Could not find symbol: " + path.toString());
+                    }
+
+                    Class scope = (Class)result.get(0);
+                    path = (Vector<Symbol>)result.get(1);
+
+                    if(path.size() == 0) {
+                        // TODO: Return class reference...
+                        throw new RuntimeException("Unimplemented");
+                    } else {
+                        // Getstatic
+                        Symbol symbol = path.remove(0);
+
+                        try {
+                            Field field = scope.getField(symbol.toString());
+                            generator.getStatic(Type.getType(scope), field.getName(), Type.getType(field.getType()));
+                            frame.operandStack.push(field.getType());
+                        } catch(NoSuchFieldException e) {
+                            throw new RuntimeException("Could not find field: " + symbol);
+                        }
+                    }
+                }
+            } else {
+                // Compile first. getField on second.
+                path = new Vector<Symbol>();
+                path.add((Symbol)node.getSecondChild());
+
+                Expression expression = Compiler.buildExpression(node.getFirstChild());
+                expression.emit(context);
+            }
+
+            for(Symbol symbol : path) {
+                try {
                     Class operand = frame.operandStack.pop();
+                    Field field = operand.getField(symbol.toString());
+
                     generator.getField(Type.getType(operand), field.getName(), Type.getType(field.getType()));
                     frame.operandStack.push(field.getType());
+                } catch(NoSuchFieldException e) {
+                    throw new RuntimeException("No such field was found: " + symbol.toString());
                 }
-            } catch(NoSuchFieldException e) {
-                throw new RuntimeException("No such field was found: " + symbol.toString());
             }
-
-            // TODO: What about obscured packages? Do they stay obscured? In other words, suppose there are two class
-            // foo.bar.Baz.a.Car and foo.bar.Baz. If the class "Baz" does not have a field "a" the current implementation
-            // will throw an exception, it will not attempt to find package "foo.bar.Baz.a".
+        } else {
+            throw new RuntimeException("Invalid access form.");
         }
     }
 }

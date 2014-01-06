@@ -169,7 +169,7 @@ public class Compiler {
             } else if(label.equals(new Symbol("#"))) {
                 return InvokeVirtual.build(node);
             } else if(label.equals(new Symbol("."))) {
-                return Access.build(node);
+                return new Access(node);
             } else if(label.equals(new Symbol("="))) {
                 return Assign.build(node);
             } else if(LogicalOperation.accepts(node.getLabel())) {
@@ -190,7 +190,7 @@ public class Compiler {
                 // TODO
             }
 
-            return Access.build((Symbol)value);
+            return new Access(value);
         } else if(value instanceof Boolean) {
             return new LiteralBoolean((Boolean)value);
         } else if(value instanceof Byte) {
