@@ -16,9 +16,11 @@ import silo.lang.compiler.Compiler;
 
 import java.util.Vector;
 import java.util.Set;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.Constructor;
 
 import org.objectweb.asm.Type;
-import org.objectweb.asm.commons.Method;
 import org.objectweb.asm.commons.GeneratorAdapter;
 
 public class Invoke implements Expression {
@@ -108,47 +110,35 @@ public class Invoke implements Expression {
         return true;
     }
 
-    public static Class mostSpecificClass(Class c1, Class c2) {
+    public static int mostSpecificClass(Class c1, Class c2) {
         if(c1.equals(c2)) {
-            return null;
+            return -1;
         }
 
         if(c1.isAssignableFrom(c2)) {
-            return c2;
+            return 1;
         }
 
         if(c2.isAssignableFrom(c1)) {
-            return c1;
+            return 0;
         }
 
-        return null;
+        return -1;
     }
 
-    public static int mostSpecificParameters(Class[] p1, Class[] p2) {
+    public static int mostSpecificParametersFixedArgs(Class[] p1, Class[] p2) {
         int index = -1;
 
-        for(int i = 0; i < p1.length; i++) {
-            Class class1 = p1[i];
-            Class class2 = p2[i];
+        if(p1.length == p2.length) {
+            for(int i = 0; i < p1.length; i++) {
+                Class class1 = p1[i];
+                Class class2 = p2[i];
 
-            Class klass = mostSpecificClass(class1, class2);
-
-            if(klass != null) {
-                if(class1.equals(klass)) {
-                    if(index == -1) {
-                        index = 0;
-                    } else {
-                        if(index != 0) {
-                            return -1;
-                        }
-                    }
-                } else if(class2.equals(klass)) {
-                    if(index == -1) {
-                        index = 1;
-                    } else {
-                        if(index != 1) {
-                            return -1;
-                        }
+                if(index == -1) {
+                    index = mostSpecificClass(class1, class2);
+                } else {
+                    if(index != mostSpecificClass(class1, class2)) {
+                        return -1;
                     }
                 }
             }
@@ -157,92 +147,254 @@ public class Invoke implements Expression {
         return index;
     }
 
-    public static int mostSpecificParameters(Vector<Class[]> params) {
-        int index = -1;
-        int count = -1;
+    public static int mostSpecificParametersVarArgs(Class[] p1, Class[] p2) {
+        if(p1.length == p2.length) {
+            return mostSpecificParametersFixedArgs(p1, p2);
+        }
 
-        for(Class[] p : params) {
-            if(count == -1) {
-                count = p.length;
+        int index = -1;
+
+        for(int i = 0; i < Math.max(p1.length, p2.length); i++) {
+            Class class1 = null;
+            Class class2 = null;
+
+            if(i >= p1.length - 1) {
+                class1 = p1[p1.length - 1].getComponentType();
             } else {
-                if(count != p.length) {
-                    // TODO: Fix this with varags
-                    throw new RuntimeException("Parameter list hold a different number of arguments.");
+                class1 = p1[i];
+            }
+
+            if(i >= p2.length - 1) {
+                class2 = p2[p2.length - 1].getComponentType();
+            } else {
+                class2 = p2[i];
+            }
+
+            if(index == -1) {
+                index = mostSpecificClass(class1, class2);
+            } else {
+                if(index != mostSpecificClass(class1, class2)) {
+                    return -1;
                 }
             }
         }
 
-        for(int i = 0; i < params.size(); i++) {
+        return index;
+    }
+
+    public static int resolveFunctionByArguments(Class[][] parameters, Class[] args) {
+        Vector<Integer> options = new Vector<Integer>();
+
+        int i = 0;
+        for(Class[] expected : parameters) {
+            if(typesMatch(expected, args)) {
+                options.add(i);
+            }
+
+            i++;
+        }
+
+
+
+        int index = -1;
+        for(i = 0; i < options.size(); i++) {
             if(i == 0) {
                 index = 0;
             } else {
-                index = mostSpecificParameters(params.get(index), params.get(i));
+                int result = mostSpecificParametersFixedArgs(
+                    parameters[options.get(index)],
+                    parameters[options.get(i)]
+                );
 
-                if(index == -1) {
+                if(result == 0) {
+                    index = index;
+                } else if(result == 1) {
+                    index = i;
+                } else {
+                    index = -1;
                     break;
                 }
             }
         }
 
-        return index;
+        if(index == -1) {
+            return -1;
+        } else {
+            return options.get(index);
+        }
     }
 
-    public static java.lang.reflect.Method getMethod(Class klass, String name, boolean isStatic, Class[] args) {
-        Vector<Class[]> options = new Vector<Class[]>();
-        Vector<java.lang.reflect.Method> methods = new Vector<java.lang.reflect.Method>();
+    public static int resolveFunctionByAutoboxing(Class[][] parameters, Class[] args) {
+        // TODO: Implement This
+        // TODO: I may want to implement this with my type propogation algorithm...
+        return -1;
+    }
 
-        for(java.lang.reflect.Method m : klass.getMethods()) {
-            if(java.lang.reflect.Modifier.isStatic(m.getModifiers()) != isStatic) {
-                continue;
+    // Assumes the last parameter in the parameter list is an array that represent that type of the
+    // variable argument array.
+    public static int resolveFunctionByVarArgs(Class[][] parameters, Class[] args) {
+        Vector<Integer> options = new Vector<Integer>();
+
+        int i = 0;
+        for(Class[] expected : parameters) {
+            boolean match = true;
+
+            for(int j = 0; j < args.length; j++) {
+                Class arg = null;
+                Class e = null;
+
+                arg = args[j];
+                if(j >= expected.length - 1) {
+                    e = expected[expected.length - 1].getComponentType();
+                } else {
+                    e = expected[j];
+                }
+
+                // TODO: isAssignableFrom does not handle boxing and unboxing
+                if(e.isAssignableFrom(arg)) {
+                    match = match && true;
+                } else {
+                    match = false;
+                }
             }
 
-            if(!java.lang.reflect.Modifier.isPublic(m.getModifiers())) {
-                continue;
+            if(match) {
+                options.add(i);
             }
 
-            if(m.getName().equals(name)) {
-                Class[] expected = m.getParameterTypes();
+            i++;
+        }
 
-                if(typesMatch(expected, args)) {
-                    methods.add(m);
-                    options.add(expected);
+
+
+        int index = -1;
+        for(i = 0; i < options.size(); i++) {
+            if(i == 0) {
+                index = 0;
+            } else {
+                int result = mostSpecificParametersVarArgs(
+                    parameters[options.get(index)],
+                    parameters[options.get(i)]
+                );
+
+                if(result == 0) {
+                    index = index;
+                } else if(result == 1) {
+                    index = i;
+                } else {
+                    index = -1;
+                    break;
                 }
             }
         }
 
-        int index = mostSpecificParameters(options);
-
         if(index == -1) {
-            return null;
+            return -1;
         } else {
-            return methods.get(index);
+            return options.get(index);
         }
     }
 
-    public static java.lang.reflect.Constructor getConstructor(Class klass, Class[] args) {
-        Vector<Class[]> options = new Vector<Class[]>();
-        Vector<java.lang.reflect.Constructor> ctors = new Vector<java.lang.reflect.Constructor>();
+    public static Class[][] convertMethodsToParameterLists(Method[] methods) {
+        Class[][] classes = new Class[methods.length][];
 
-        for(java.lang.reflect.Constructor c : klass.getConstructors()) {
-            if(!java.lang.reflect.Modifier.isPublic(c.getModifiers())) {
+        for(int i = 0; i < methods.length; i++) {
+            classes[i] = methods[i].getParameterTypes();
+        }
+
+        return classes;
+    }
+
+    public static Class[][] convertConstructorsToParameterLists(Constructor[] constructors) {
+        Class[][] classes = new Class[constructors.length][];
+
+        for(int i = 0; i < constructors.length; i++) {
+            classes[i] = constructors[i].getParameterTypes();
+        }
+
+        return classes;
+    }
+
+    public static Method resolveMethod(Class klass, String name, boolean isStatic, Class[] args) {
+        Vector<Method> methods = new Vector<Method>();
+
+        for(Method m : klass.getMethods()) {
+            if(Modifier.isStatic(m.getModifiers()) != isStatic) {
                 continue;
             }
 
-            Class[] expected = c.getParameterTypes();
+            if(!Modifier.isPublic(m.getModifiers())) {
+                continue;
+            }
 
-            if(typesMatch(expected, args)) {
-                ctors.add(c);
-                options.add(expected);
+            if(m.getName().equals(name)) {
+                methods.add(m);
             }
         }
 
-        int index = mostSpecificParameters(options);
+        int index = -1;
 
-        if(index == -1) {
-            return null;
-        } else {
-            return ctors.get(index);
+        // Phase 1
+        index = resolveFunctionByArguments(convertMethodsToParameterLists(methods.toArray(new Method[0])), args);
+        if(index != -1) {
+            return methods.get(index);
         }
+
+        // Phase 2
+        // TODO: Autoboxing
+
+        // Phase 3
+        Vector<Method> varArgsMethods = new Vector<Method>();
+        for(Method method : methods) {
+            if(method.isVarArgs()) {
+                varArgsMethods.add(method);
+            }
+        }
+
+        index = resolveFunctionByArguments(convertMethodsToParameterLists(varArgsMethods.toArray(new Method[0])), args);
+        if(index != -1) {
+            return varArgsMethods.get(index);
+        }
+
+        return null;
+    }
+
+    public static Constructor resolveConstructor(Class klass, Class[] args) {
+        Vector<Constructor> constructors = new Vector<Constructor>();
+
+        for(Constructor c : klass.getConstructors()) {
+            if(!Modifier.isPublic(c.getModifiers())) {
+                continue;
+            }
+
+            constructors.add(c);
+        }
+
+        int index = -1;
+
+        // Phase 1
+        index = resolveFunctionByArguments(convertConstructorsToParameterLists(constructors.toArray(new Constructor[0])), args);
+        if(index != -1) {
+            return constructors.get(index);
+        }
+
+        // Phase 2
+        // TODO: Autoboxing
+
+        // Phase 3
+        Vector<Constructor> varArgsConstructors = new Vector<Constructor>();
+        for(Constructor c : constructors) {
+            if(c.isVarArgs()) {
+                varArgsConstructors.add(c);
+            }
+        }
+
+        index = resolveFunctionByArguments(convertConstructorsToParameterLists(varArgsConstructors.toArray(new Constructor[0])), args);
+        if(index != -1) {
+            return varArgsConstructors.get(index);
+        }
+
+        return null;
     }
 
     public void emit(CompilationContext context) {
@@ -266,7 +418,7 @@ public class Invoke implements Expression {
                     // TODO: Should I support type overloading?
 
                     if(Function.class.isAssignableFrom(klass)) {
-                        java.lang.reflect.Method method = Function.methodHandle(klass);
+                        Method method = Function.methodHandle(klass);
 
                         Vector<Class> types = compileArguments(arguments, context);
 
@@ -283,7 +435,7 @@ public class Invoke implements Expression {
                             }
                         }
 
-                        generator.invokeStatic(Type.getType(klass), Method.getMethod(method));
+                        generator.invokeStatic(Type.getType(klass), org.objectweb.asm.commons.Method.getMethod(method));
 
                         for(Expression e : arguments) {
                             frame.operandStack.pop();
@@ -301,12 +453,12 @@ public class Invoke implements Expression {
 
                         Vector<Class> types = compileArguments(arguments, context);
 
-                        java.lang.reflect.Constructor constructor = getConstructor(klass, types.toArray(new Class[0]));
+                        Constructor constructor = resolveConstructor(klass, types.toArray(new Class[0]));
                         if(constructor == null) {
                             throw new RuntimeException("Could not find constructor");
                         }
 
-                        generator.invokeConstructor(Type.getType(klass), Method.getMethod(constructor));
+                        generator.invokeConstructor(Type.getType(klass), org.objectweb.asm.commons.Method.getMethod(constructor));
 
                         for(Expression e : arguments) {
                             frame.operandStack.pop();
@@ -322,13 +474,13 @@ public class Invoke implements Expression {
                     Symbol symbol = path.get(0);
                     Vector<Class> types = compileArguments(arguments, context);
 
-                    java.lang.reflect.Method method = getMethod(klass, symbol.toString(), true, types.toArray(new Class[0]));
+                    Method method = resolveMethod(klass, symbol.toString(), true, types.toArray(new Class[0]));
 
                     if(method == null) {
                         throw new RuntimeException("Could not find function: " + symbol.toString());
                     }
 
-                    generator.invokeStatic(Type.getType(klass), Method.getMethod(method));
+                    generator.invokeStatic(Type.getType(klass), org.objectweb.asm.commons.Method.getMethod(method));
 
                     for(Expression e : arguments) {
                         frame.operandStack.pop();

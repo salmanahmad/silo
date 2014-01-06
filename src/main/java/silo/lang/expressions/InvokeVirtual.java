@@ -70,7 +70,7 @@ public class InvokeVirtual implements Expression {
 
         Vector<Class> types = Invoke.compileArguments(arguments, context);
 
-        java.lang.reflect.Method m = Invoke.getMethod(klass, method.toString(), false, types.toArray(new Class[0]));
+        java.lang.reflect.Method m = Invoke.resolveMethod(klass, method.toString(), false, types.toArray(new Class[0]));
 
         if(m == null) {
             throw new RuntimeException("Could not find function: " + method.toString() + " in class: " + klass);
