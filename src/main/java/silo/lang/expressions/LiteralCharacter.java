@@ -25,6 +25,10 @@ public class LiteralCharacter implements Expression {
         this.value = value.charValue();
     }
 
+    public Class type(CompilationContext context) {
+        return null;
+    }
+
     public void emit(CompilationContext context) {
         context.currentFrame().operandStack.push(Character.TYPE);
         context.currentFrame().generator.push(value);

@@ -95,6 +95,10 @@ public class FunctionExpression implements Expression, Opcodes {
         this.varargs = varargs;
     }
 
+    public Class type(CompilationContext context) {
+        return null;
+    }
+
     public void emit(CompilationContext context) {
 
         if(name == null) {

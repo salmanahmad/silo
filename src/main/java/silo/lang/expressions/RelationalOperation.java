@@ -75,6 +75,10 @@ public class RelationalOperation implements Expression {
         this.operation = operation;
     }
 
+    public Class type(CompilationContext context) {
+        return null;
+    }
+
     public void emit(CompilationContext context) {
         // TODO: Add support for non-primitive types.
 

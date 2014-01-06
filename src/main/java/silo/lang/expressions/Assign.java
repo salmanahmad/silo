@@ -243,6 +243,10 @@ public class Assign implements Expression {
         return;
     }
 
+    public Class type(CompilationContext context) {
+        return null;
+    }
+
     public void emit(CompilationContext context) {
         GeneratorAdapter generator = context.currentFrame().generator;
         RuntimeClassLoader loader = context.runtime.loader;

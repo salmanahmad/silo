@@ -28,6 +28,10 @@ public class Declare implements Expression {
         
     }
 
+    public Class type(CompilationContext context) {
+        return null;
+    }
+
     public void emit(CompilationContext context) {
         
     }

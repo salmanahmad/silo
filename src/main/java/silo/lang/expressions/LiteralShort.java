@@ -25,6 +25,10 @@ public class LiteralShort implements Expression {
         this.value = value.shortValue();
     }
 
+    public Class type(CompilationContext context) {
+        return null;
+    }
+
     public void emit(CompilationContext context) {
         context.currentFrame().operandStack.push(Short.TYPE);
         context.currentFrame().generator.push(value);

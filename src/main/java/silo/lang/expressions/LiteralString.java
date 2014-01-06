@@ -21,6 +21,10 @@ public class LiteralString implements Expression {
         this.string = string;
     }
 
+    public Class type(CompilationContext context) {
+        return null;
+    }
+
     public void emit(CompilationContext context) {
         context.currentFrame().operandStack.push(String.class);
         context.currentFrame().generator.push(string);

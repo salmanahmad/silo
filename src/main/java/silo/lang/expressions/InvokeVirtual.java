@@ -60,6 +60,10 @@ public class InvokeVirtual implements Expression {
         this.arguments = arguments;
     }
 
+    public Class type(CompilationContext context) {
+        return null;
+    }
+
     public void emit(CompilationContext context) {
         GeneratorAdapter generator = context.currentFrame().generator;
         RuntimeClassLoader loader = context.runtime.loader;

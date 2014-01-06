@@ -25,6 +25,10 @@ public class LiteralDouble implements Expression {
         this.value = value.doubleValue();
     }
 
+    public Class type(CompilationContext context) {
+        return null;
+    }
+
     public void emit(CompilationContext context) {
         context.currentFrame().operandStack.push(Double.TYPE);
         context.currentFrame().generator.push(value);

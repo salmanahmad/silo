@@ -50,6 +50,10 @@ public class Branch implements Expression {
         this.falseBranch = falseBranch;
     }
 
+    public Class type(CompilationContext context) {
+        return null;
+    }
+
     public void emit(CompilationContext context) {
         CompilationFrame frame = context.currentFrame();
         GeneratorAdapter generator = frame.generator;

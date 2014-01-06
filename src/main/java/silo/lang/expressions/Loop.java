@@ -36,6 +36,10 @@ public class Loop implements Expression {
         this.code = code;
     }
 
+    public Class type(CompilationContext context) {
+        return null;
+    }
+
     public void emit(CompilationContext context) {
         CompilationFrame frame = context.currentFrame();
         GeneratorAdapter generator = frame.generator;

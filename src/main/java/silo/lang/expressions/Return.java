@@ -48,6 +48,10 @@ public class Return implements Expression {
         );
     }
 
+    public Class type(CompilationContext context) {
+        return null;
+    }
+
     public void emit(CompilationContext context) {
         if(value != null) {
             value.emit(context);

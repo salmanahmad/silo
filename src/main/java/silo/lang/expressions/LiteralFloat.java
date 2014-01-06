@@ -25,6 +25,10 @@ public class LiteralFloat implements Expression {
         this.value = value.floatValue();
     }
 
+    public Class type(CompilationContext context) {
+        return null;
+    }
+
     public void emit(CompilationContext context) {
         context.currentFrame().operandStack.push(Float.TYPE);
         context.currentFrame().generator.push(value);

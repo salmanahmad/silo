@@ -42,6 +42,10 @@ public class LiteralArray implements Expression {
         this.dimensions = dimensions;
     }
 
+    public Class type(CompilationContext context) {
+        return null;
+    }
+
     public void emit(CompilationContext context) {
         GeneratorAdapter generator = context.currentFrame().generator;
         CompilationFrame frame = context.currentFrame();

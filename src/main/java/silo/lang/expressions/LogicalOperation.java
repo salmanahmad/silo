@@ -99,5 +99,9 @@ public class LogicalOperation implements Expression {
         throw new RuntimeException("Invalid logical operation");
     }
 
+    public Class type(CompilationContext context) {
+        return null;
+    }
+
     public void emit(CompilationContext context) {}
 }

@@ -25,6 +25,10 @@ public class LiteralBoolean implements Expression {
         this.value = value.booleanValue();
     }
 
+    public Class type(CompilationContext context) {
+        return null;
+    }
+
     public void emit(CompilationContext context) {
         context.currentFrame().operandStack.push(Boolean.TYPE);
         context.currentFrame().generator.push(value);

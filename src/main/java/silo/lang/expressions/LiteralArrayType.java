@@ -31,6 +31,10 @@ public class LiteralArrayType implements Expression {
         this.node = node;
     }
 
+    public Class type(CompilationContext context) {
+        return null;
+    }
+
     public void emit(CompilationContext context) {
         GeneratorAdapter generator = context.currentFrame().generator;
         CompilationFrame frame = context.currentFrame();

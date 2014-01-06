@@ -98,6 +98,10 @@ public class MathOperation implements Expression {
         return null;
     }
 
+    public Class type(CompilationContext context) {
+        return null;
+    }
+
     public void emit(CompilationContext context) {
         Class operand1 = null;
         Class operand2 = null;

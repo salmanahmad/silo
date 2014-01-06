@@ -34,6 +34,10 @@ public class Access implements Expression {
     }
 
     public static void resolveSymbol(Symbol symbol, CompilationContext context) {
+        resolveSymbol(symbol, context, true);
+    }
+
+    private static void resolveSymbol(Symbol symbol, CompilationContext context, boolean shouldEmit) {
         CompilationFrame frame = context.currentFrame();
         GeneratorAdapter generator = frame.generator;
 
@@ -41,7 +45,10 @@ public class Access implements Expression {
             int local = frame.locals.get(symbol).intValue();
             Class scope = frame.localTypes.get(symbol);
 
-            generator.visitVarInsn(Type.getType(scope).getOpcode(Opcodes.ILOAD), local);
+            if(shouldEmit) {
+                generator.visitVarInsn(Type.getType(scope).getOpcode(Opcodes.ILOAD), local);
+            }
+
             frame.operandStack.push(scope);
         } else {
             // TODO: Attempt to find Class reference by this name and return it
@@ -49,7 +56,24 @@ public class Access implements Expression {
         }
     }
 
+    public Class type(CompilationContext context) {
+        CompilationFrame frame = context.currentFrame();
+        int size = frame.operandStack.size();
+
+        emit(context, false);
+
+        if(frame.operandStack.size() - size != 1) {
+            throw new RuntimeException("Error!");
+        }
+
+        return frame.operandStack.pop();
+    }
+
     public void emit(CompilationContext context) {
+        emit(context, true);
+    }
+
+    private void emit(CompilationContext context, boolean shouldEmit) {
         GeneratorAdapter generator = context.currentFrame().generator;
         RuntimeClassLoader loader = context.runtime.loader;
         CompilationFrame frame = context.currentFrame();
@@ -62,7 +86,7 @@ public class Access implements Expression {
 
         if(value instanceof Symbol) {
             // Local variable or class reference...
-            resolveSymbol((Symbol)value, context);
+            resolveSymbol((Symbol)value, context, shouldEmit);
         } else if(value instanceof Node) {
             Node node = (Node)value;
 
@@ -89,7 +113,12 @@ public class Access implements Expression {
                     path.add((Symbol)node.getSecondChild());
 
                     Expression expression = Compiler.buildExpression(node.getFirstChild());
-                    expression.emit(context);
+
+                    if(shouldEmit) {
+                        expression.emit(context);
+                    } else {
+                        frame.operandStack.push(expression.type(context));
+                    }
                 } else {
                     Vector result = Compiler.resolveIdentifierPath(path, context);
 
@@ -109,7 +138,11 @@ public class Access implements Expression {
 
                         try {
                             Field field = scope.getField(symbol.toString());
-                            generator.getStatic(Type.getType(scope), field.getName(), Type.getType(field.getType()));
+
+                            if(shouldEmit) {
+                                generator.getStatic(Type.getType(scope), field.getName(), Type.getType(field.getType()));
+                            }
+
                             frame.operandStack.push(field.getType());
                         } catch(NoSuchFieldException e) {
                             throw new RuntimeException("Could not find field: " + symbol);
@@ -122,7 +155,12 @@ public class Access implements Expression {
                 path.add((Symbol)node.getSecondChild());
 
                 Expression expression = Compiler.buildExpression(node.getFirstChild());
-                expression.emit(context);
+
+                if(shouldEmit) {
+                    expression.emit(context);
+                } else {
+                    frame.operandStack.push(expression.type(context));
+                }
             }
 
             for(Symbol symbol : path) {
@@ -130,7 +168,10 @@ public class Access implements Expression {
                     Class operand = frame.operandStack.pop();
                     Field field = operand.getField(symbol.toString());
 
-                    generator.getField(Type.getType(operand), field.getName(), Type.getType(field.getType()));
+                    if(shouldEmit) {
+                        generator.getField(Type.getType(operand), field.getName(), Type.getType(field.getType()));
+                    }
+
                     frame.operandStack.push(field.getType());
                 } catch(NoSuchFieldException e) {
                     throw new RuntimeException("No such field was found: " + symbol.toString());

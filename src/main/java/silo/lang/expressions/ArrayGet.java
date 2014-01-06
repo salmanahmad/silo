@@ -39,6 +39,10 @@ public class ArrayGet implements Expression {
         this.index = index;
     }
 
+    public Class type(CompilationContext context) {
+        return null;
+    }
+
     public void emit(CompilationContext context) {
         CompilationFrame frame = context.currentFrame();
         GeneratorAdapter generator = frame.generator;

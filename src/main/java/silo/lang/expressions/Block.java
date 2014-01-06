@@ -36,6 +36,10 @@ public class Block implements Expression {
         this.expressions = expressions;
     }
 
+    public Class type(CompilationContext context) {
+        return null;
+    }
+
     public void emit(CompilationContext context) {
         CompilationFrame frame = context.currentFrame();
 
