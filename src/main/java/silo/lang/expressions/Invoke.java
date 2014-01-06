@@ -357,6 +357,59 @@ public class Invoke implements Expression {
         return types;
     }
 
+    public static void compileVariableArguments(Class[] params, Vector<Expression> arguments, CompilationContext context, boolean shouldEmit) {
+        CompilationFrame frame = context.currentFrame();
+        GeneratorAdapter generator = context.currentFrame().generator;
+
+        int count = arguments.size() - (params.length - 1);
+
+        for(int i = 0; i < arguments.size() - count; i++) {
+            Expression e = arguments.get(i);
+
+            if(shouldEmit) {
+                e.emit(context);
+            } else {
+                frame.operandStack.push(e.type(context));
+            }
+        }
+
+        //new Array...
+        Class arrayClass = params[params.length - 1];
+
+        if(shouldEmit) {
+            generator.push(count);
+            generator.newArray(Type.getType(arrayClass.getComponentType()));
+        }
+
+        frame.operandStack.push(arrayClass);
+
+        int index = 0;
+        for(int i = arguments.size() - count; i < arguments.size(); i++) {
+            if(shouldEmit) {
+                generator.dup();
+                generator.push(index);
+            }
+
+            frame.operandStack.push(arrayClass);
+            frame.operandStack.push(Integer.TYPE);
+
+            Expression e = arguments.get(i);
+
+            if(shouldEmit) {
+                e.emit(context);
+                generator.arrayStore(Type.getType(arrayClass.getComponentType()));
+            } else {
+                frame.operandStack.push(e.type(context));
+            }
+
+            frame.operandStack.pop();
+            frame.operandStack.pop();
+            frame.operandStack.pop();
+
+            index++;
+        }
+    }
+
     public static Vector<Class> argumentTypes(Vector<Expression> arguments, CompilationContext context) {
         Vector<Class> types = new Vector<Class>();
 
@@ -365,6 +418,21 @@ public class Invoke implements Expression {
         }
 
         return types;
+    }
+
+    public static boolean shouldUseVarArgs(Class[] params, Class[] args) {
+        boolean shouldVarArgs = false;
+
+        if(args.length > params.length) {
+            shouldVarArgs = true;
+        } else if(args.length == params.length) {
+            shouldVarArgs = params[params.length - 1].equals(args[params.length - 1]);
+            shouldVarArgs = !shouldVarArgs;
+        } else {
+            throw new RuntimeException("Error!");
+        }
+
+        return shouldVarArgs;
     }
 
     public Class type(CompilationContext context) {
@@ -478,64 +546,11 @@ public class Invoke implements Expression {
                         boolean shouldVarArgs = false;
 
                         if(constructor.isVarArgs()) {
-                            if(types.size() > params.length) {
-                                shouldVarArgs = true;
-                            } else if(types.size() == params.length) {
-                                shouldVarArgs = params[params.length - 1].equals(types.get(params.length - 1));
-                                shouldVarArgs = !shouldVarArgs;
-                            } else {
-                                throw new RuntimeException("Error!");
-                            }
+                            shouldVarArgs = shouldUseVarArgs(params, types.toArray(new Class[0]));
                         }
 
                         if(shouldVarArgs) {
-                            int count = arguments.size() - (params.length - 1);
-
-                            for(int i = 0; i < arguments.size() - count; i++) {
-                                Expression e = arguments.get(i);
-
-                                if(shouldEmit) {
-                                    e.emit(context);
-                                } else {
-                                    frame.operandStack.push(e.type(context));
-                                }
-                            }
-
-                            //new Array...
-                            Class arrayClass = params[params.length - 1];
-
-                            if(shouldEmit) {
-                                generator.push(count);
-                                generator.newArray(Type.getType(arrayClass.getComponentType()));
-                            }
-
-                            frame.operandStack.push(arrayClass);
-
-                            int index = 0;
-                            for(int i = arguments.size() - count; i < arguments.size(); i++) {
-                                if(shouldEmit) {
-                                    generator.dup();
-                                    generator.push(index);
-                                }
-
-                                frame.operandStack.push(arrayClass);
-                                frame.operandStack.push(Integer.TYPE);
-
-                                Expression e = arguments.get(i);
-
-                                if(shouldEmit) {
-                                    e.emit(context);
-                                    generator.arrayStore(Type.getType(arrayClass.getComponentType()));
-                                } else {
-                                    frame.operandStack.push(e.type(context));
-                                }
-
-                                frame.operandStack.pop();
-                                frame.operandStack.pop();
-                                frame.operandStack.pop();
-
-                                index++;
-                            }
+                            compileVariableArguments(params, arguments, context, shouldEmit);
                         } else {
                             compileArguments(arguments, context, shouldEmit);
                         }
