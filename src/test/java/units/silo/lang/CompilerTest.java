@@ -315,4 +315,21 @@ public class CompilerTest {
         o = runtime.eval(classes.get(0));
         Assert.assertEquals(Arrays.asList("Hello", null, "Hi!", null, "Welcome!"), o);
     }
+
+    @Test
+    public void testVarArgVirtual() {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/examples/varargs-virtual.silo");
+
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+        Object o = null;
+
+        o = runtime.eval(classes.get(0));
+
+        StringBuilder sb = new StringBuilder();
+        Formatter formatter = new Formatter(sb, Locale.US);
+        formatter.format("%4$2s %3$2s %2$2s %1$2s", "a", "b", "c", "d");
+
+        Assert.assertEquals(sb.toString(), o);
+    }
 }

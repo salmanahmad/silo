@@ -91,7 +91,7 @@ public class InvokeVirtual implements Expression {
 
         Class klass = frame.operandStack.peek();
 
-        Vector<Class> types = Invoke.compileArguments(arguments, context, shouldEmit);
+        Vector<Class> types = Invoke.argumentTypes(arguments, context);
 
         java.lang.reflect.Method m = Invoke.resolveMethod(klass, method.toString(), false, types.toArray(new Class[0]));
 
@@ -99,12 +99,25 @@ public class InvokeVirtual implements Expression {
             throw new RuntimeException("Could not find function: " + method.toString() + " in class: " + klass);
         }
 
+        Class[] params = m.getParameterTypes();
+        boolean shouldVarArgs = false;
+
+        if(m.isVarArgs()) {
+            shouldVarArgs = Invoke.shouldUseVarArgs(params, types.toArray(new Class[0]));
+        }
+
+        if(shouldVarArgs) {
+            Invoke.compileVariableArguments(params, arguments, context, shouldEmit);
+        } else {
+            Invoke.compileArguments(arguments, context, shouldEmit);
+        }
+
         if(shouldEmit) {
             generator.invokeVirtual(Type.getType(klass), Method.getMethod(m));
         }
 
         // Pop the arguments
-        for(Expression e : arguments) {
+        for(int i = 0; i < params.length; i++) {
             frame.operandStack.pop();
         }
 

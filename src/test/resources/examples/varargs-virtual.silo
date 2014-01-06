@@ -1,0 +1,13 @@
+
+function(
+    name(test)
+    outputs(String)
+    do(
+        sb : StringBuilder = StringBuilder()
+        formatter : Formatter = Formatter(sb, Locale.US)
+        formatter#format("%4$2s %3$2s %2$2s %1$2s", "a", "b", "c", "d")
+
+        sb#toString()
+    )
+)
+
