@@ -37,7 +37,13 @@ public class Block implements Expression {
     }
 
     public Class type(CompilationContext context) {
-        return null;
+        if(expressions != null && expressions.size() > 0) {
+            Expression e = expressions.get(expressions.size() - 1);
+            return e.type(context);
+        } else {
+            // TODO: Should be var
+            return Object.class;
+        }
     }
 
     public void emit(CompilationContext context) {

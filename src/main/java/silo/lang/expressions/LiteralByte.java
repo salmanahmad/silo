@@ -26,7 +26,7 @@ public class LiteralByte implements Expression {
     }
 
     public Class type(CompilationContext context) {
-        return null;
+        return Byte.TYPE;
     }
 
     public void emit(CompilationContext context) {

@@ -26,7 +26,7 @@ public class LiteralCharacter implements Expression {
     }
 
     public Class type(CompilationContext context) {
-        return null;
+        return Character.TYPE;
     }
 
     public void emit(CompilationContext context) {

@@ -100,7 +100,7 @@ public class LogicalOperation implements Expression {
     }
 
     public Class type(CompilationContext context) {
-        return null;
+        throw new RuntimeException("LogicalOperation should not ever be called...");
     }
 
     public void emit(CompilationContext context) {}

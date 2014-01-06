@@ -61,18 +61,37 @@ public class InvokeVirtual implements Expression {
     }
 
     public Class type(CompilationContext context) {
-        return null;
+        CompilationFrame frame = context.currentFrame();
+        int size = frame.operandStack.size();
+
+        emit(context, false);
+
+        if(frame.operandStack.size() - size != 1) {
+            throw new RuntimeException("Error!");
+        }
+
+        return frame.operandStack.pop();
     }
 
     public void emit(CompilationContext context) {
+        emit(context, true);
+    }
+
+    private void emit(CompilationContext context, boolean shouldEmit) {
         GeneratorAdapter generator = context.currentFrame().generator;
         RuntimeClassLoader loader = context.runtime.loader;
         CompilationFrame frame = context.currentFrame();
 
-        receiver.emit(context);
+
+        if(shouldEmit) {
+            receiver.emit(context);
+        } else {
+            frame.operandStack.push(receiver.type(context));
+        }
+
         Class klass = frame.operandStack.peek();
 
-        Vector<Class> types = Invoke.compileArguments(arguments, context);
+        Vector<Class> types = Invoke.compileArguments(arguments, context, shouldEmit);
 
         java.lang.reflect.Method m = Invoke.resolveMethod(klass, method.toString(), false, types.toArray(new Class[0]));
 
@@ -80,7 +99,9 @@ public class InvokeVirtual implements Expression {
             throw new RuntimeException("Could not find function: " + method.toString() + " in class: " + klass);
         }
 
-        generator.invokeVirtual(Type.getType(klass), Method.getMethod(m));
+        if(shouldEmit) {
+            generator.invokeVirtual(Type.getType(klass), Method.getMethod(m));
+        }
 
         // Pop the arguments
         for(Expression e : arguments) {
@@ -91,8 +112,13 @@ public class InvokeVirtual implements Expression {
         frame.operandStack.pop();
         
         // Add the return type
-        if(!m.getReturnType().equals(Void.TYPE)) {
-            // TODO: Return null if it is a void return.
+        if(m.getReturnType().equals(Void.TYPE)) {
+            if(shouldEmit) {
+                generator.push((String)null);
+            }
+
+            frame.operandStack.push(Object.class);
+        } else {
             frame.operandStack.push(m.getReturnType());
         }
     }

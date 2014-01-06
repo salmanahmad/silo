@@ -32,7 +32,7 @@ public class LiteralArrayType implements Expression {
     }
 
     public Class type(CompilationContext context) {
-        return null;
+        return Class.class;
     }
 
     public void emit(CompilationContext context) {

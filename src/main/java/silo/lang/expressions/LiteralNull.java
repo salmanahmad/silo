@@ -19,7 +19,7 @@ public class LiteralNull implements Expression {
     }
 
     public Class type(CompilationContext context) {
-        return null;
+        return Object.class;
     }
 
     public void emit(CompilationContext context) {

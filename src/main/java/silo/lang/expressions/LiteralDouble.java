@@ -26,7 +26,7 @@ public class LiteralDouble implements Expression {
     }
 
     public Class type(CompilationContext context) {
-        return null;
+        return Double.TYPE;
     }
 
     public void emit(CompilationContext context) {

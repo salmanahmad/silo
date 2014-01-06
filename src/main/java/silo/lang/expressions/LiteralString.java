@@ -22,7 +22,7 @@ public class LiteralString implements Expression {
     }
 
     public Class type(CompilationContext context) {
-        return null;
+        return String.class;
     }
 
     public void emit(CompilationContext context) {

@@ -26,7 +26,7 @@ public class LiteralShort implements Expression {
     }
 
     public Class type(CompilationContext context) {
-        return null;
+        return Short.TYPE;
     }
 
     public void emit(CompilationContext context) {

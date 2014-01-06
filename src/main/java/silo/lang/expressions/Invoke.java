@@ -339,7 +339,7 @@ public class Invoke implements Expression {
         return compileArguments(arguments, context, true);
     }
 
-    private static Vector<Class> compileArguments(Vector<Expression> arguments, CompilationContext context, boolean shouldEmit) {
+    public static Vector<Class> compileArguments(Vector<Expression> arguments, CompilationContext context, boolean shouldEmit) {
         CompilationFrame frame = context.currentFrame();
 
         Vector<Class> types = new Vector<Class>();

@@ -37,7 +37,8 @@ public class Loop implements Expression {
     }
 
     public Class type(CompilationContext context) {
-        return null;
+        // TODO: This should be a Var
+        return Object.class;
     }
 
     public void emit(CompilationContext context) {

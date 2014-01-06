@@ -26,7 +26,7 @@ public class LiteralLong implements Expression {
     }
 
     public Class type(CompilationContext context) {
-        return null;
+        return Long.TYPE;
     }
 
     public void emit(CompilationContext context) {

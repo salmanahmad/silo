@@ -29,10 +29,10 @@ public class Declare implements Expression {
     }
 
     public Class type(CompilationContext context) {
-        return null;
+        throw new RuntimeException("Unimplemented");
     }
 
     public void emit(CompilationContext context) {
-        
+        throw new RuntimeException("Unimplemented");
     }
 }

@@ -26,7 +26,7 @@ public class LiteralFloat implements Expression {
     }
 
     public Class type(CompilationContext context) {
-        return null;
+        return Float.TYPE;
     }
 
     public void emit(CompilationContext context) {

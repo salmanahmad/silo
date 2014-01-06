@@ -51,7 +51,25 @@ public class Branch implements Expression {
     }
 
     public Class type(CompilationContext context) {
-        return null;
+        Class trueClass = null;
+        Class falseClass = null;
+
+        if(trueBranch != null) {
+            trueClass = trueBranch.type(context);
+        }
+
+        if(falseBranch != null) {
+            falseClass = falseBranch.type(context);
+        }
+
+        if(trueBranch != null && falseBranch != null) {
+            if(trueClass.equals(falseClass)) {
+                return trueClass;
+            }
+        }
+
+        // TODO: This should be Var
+        return Object.class;
     }
 
     public void emit(CompilationContext context) {

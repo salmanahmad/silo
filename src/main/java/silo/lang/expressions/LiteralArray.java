@@ -43,10 +43,23 @@ public class LiteralArray implements Expression {
     }
 
     public Class type(CompilationContext context) {
-        return null;
+        CompilationFrame frame = context.currentFrame();
+        int size = frame.operandStack.size();
+
+        emit(context, false);
+
+        if(frame.operandStack.size() - size != 1) {
+            throw new RuntimeException("Error!");
+        }
+
+        return frame.operandStack.pop();
     }
 
     public void emit(CompilationContext context) {
+        emit(context, true);
+    }
+
+    private void emit(CompilationContext context, boolean shouldEmit) {
         GeneratorAdapter generator = context.currentFrame().generator;
         CompilationFrame frame = context.currentFrame();
 
@@ -62,7 +75,12 @@ public class LiteralArray implements Expression {
         }
 
         for(Expression expression : dimensions) {
-            expression.emit(context);
+            if(shouldEmit) {
+                expression.emit(context);
+            } else {
+                frame.operandStack.push(expression.type(context));
+            }
+
             Class operand = frame.operandStack.peek();
             if(!operand.equals(Integer.TYPE)) {
                 // TODO: Support vars here as well as Integer (the boxed version of ints)
@@ -71,7 +89,10 @@ public class LiteralArray implements Expression {
         }
 
         for(Expression expression : dimensions) {
-            generator.newArray(Type.getType(klass));
+            if(shouldEmit) {
+                generator.newArray(Type.getType(klass));
+            }
+
             frame.operandStack.pop();
 
             klass = Array.newInstance(klass, 0).getClass();

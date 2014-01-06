@@ -99,7 +99,7 @@ public class MathOperation implements Expression {
     }
 
     public Class type(CompilationContext context) {
-        return null;
+        return implicitConversion(this.e1.type(context), this.e2.type(context));
     }
 
     public void emit(CompilationContext context) {

@@ -26,7 +26,7 @@ public class LiteralInteger implements Expression {
     }
 
     public Class type(CompilationContext context) {
-        return null;
+        return Integer.TYPE;
     }
 
     public void emit(CompilationContext context) {

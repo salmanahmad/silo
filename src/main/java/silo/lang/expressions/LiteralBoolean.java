@@ -26,7 +26,7 @@ public class LiteralBoolean implements Expression {
     }
 
     public Class type(CompilationContext context) {
-        return null;
+        return Boolean.TYPE;
     }
 
     public void emit(CompilationContext context) {

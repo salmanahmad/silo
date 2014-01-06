@@ -96,7 +96,9 @@ public class FunctionExpression implements Expression, Opcodes {
     }
 
     public Class type(CompilationContext context) {
-        return null;
+        // TODO: Return function objects and method handles.
+        // TODO: I think that I need to do forward declaration to get this to work... right?
+        return Object.class;
     }
 
     public void emit(CompilationContext context) {

@@ -49,7 +49,8 @@ public class Return implements Expression {
     }
 
     public Class type(CompilationContext context) {
-        return null;
+        // TODO: This should be var.
+        return Object.class;
     }
 
     public void emit(CompilationContext context) {
