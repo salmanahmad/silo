@@ -103,42 +103,23 @@ public class MathOperation implements Expression {
     }
 
     public void emit(CompilationContext context) {
-        Class operand1 = null;
-        Class operand2 = null;
+        // TODO: Autoboxing and Var support...
+
+        Class outputType = type(context);
+        Class operand = null;
 
         this.e1.emit(context);
-        operand1 = context.currentFrame().operandStack.peek();
+        operand = context.currentFrame().operandStack.peek();
+        context.currentFrame().generator.cast(Type.getType(operand), Type.getType(outputType));
 
         this.e2.emit(context);
-        operand2 = context.currentFrame().operandStack.peek();
-
-        Class outputType = implicitConversion(operand1, operand2);
-        if(outputType == null) {
-            throw new RuntimeException("Invalid math operation. Cannot perform operation on a " + operand1 + " and a " + operand2);
-        }
-
-        if(!operand1.equals(operand2)) {
-            // TODO: Optimize this. The issue I have right now is that "emit" adds all of the instructions
-            // to a MethodVisitor rather than returning an InsnList so I cannot tell what the type is ahead of time.
-            // Once I figure out how to unify those APIs I should optimze this. Or, replace them with a bunch of Static calls
-            // to runtime methods that handle the math for me if unifying the APIs ais not worth it...
-
-            // TODO: Only do this swapping if operand1 needs to be converted. If only operand2 needs to be convert you can get by with just appending an instructions.
-
-            // TODO: The other issue that I should keep in mind here is that returning an InsnList may mess up if one of the operators
-            // is a function call that needs to be weaved. That would screw a bunch of stuff up because the frame.operandStack no longer
-            // matches reality. And I cannot re-run the compilation because I may be emitting custom classes.
-            context.currentFrame().generator.cast(Type.getType(operand2), Type.getType(outputType));
-            context.currentFrame().generator.swap(Type.getType(operand1), Type.getType(outputType));
-            context.currentFrame().generator.cast(Type.getType(operand1), Type.getType(outputType));
-            context.currentFrame().generator.swap(Type.getType(outputType), Type.getType(outputType));
-        }
+        operand = context.currentFrame().operandStack.peek();
+        context.currentFrame().generator.cast(Type.getType(operand), Type.getType(outputType));
 
         context.currentFrame().generator.math(this.operation, Type.getType(outputType));
 
         context.currentFrame().operandStack.pop();
         context.currentFrame().operandStack.pop();
-
         context.currentFrame().operandStack.push(outputType);
     }
 }

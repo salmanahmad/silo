@@ -88,6 +88,9 @@ public class CompilerTest {
 
         Object o = runtime.eval(classes.get(0));
         Assert.assertEquals(new Double(95.5), o);
+
+        o = runtime.eval(classes.get(1));
+        Assert.assertEquals(new Double(95.5), o);
     }
 
     @Test

@@ -7,3 +7,11 @@ function(
         5.5 + 90
     )
 )
+
+function(
+    name(test_math_2)
+    outputs(double)
+    do(
+        90 + 5.5
+    )
+)
