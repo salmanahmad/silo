@@ -31,19 +31,6 @@ public class Invoke implements Expression {
         this.node = node;
     }
 
-    public static Vector<Class> compileArguments(Vector<Expression> arguments, CompilationContext context) {
-        CompilationFrame frame = context.currentFrame();
-
-        Vector<Class> types = new Vector<Class>();
-
-        for(Expression e : arguments) {
-            e.emit(context);
-            types.add(frame.operandStack.peek());
-        }
-
-        return types;
-    }
-
     public static int mostSpecificClass(Class c1, Class c2) {
         if(c1.equals(c2)) {
             return -1;
@@ -348,11 +335,46 @@ public class Invoke implements Expression {
         return null;
     }
 
+    public static Vector<Class> compileArguments(Vector<Expression> arguments, CompilationContext context) {
+        return compileArguments(arguments, context, true);
+    }
+
+    private static Vector<Class> compileArguments(Vector<Expression> arguments, CompilationContext context, boolean shouldEmit) {
+        CompilationFrame frame = context.currentFrame();
+
+        Vector<Class> types = new Vector<Class>();
+
+        for(Expression e : arguments) {
+            if(shouldEmit) {
+                e.emit(context);
+            } else {
+                frame.operandStack.push(e.type(context));
+            }
+
+            types.add(frame.operandStack.peek());
+        }
+
+        return types;
+    }
+
     public Class type(CompilationContext context) {
-        return null;
+        CompilationFrame frame = context.currentFrame();
+        int size = frame.operandStack.size();
+
+        emit(context, false);
+
+        if(frame.operandStack.size() - size != 1) {
+            throw new RuntimeException("Error!");
+        }
+
+        return frame.operandStack.pop();
     }
 
     public void emit(CompilationContext context) {
+        emit(context, true);
+    }
+
+    private void emit(CompilationContext context, boolean shouldEmit) {
         GeneratorAdapter generator = context.currentFrame().generator;
         RuntimeClassLoader loader = context.runtime.loader;
         CompilationFrame frame = context.currentFrame();
@@ -413,7 +435,9 @@ public class Invoke implements Expression {
                             }
                         }
 
-                        generator.invokeStatic(Type.getType(klass), org.objectweb.asm.commons.Method.getMethod(method));
+                        if(shouldEmit) {
+                            generator.invokeStatic(Type.getType(klass), org.objectweb.asm.commons.Method.getMethod(method));
+                        }
 
                         for(Expression e : arguments) {
                             frame.operandStack.pop();
@@ -425,8 +449,11 @@ public class Invoke implements Expression {
                     } else {
                         // TODO: Add another "else if" clause that checks for a "record" or "type"
 
-                        generator.newInstance(Type.getType(klass));
-                        Compiler.dup(klass, generator);
+                        if(shouldEmit) {
+                            generator.newInstance(Type.getType(klass));
+                            Compiler.dup(klass, generator);
+                        }
+
                         frame.operandStack.push(klass);
 
                         Vector<Class> types = compileArguments(arguments, context);
@@ -436,7 +463,9 @@ public class Invoke implements Expression {
                             throw new RuntimeException("Could not find constructor");
                         }
 
-                        generator.invokeConstructor(Type.getType(klass), org.objectweb.asm.commons.Method.getMethod(constructor));
+                        if(shouldEmit) {
+                            generator.invokeConstructor(Type.getType(klass), org.objectweb.asm.commons.Method.getMethod(constructor));
+                        }
 
                         for(Expression e : arguments) {
                             frame.operandStack.pop();
@@ -458,7 +487,9 @@ public class Invoke implements Expression {
                         throw new RuntimeException("Could not find function: " + symbol.toString());
                     }
 
-                    generator.invokeStatic(Type.getType(klass), org.objectweb.asm.commons.Method.getMethod(method));
+                    if(shouldEmit) {
+                        generator.invokeStatic(Type.getType(klass), org.objectweb.asm.commons.Method.getMethod(method));
+                    }
 
                     for(Expression e : arguments) {
                         frame.operandStack.pop();
@@ -474,7 +505,11 @@ public class Invoke implements Expression {
 
 
         Expression expression = Compiler.buildExpression(label);
-        expression.emit(context);
+        if(shouldEmit) {
+            expression.emit(context);
+        } else {
+            frame.operandStack.push(expression.type(context));
+        }
 
         Class operand = frame.operandStack.peek();
         if(operand.isArray()) {
@@ -488,7 +523,9 @@ public class Invoke implements Expression {
                 throw new RuntimeException("An array lookup requires a single integer parameter. Was provided: " + classes.get(0));
             }
 
-            generator.arrayLoad(Type.getType(operand.getComponentType()));
+            if(shouldEmit) {
+                generator.arrayLoad(Type.getType(operand.getComponentType()));
+            }
 
             frame.operandStack.pop();
             frame.operandStack.pop();
