@@ -291,4 +291,16 @@ public class CompilerTest {
         o = runtime.eval(classes.get(0));
         Assert.assertEquals(Integer.MAX_VALUE - 5.0, o);
     }
+
+    @Test
+    public void testVarArgs() {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/examples/varargs.silo");
+
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+        Object o = null;
+
+        o = runtime.eval(classes.get(0));
+        Assert.assertEquals(new Node(null, "hello", "world", "this", "is", "fun"), o);
+    }
 }

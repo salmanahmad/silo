@@ -1,0 +1,8 @@
+
+function(
+    name(test)
+    outputs(silo.lang.Node)
+    do(
+        silo.lang.Node(null, "hello", "world", "this", "is", "fun");
+    )
+)

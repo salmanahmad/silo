@@ -63,7 +63,7 @@ public class Block implements Expression {
 
                 if(size > 1) {
                     // TODO - How do I handle multiple return values?
-                    throw new RuntimeException("The operand stack should not change more than one for nodes.");
+                    throw new RuntimeException("The operand stack should not change more than one for nodes. It changed by: " + size);
                 }
 
                 if(i < (expressions.size() - 1)) {

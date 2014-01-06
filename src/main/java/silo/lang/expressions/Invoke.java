@@ -327,7 +327,7 @@ public class Invoke implements Expression {
             }
         }
 
-        index = resolveFunctionByArguments(convertConstructorsToParameterLists(varArgsConstructors.toArray(new Constructor[0])), args);
+        index = resolveFunctionByVarArgs(convertConstructorsToParameterLists(varArgsConstructors.toArray(new Constructor[0])), args);
         if(index != -1) {
             return varArgsConstructors.get(index);
         }
@@ -352,6 +352,16 @@ public class Invoke implements Expression {
             }
 
             types.add(frame.operandStack.peek());
+        }
+
+        return types;
+    }
+
+    public static Vector<Class> argumentTypes(Vector<Expression> arguments, CompilationContext context) {
+        Vector<Class> types = new Vector<Class>();
+
+        for(Expression e : arguments) {
+            types.add(e.type(context));
         }
 
         return types;
@@ -420,7 +430,7 @@ public class Invoke implements Expression {
                     if(Function.class.isAssignableFrom(klass)) {
                         Method method = Function.methodHandle(klass);
 
-                        Vector<Class> types = compileArguments(arguments, context);
+                        Vector<Class> types = compileArguments(arguments, context, shouldEmit);
 
                         if(types.size() != method.getParameterTypes().length) {
                             throw new RuntimeException("Arity mismatch.");
@@ -455,20 +465,96 @@ public class Invoke implements Expression {
                         }
 
                         frame.operandStack.push(klass);
+                        frame.operandStack.push(klass);
 
-                        Vector<Class> types = compileArguments(arguments, context);
+                        Vector<Class> types = argumentTypes(arguments, context);
 
                         Constructor constructor = resolveConstructor(klass, types.toArray(new Class[0]));
                         if(constructor == null) {
                             throw new RuntimeException("Could not find constructor");
                         }
 
+                        Class[] params = constructor.getParameterTypes();
+                        boolean shouldVarArgs = false;
+
+                        if(constructor.isVarArgs()) {
+                            if(types.size() > params.length) {
+                                shouldVarArgs = true;
+                            } else if(types.size() == params.length) {
+                                shouldVarArgs = params[params.length - 1].equals(types.get(params.length - 1));
+                                shouldVarArgs = !shouldVarArgs;
+                            } else {
+                                throw new RuntimeException("Error!");
+                            }
+                        }
+
+                        if(shouldVarArgs) {
+                            int count = arguments.size() - (params.length - 1);
+
+                            for(int i = 0; i < arguments.size() - count; i++) {
+                                Expression e = arguments.get(i);
+
+                                if(shouldEmit) {
+                                    e.emit(context);
+                                } else {
+                                    frame.operandStack.push(e.type(context));
+                                }
+                            }
+
+                            //new Array...
+                            Class arrayClass = params[params.length - 1];
+
+                            if(shouldEmit) {
+                                generator.push(count);
+                                generator.newArray(Type.getType(arrayClass.getComponentType()));
+                            }
+
+                            frame.operandStack.push(arrayClass);
+
+                            int index = 0;
+                            for(int i = arguments.size() - count; i < arguments.size(); i++) {
+                                if(shouldEmit) {
+                                    generator.dup();
+                                    generator.push(index);
+                                }
+
+                                frame.operandStack.push(arrayClass);
+                                frame.operandStack.push(Integer.TYPE);
+
+                                Expression e = arguments.get(i);
+
+                                if(shouldEmit) {
+                                    e.emit(context);
+                                    generator.arrayStore(Type.getType(arrayClass.getComponentType()));
+                                } else {
+                                    frame.operandStack.push(e.type(context));
+                                }
+
+                                frame.operandStack.pop();
+                                frame.operandStack.pop();
+                                frame.operandStack.pop();
+
+                                index++;
+                            }
+                        } else {
+                            compileArguments(arguments, context, shouldEmit);
+                        }
+
                         if(shouldEmit) {
                             generator.invokeConstructor(Type.getType(klass), org.objectweb.asm.commons.Method.getMethod(constructor));
                         }
 
-                        for(Expression e : arguments) {
-                            frame.operandStack.pop();
+                        // Remove the class reference that was used to invoke the constructor
+                        frame.operandStack.pop();
+
+                        if(shouldVarArgs) {
+                            for(int i = 0; i < params.length; i++) {
+                                frame.operandStack.pop();
+                            }
+                        } else {
+                            for(Expression e : arguments) {
+                                frame.operandStack.pop();
+                            }
                         }
 
                         return;
@@ -513,7 +599,7 @@ public class Invoke implements Expression {
 
         Class operand = frame.operandStack.peek();
         if(operand.isArray()) {
-            Vector<Class> classes = compileArguments(arguments, context);
+            Vector<Class> classes = compileArguments(arguments, context, shouldEmit);
 
             if(classes.size() != 1) {
                 throw new RuntimeException("An array lookup requires a single parameter.");

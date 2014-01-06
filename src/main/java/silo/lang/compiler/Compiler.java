@@ -93,6 +93,11 @@ public class Compiler {
                 klass = resolveType(label, context);
             } catch(Exception e) {
                 klass = null;
+            } catch(NoClassDefFoundError e) {
+                // TODO: This sometimes can generator a NoClassDefFoundError that can NOT be caught.
+                // The reproduce this errors, compile a program that uses `Node(null, null)`. Keep the
+                // CompilationContext imports the same as the commit where this comment was introduced.
+                klass = null;
             }
 
             if(isMacro(klass)) {
