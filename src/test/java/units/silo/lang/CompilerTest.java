@@ -279,4 +279,16 @@ public class CompilerTest {
         o = runtime.eval(classes.get(1));
         Assert.assertEquals(new Integer(5), o);
     }
+
+    @Test
+    public void testTypePropogation() {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/examples/math-test-propogation.silo");
+
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+        Object o = null;
+
+        o = runtime.eval(classes.get(0));
+        Assert.assertEquals(Integer.MAX_VALUE - 5.0, o);
+    }
 }

@@ -1,0 +1,9 @@
+
+function(
+    name(test_math)
+    outputs(double)
+    do(
+        Integer.MAX_VALUE - 5.0
+    )
+)
+
