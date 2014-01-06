@@ -492,10 +492,11 @@ public class Invoke implements Expression {
                 if(path.size() == 0) {
                     // Native function or Constructor
 
-                    // TODO: Handle arity overloading - Method.html#isVarArgs()
-                    // TODO: Should I support type overloading?
-
                     if(Function.class.isAssignableFrom(klass)) {
+
+                        // TODO: Should I support arity overloading?
+                        // TODO: Should I support type overloading?
+
                         Method method = Function.methodHandle(klass);
 
                         Vector<Class> types = compileArguments(arguments, context, shouldEmit);
@@ -570,8 +571,6 @@ public class Invoke implements Expression {
                     }
                 } else if(path.size() == 1) {
                     // Java static method
-
-                    // TODO: Handle arity overloading - Method.html#isVarArgs()
 
                     Symbol symbol = path.get(0);
                     Vector<Class> types = argumentTypes(arguments, context);
