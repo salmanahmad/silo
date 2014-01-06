@@ -1,0 +1,8 @@
+
+function(
+    name(test)
+    outputs(List)
+    do(
+        Arrays.asList("Hello", null, "Hi!", null, "Welcome!")
+    )
+)

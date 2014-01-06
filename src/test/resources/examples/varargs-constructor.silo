@@ -6,3 +6,4 @@ function(
         silo.lang.Node(null, "hello", "world", "this", "is", "fun");
     )
 )
+

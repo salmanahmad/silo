@@ -293,14 +293,26 @@ public class CompilerTest {
     }
 
     @Test
-    public void testVarArgs() {
+    public void testVarArgConstructor() {
         Runtime runtime = new Runtime();
-        String source = Helper.readResource("/examples/varargs.silo");
+        String source = Helper.readResource("/examples/varargs-constructor.silo");
 
         Vector<Class> classes = runtime.compile(Parser.parse(source));
         Object o = null;
 
         o = runtime.eval(classes.get(0));
         Assert.assertEquals(new Node(null, "hello", "world", "this", "is", "fun"), o);
+    }
+
+    @Test
+    public void testVarArgStatic() {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/examples/varargs-static.silo");
+
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+        Object o = null;
+
+        o = runtime.eval(classes.get(0));
+        Assert.assertEquals(Arrays.asList("Hello", null, "Hi!", null, "Welcome!"), o);
     }
 }

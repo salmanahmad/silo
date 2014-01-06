@@ -289,7 +289,7 @@ public class Invoke implements Expression {
             }
         }
 
-        index = resolveFunctionByArguments(convertMethodsToParameterLists(varArgsMethods.toArray(new Method[0])), args);
+        index = resolveFunctionByVarArgs(convertMethodsToParameterLists(varArgsMethods.toArray(new Method[0])), args);
         if(index != -1) {
             return varArgsMethods.get(index);
         }
@@ -574,7 +574,7 @@ public class Invoke implements Expression {
                     // TODO: Handle arity overloading - Method.html#isVarArgs()
 
                     Symbol symbol = path.get(0);
-                    Vector<Class> types = compileArguments(arguments, context);
+                    Vector<Class> types = argumentTypes(arguments, context);
 
                     Method method = resolveMethod(klass, symbol.toString(), true, types.toArray(new Class[0]));
 
@@ -582,11 +582,24 @@ public class Invoke implements Expression {
                         throw new RuntimeException("Could not find function: " + symbol.toString());
                     }
 
+                    Class[] params = method.getParameterTypes();
+                    boolean shouldVarArgs = false;
+
+                    if(method.isVarArgs()) {
+                        shouldVarArgs = shouldUseVarArgs(params, types.toArray(new Class[0]));
+                    }
+
+                    if(shouldVarArgs) {
+                        compileVariableArguments(params, arguments, context, shouldEmit);
+                    } else {
+                        compileArguments(arguments, context, shouldEmit);
+                    }
+
                     if(shouldEmit) {
                         generator.invokeStatic(Type.getType(klass), org.objectweb.asm.commons.Method.getMethod(method));
                     }
 
-                    for(Expression e : arguments) {
+                    for(int i = 0; i < params.length; i++) {
                         frame.operandStack.pop();
                     }
 
