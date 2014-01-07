@@ -44,7 +44,12 @@ public class Runtime {
 
     public Object eval(Class klass, Object... args) {
         try {
-            return ((Function)klass.newInstance()).methodHandle().invoke(null, args);
+            if(Function.isVarArgs(klass)) {
+                args = Function.convertArgsToVarArgs(klass, args);
+                return ((Function)klass.newInstance()).methodHandle().invoke(null, args);
+            } else {
+                return ((Function)klass.newInstance()).methodHandle().invoke(null, args);
+            }
         } catch(Exception e) {
             // TODO: Better error handling.
             e.printStackTrace();

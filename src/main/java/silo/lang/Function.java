@@ -17,6 +17,9 @@ import java.lang.reflect.Method;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
+import com.github.krukow.clj_lang.IPersistentVector;
+import com.github.krukow.clj_lang.PersistentVector;
+
 public class Function {
 
     @Retention(RetentionPolicy.RUNTIME)
@@ -43,6 +46,25 @@ public class Function {
         }
 
         return false;
+    }
+
+    public static Object[] convertArgsToVarArgs(Class klass, Object... args) {
+        Method handle = methodHandle(klass);
+
+        int size = handle.getParameterTypes().length;
+        Object[] varargs = new Object[size];
+        IPersistentVector vec = PersistentVector.emptyVector();
+
+        for(int i = 0; i < args.length; i++) {
+            if(i < (size - 1)) {
+                varargs[i] = args[i];
+            } else {
+                vec = vec.cons(args[i]);
+            }
+        }
+
+        varargs[size - 1] = vec;
+        return varargs;
     }
 
     public static Method methodHandle(Class klass) {

@@ -1,0 +1,2 @@
+
+fn(System.out#println("This is a greeting to Core!"))

@@ -1,4 +1,41 @@
 
+// TODO: Make this quote
+function(
+    name(symbol)
+    inputs(s : String)
+    outputs(silo.lang.Symbol)
+    {
+        silo.lang.Symbol(s);
+    }
+)
+
+// TODO: Make this quote
+function(
+    name(node)
+    varargs(args)
+    outputs(silo.lang.Node)
+    {
+        silo.lang.Node.fromVector(args)
+    }
+)
+
+function(
+    name(fn)
+    macro
+    varargs(args)
+    outputs(silo.lang.Node)
+    {
+        node(
+            symbol("function")
+            node(
+                symbol("do")
+                args#nth(args#length() - 1)
+            )
+        )
+    }
+)
+
+
 function(
     name(print)
     inputs(value)
@@ -9,9 +46,7 @@ function(
     }
 )
 
-function(
-    name(node)
-)
+
 
 function(
     name(while)

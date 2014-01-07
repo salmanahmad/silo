@@ -122,7 +122,11 @@ public class InvokeVirtual implements Expression {
         }
 
         if(shouldEmit) {
-            generator.invokeVirtual(Type.getType(klass), Method.getMethod(m));
+            if(klass.isInterface()) {
+                generator.invokeInterface(Type.getType(klass), Method.getMethod(m));
+            } else {
+                generator.invokeVirtual(Type.getType(klass), Method.getMethod(m));
+            }
         }
 
         // Pop the arguments

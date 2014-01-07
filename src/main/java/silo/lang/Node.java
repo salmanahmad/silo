@@ -11,6 +11,8 @@
 
 package silo.lang;
 
+import com.github.krukow.clj_lang.IPersistentVector;
+
 import java.util.Vector;
 import java.util.Arrays;
 import org.apache.commons.lang3.StringUtils;
@@ -25,6 +27,18 @@ public class Node {
     // TODO: Rename label to head?
     Object label;
     Vector children;
+
+    // TODO: Convert child to IPersistentVector instead of Vector
+    public static Node fromVector(IPersistentVector v) {
+        Object label = v.nth(0);
+        Vector children = new Vector();
+
+        for(int i = 1; i < v.length(); i++) {
+            children.add(v.nth(i));
+        }
+
+        return new Node(label, children);
+    }
 
     public Node(Object label) {
         this.label = label;
