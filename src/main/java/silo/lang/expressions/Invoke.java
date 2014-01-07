@@ -20,6 +20,9 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Constructor;
 
+import com.github.krukow.clj_lang.IPersistentVector;
+import com.github.krukow.clj_lang.PersistentVector;
+
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.GeneratorAdapter;
 
@@ -410,6 +413,60 @@ public class Invoke implements Expression {
         }
     }
 
+
+    public static void compileVariableArgumentsForNativeFunction(Class[] params, Vector<Expression> arguments, CompilationContext context, boolean shouldEmit) {
+        CompilationFrame frame = context.currentFrame();
+        GeneratorAdapter generator = context.currentFrame().generator;
+
+        for(int i = 0; i < params.length - 1; i++) {
+            Expression e = arguments.get(i);
+
+            if(shouldEmit) {
+                e.emit(context);
+            } else {
+                frame.operandStack.push(e.type(context));
+            }
+        }
+
+
+        if(shouldEmit) {
+            generator.invokeStatic(
+                Type.getType(PersistentVector.class),
+                new org.objectweb.asm.commons.Method(
+                    "emptyVector",
+                    Type.getType(PersistentVector.class),
+                    new Type[0]
+                )
+            );
+        }
+
+        frame.operandStack.push(PersistentVector.class);
+
+
+        for(int i = params.length - 1; i < arguments.size(); i++) {
+            Expression e = arguments.get(i);
+
+            if(shouldEmit) {
+                e.emit(context);
+            } else {
+                frame.operandStack.push(e.type(context));
+            }
+
+            if(shouldEmit) {
+                generator.invokeVirtual(
+                    Type.getType(PersistentVector.class),
+                    new org.objectweb.asm.commons.Method(
+                        "cons",
+                        Type.getType(PersistentVector.class),
+                        new Type[] { Type.getType(Object.class) }
+                    )
+                );
+            }
+
+            frame.operandStack.pop();
+        }
+    }
+
     public static Vector<Class> argumentTypes(Vector<Expression> arguments, CompilationContext context) {
         Vector<Class> types = new Vector<Class>();
 
@@ -496,17 +553,30 @@ public class Invoke implements Expression {
 
                         // TODO: Should I support arity overloading?
                         // TODO: Should I support type overloading?
+                        // TODO: If I do, I should consider doing it how Clojure does it... or implement it as a macro...
 
                         Method method = Function.methodHandle(klass);
+                        boolean isVarArgs = Function.isVarArgs(klass);
 
-                        Vector<Class> types = compileArguments(arguments, context, shouldEmit);
+                        Class[] params = method.getParameterTypes();
+                        Vector<Class> types = argumentTypes(arguments, context);
 
-                        if(types.size() != method.getParameterTypes().length) {
-                            throw new RuntimeException("Arity mismatch.");
+                        if(isVarArgs) {
+                            if(types.size() < params.length) {
+                                throw new RuntimeException("Arity mismatch.");
+                            }
+                        } else {
+                            if(types.size() != params.length) {
+                                throw new RuntimeException("Arity mismatch.");
+                            }
                         }
 
-                        for(int i = 0; i < types.size(); i++) {
-                            Class expectedType = method.getParameterTypes()[i];
+                        for(int i = 0; i < params.length; i++) {
+                            if(isVarArgs && (i == (params.length - 1))) {
+                                continue;
+                            }
+
+                            Class expectedType = params[i];
                             Class providedType = types.get(i);
 
                             if(!(expectedType.isAssignableFrom(providedType))) {
@@ -514,11 +584,17 @@ public class Invoke implements Expression {
                             }
                         }
 
+                        if(isVarArgs) {
+                            Invoke.compileVariableArgumentsForNativeFunction(params, arguments, context, shouldEmit);
+                        } else {
+                            Invoke.compileArguments(arguments, context, shouldEmit);
+                        }
+
                         if(shouldEmit) {
                             generator.invokeStatic(Type.getType(klass), org.objectweb.asm.commons.Method.getMethod(method));
                         }
 
-                        for(Expression e : arguments) {
+                        for(int i = 0; i < params.length; i++) {
                             frame.operandStack.pop();
                         }
 

@@ -1,0 +1,21 @@
+
+
+function(
+    name(foo)
+    varargs(data)
+    outputs(String)
+    do(
+        data#toString()
+    )
+)
+
+
+
+function(
+    name(test)
+    outputs(String)
+    do(
+        foo("a", "b", "c", "d", "e", "f")
+    )
+)
+

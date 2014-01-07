@@ -36,6 +36,15 @@ public class Function {
         throw new RuntimeException("Unimplemented");
     }
 
+    public static boolean isVarArgs(Class klass) {
+        if(klass.isAnnotationPresent(Definition.class)) {
+            Definition d = (Definition)klass.getAnnotation(Definition.class);
+            return d.varargs();
+        }
+
+        return false;
+    }
+
     public static Method methodHandle(Class klass) {
         Method[] methods = klass.getMethods();
         for(Method method : methods) {

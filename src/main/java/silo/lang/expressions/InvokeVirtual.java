@@ -89,14 +89,23 @@ public class InvokeVirtual implements Expression {
             frame.operandStack.push(receiver.type(context));
         }
 
-        Class klass = frame.operandStack.peek();
+        Class originalklass = frame.operandStack.peek();
+        Class klass = originalklass;
 
         Vector<Class> types = Invoke.argumentTypes(arguments, context);
 
-        java.lang.reflect.Method m = Invoke.resolveMethod(klass, method.toString(), false, types.toArray(new Class[0]));
+        java.lang.reflect.Method m = Invoke.resolveMethod(originalklass, method.toString(), false, types.toArray(new Class[0]));
+
+        if(m == null && originalklass.isInterface()) {
+            m = Invoke.resolveMethod(Object.class, method.toString(), false, types.toArray(new Class[0]));
+
+            if(m != null) {
+                klass = Object.class;
+            }
+        }
 
         if(m == null) {
-            throw new RuntimeException("Could not find function: " + method.toString() + " in class: " + klass);
+            throw new RuntimeException("Could not find function: " + method.toString() + " in class: " + originalklass);
         }
 
         Class[] params = m.getParameterTypes();

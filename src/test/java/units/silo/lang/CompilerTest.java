@@ -332,4 +332,16 @@ public class CompilerTest {
 
         Assert.assertEquals(sb.toString(), o);
     }
+
+    @Test
+    public void testVarArg() {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/examples/varargs.silo");
+
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+        Object o = null;
+
+        o = runtime.eval(classes.get(1));
+        Assert.assertEquals("[\"a\" \"b\" \"c\" \"d\" \"e\" \"f\"]", o);
+    }
 }

@@ -16,6 +16,8 @@ import silo.lang.compiler.Compiler;
 
 import java.util.Vector;
 
+import com.github.krukow.clj_lang.IPersistentVector;
+
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.GeneratorAdapter;
 import org.objectweb.asm.*;
@@ -38,7 +40,7 @@ public class FunctionExpression implements Expression, Opcodes {
     Vector outputs;
     Block body;
     boolean macro;
-    boolean varargs;
+    Symbol varargs;
 
     public static FunctionExpression build(Node node) {
         Symbol name = null;
@@ -46,7 +48,7 @@ public class FunctionExpression implements Expression, Opcodes {
         Vector outputs = null;
         Block body = null;
         boolean macro = false;
-        boolean varargs = false;
+        Symbol varargs = null;
 
         Node n = null;
         Object o = null;
@@ -56,7 +58,14 @@ public class FunctionExpression implements Expression, Opcodes {
         macro = o != null;
 
         o = node.getChildNamed(new Symbol("varargs"));
-        varargs = o != null;
+        if(o != null) {
+            if((o instanceof Node) && (((Node)o).getFirstChild() instanceof Symbol)) {
+                o = ((Node)o).getFirstChild();
+                varargs = (Symbol)o;
+            } else {
+                throw new RuntimeException("The name of a varargs parameter must be a symbol and cannot have a type.");
+            }
+        }
 
         n = node.getChildNode(new Symbol("name"));
         if(n != null) {
@@ -86,7 +95,7 @@ public class FunctionExpression implements Expression, Opcodes {
         return new FunctionExpression(name, inputs, outputs, body, macro, varargs);
     }
 
-    public FunctionExpression(Symbol name, Vector inputs, Vector outputs, Block body, boolean macro, boolean varargs) {
+    public FunctionExpression(Symbol name, Vector inputs, Vector outputs, Block body, boolean macro, Symbol varargs) {
         this.name = name;
         this.inputs = inputs;
         this.outputs = outputs;
@@ -166,6 +175,12 @@ public class FunctionExpression implements Expression, Opcodes {
             }
         }
 
+        if(varargs != null) {
+            inputTypes.add(Type.getType(IPersistentVector.class));
+            inputClasses.add(IPersistentVector.class);
+            inputNames.add(varargs);
+        }
+
         Type outputType = Type.VOID_TYPE;
         Class outputClass = Void.TYPE;
         if(outputs.size() == 1) {
@@ -203,7 +218,7 @@ public class FunctionExpression implements Expression, Opcodes {
         if(macro) {
             av.visit("macro", Boolean.TRUE);
         }
-        if(varargs) {
+        if(varargs != null) {
             // TODO: Varargs should also create an actual overloaded varargs method that wraps a PersistentVector and calls the actual method..
             av.visit("varargs", Boolean.TRUE);
         }
