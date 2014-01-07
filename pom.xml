@@ -140,7 +140,7 @@
               <target>
                 <fileset id="files" dir="${basedir}/src/main/silo/" includes="*.silo"/>
                 <pathconvert pathsep=" " property="files" refid="files"/>
-                <java classname="silo.lang.Compile" output="${project.build.directory}/build-standard-library.txt" fork="true">
+                <java classname="silo.lang.Compile" output="${project.build.directory}/build-standard-library.txt" fork="true" failonerror="true">
                   <classpath>
                     <fileset dir="${project.build.directory}/dependency">
                       <include name="**/*.jar"/>
