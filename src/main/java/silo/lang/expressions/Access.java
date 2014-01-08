@@ -130,8 +130,12 @@ public class Access implements Expression {
                     path = (Vector<Symbol>)result.get(1);
 
                     if(path.size() == 0) {
-                        // TODO: Return class reference...
-                        throw new RuntimeException("Unimplemented");
+                        // Return class reference
+                        if(shouldEmit) {
+                            generator.visitLdcInsn(Type.getType(scope));
+                        }
+
+                        frame.operandStack.push(Class.class);
                     } else {
                         // Getstatic
                         Symbol symbol = path.remove(0);

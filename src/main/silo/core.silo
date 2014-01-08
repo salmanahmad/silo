@@ -50,8 +50,39 @@ function(
     varargs(args)
     outputs(silo.lang.Node)
     {
+        inputs : com.github.krukow.clj_lang.IPersistentVector = vector(symbol("inputs"))
+        outputs : com.github.krukow.clj_lang.IPersistentVector = vector(symbol("outputs"))
+
+        i : int = 0
+        useInputs : boolean = true
+        loop(
+            branch(i < (args#length() - 1), null, break())
+
+
+            o : Object = args#nth(i)
+
+            isNode : boolean = invokevirtual(invokevirtual(o getClass()) equals(silo.lang.Node))
+            n : silo.lang.Node = checkcast(silo.lang.Node, o)
+            isArrow : boolean = invokevirtual(invokevirtual(n getLabel()) equals(symbol("=>")))
+
+            branch(isArrow {
+                inputs = inputs#cons(n#getFirstChild())
+                outputs = outputs#cons(n#getSecondChild())
+            } {
+                branch(useInputs {
+                    inputs = inputs#cons(o)
+                } {
+                    outputs = outputs#cons(o)
+                })
+            })
+
+            i = i + 1
+        )
+
         node(
             symbol("function")
+            silo.lang.Node.fromVector(inputs)
+            silo.lang.Node.fromVector(outputs)
             node(
                 symbol("do")
                 args#nth(args#length() - 1)

@@ -1,2 +1,4 @@
 
-fn(System.out#println("This is a greeting to Core!"))
+fn(a : int, b: int => int {
+    a + b
+})

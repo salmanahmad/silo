@@ -152,8 +152,12 @@ public class Invoke implements Expression {
                 } else if(result == 1) {
                     index = i;
                 } else {
-                    index = -1;
-                    break;
+                    if(java.util.Arrays.equals(parameters[options.get(index)], parameters[options.get(i)])) {
+                        index = index;
+                    } else {
+                        index = -1;
+                        break;
+                    }
                 }
             }
         }

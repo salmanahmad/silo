@@ -168,6 +168,8 @@ public class Compiler {
                 return Branch.build(node);
             } else if(label.equals(new Symbol("return"))) {
                 return Return.build(node);
+            } else if(label.equals(new Symbol("checkcast"))) {
+                return new CheckCast(node);
             } else if(label.equals(new Symbol("invokevirtual"))) {
                 // TODO: Add macro called "dispatch" to wrap this...
                 return InvokeVirtual.build(node);
