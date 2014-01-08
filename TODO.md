@@ -27,3 +27,5 @@ TODO List
 - Read up on the `visitLdcInsn` method in ASM. In particular this bit about method handles: `cst - the constant to be loaded on the stack. This parameter must be a non null Integer, a Float, a Long, a Double, a String, a Type of OBJECT or ARRAY sort for .class constants, for classes whose version is 49.0, a Type of METHOD sort or a Handle for MethodType and MethodHandle constants, for classes whose version is 51.0.`
 
 - `vararg : silo.lang.Symbol = null` this does not work. I need to figure out a way to allow null assignments to objects that are not strictly "Object.class"
+
+- How do I pass in an array to a varargs method. Like the splat operator in ruby. http://stackoverflow.com/questions/5227290/pass-array-into-vararg-in-ruby

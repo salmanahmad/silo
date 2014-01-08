@@ -322,6 +322,12 @@ public class Assign implements Expression {
                     // return the assigned value or the value was it was written into? Right now, it is the AssignedValue, but
                     // that makes this almost useless because you cannot get the mutated new value...
 
+                    // TODO: Summary of the assignable trait with vars:
+                    // v("hello")        // This will call Var#invoke
+                    // v("hello") = d    // This will call Var#invokeAssignment
+                    // v.hello           // This will call Var#getField
+                    // v.hello = "a"     // This will call Var#setField
+
                     // TODO: Remember to duplicate this.value and pop the return value from the AccessibleTrait to ensure that the
                     // return type is ALWAYS this.value.
                     throw new RuntimeException("Vars and AssignableTrait are not yet supported...");
