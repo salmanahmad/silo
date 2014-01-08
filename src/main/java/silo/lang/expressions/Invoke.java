@@ -562,7 +562,7 @@ public class Invoke implements Expression {
                         Vector<Class> types = argumentTypes(arguments, context);
 
                         if(isVarArgs) {
-                            if(types.size() < params.length) {
+                            if(types.size() < (params.length - 1)) {
                                 throw new RuntimeException("Arity mismatch.");
                             }
                         } else {

@@ -256,6 +256,8 @@ public class Compiler {
             return klass;
         } catch(ClassNotFoundException e) {
             return null;
+        } catch(NoClassDefFoundError e) {
+            return null;
         }
     }
 
