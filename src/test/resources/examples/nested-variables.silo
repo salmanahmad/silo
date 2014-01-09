@@ -13,3 +13,25 @@ function(outputs(String) {
 
     s
 })
+
+
+function(outputs(String) {
+    branch(true {
+        s : String = "Hello, World!"
+    })
+
+
+    i : int = 0
+    while(i < 10 {
+        s = "foo"
+        i = i + 1
+    })
+
+    branch(false {
+        
+    } {
+        s = "bar bar bar"
+    })
+
+    s
+})

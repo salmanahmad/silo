@@ -381,6 +381,7 @@ public class CompilerTest {
 
         Assert.assertEquals("Hello, World!", runtime.eval(classes.get(0)));
         Assert.assertEquals(null, runtime.eval(classes.get(1)));
+        Assert.assertEquals("bar bar bar", runtime.eval(classes.get(2)));
     }
 
     @Test
