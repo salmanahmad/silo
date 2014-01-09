@@ -1,0 +1,52 @@
+
+function(
+    name(branch_test1)
+    outputs(int)
+    {
+        i : int = 0;
+        branch(true {
+            i = 3
+        })
+
+        i
+    }
+)
+
+function(
+    name(branch_test2)
+    outputs(int)
+    {
+        i : int = 0;
+        branch(false {} {
+            i = 3
+        })
+
+        i
+    }
+)
+
+function(
+    name(branch_test3)
+    outputs(int)
+    {
+        i : int = 0;
+        branch(false null {
+            i = 3
+        })
+
+        i
+    }
+)
+
+function(
+    name(branch_test4)
+    outputs(int)
+    {
+        i : int = 0;
+        branch(true {
+            i = 3
+        } null)
+
+        i
+    }
+)

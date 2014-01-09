@@ -110,6 +110,34 @@ public class CompilerTest {
     }
 
     @Test
+    public void testBranchSingle() {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/examples/branch-single.silo");
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+
+        Object o = null;
+
+        Assert.assertEquals(3, runtime.eval(classes.get(0)));
+        Assert.assertEquals(3, runtime.eval(classes.get(1)));
+        Assert.assertEquals(3, runtime.eval(classes.get(2)));
+        Assert.assertEquals(3, runtime.eval(classes.get(3)));
+    }
+
+    @Test
+    public void testBranchBoxing() {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/examples/branch-boxing.silo");
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+
+        Object o = null;
+
+        Assert.assertEquals(5, runtime.eval(classes.get(0)));
+        Assert.assertEquals(10.0, runtime.eval(classes.get(1)));
+        Assert.assertEquals(null, runtime.eval(classes.get(2)));
+        Assert.assertEquals(null, runtime.eval(classes.get(3)));
+    }
+
+    @Test
     public void testBranchReturns() {
         Runtime runtime = new Runtime();
         String source = Helper.readResource("/examples/branch-returns.silo");

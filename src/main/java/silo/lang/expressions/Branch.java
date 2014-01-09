@@ -29,15 +29,25 @@ public class Branch implements Expression {
     public final Expression falseBranch;
 
     public static Branch build(Node node) {
-        if(node.getChildren().size() > 3) {
-            throw new RuntimeException("Branch must only have 3 arguments.");
-        }
+        int size = node.getChildren().size();
 
-        return new Branch(
-            Compiler.buildExpression(node.getChildren().get(0)),
-            Compiler.buildExpression(node.getChildren().get(1)),
-            Compiler.buildExpression(node.getChildren().get(2))
-        );
+        if(size == 1) {
+            return new Branch(Compiler.buildExpression(node.getChildren().get(0)), null, null);
+        } else if(size == 2) {
+            return new Branch(
+                Compiler.buildExpression(node.getChildren().get(0)),
+                Compiler.buildExpression(node.getChildren().get(1)),
+                null
+            );
+        } else if(size == 3) {
+            return new Branch(
+                Compiler.buildExpression(node.getChildren().get(0)),
+                Compiler.buildExpression(node.getChildren().get(1)),
+                Compiler.buildExpression(node.getChildren().get(2))
+            );
+        } else {
+            throw new RuntimeException("Invalid number of arguments to the branch form.");
+        }
     }
 
     public Branch(Expression condition, Expression trueBranch, Expression falseBranch) {
@@ -94,66 +104,34 @@ public class Branch implements Expression {
             generator.ifNull(falseLabel);
         }
 
-
-
-        // TODO: Make this var
-        Class outputType = Object.class;
-
-        Class trueClass = null;
-        Class falseClass = null;
-
-        boolean shouldBox = true;
-
-
+        Class outputType = type(context);
 
         if(trueBranch != null) {
             trueBranch.emit(context);
-            generator.goTo(trueEndLabel);
-            trueClass = frame.operandStack.pop();
+            Class operand = frame.operandStack.pop();
+            if(operand.isPrimitive() && outputType.equals(Object.class)) {
+                // TODO: This should be Var
+                generator.box(Type.getType(operand));
+            }
         } else {
             generator.push((String)null);
-            generator.goTo(trueEndLabel);
         }
+        generator.goTo(endLabel);
 
         generator.mark(falseLabel);
         if(falseBranch != null) {
             falseBranch.emit(context);
-            generator.goTo(falseEndLabel);
-            falseClass = frame.operandStack.pop();
+            Class operand = frame.operandStack.pop();
+            if(operand.isPrimitive() && outputType.equals(Object.class)) {
+                // TODO: This should be Var
+                generator.box(Type.getType(operand));
+            }
         } else {
             generator.push((String)null);
-            generator.goTo(falseEndLabel);
-        }
-
-
-
-        if(trueBranch != null && falseBranch != null) {
-            if(trueClass.equals(falseClass)) {
-                shouldBox = false;
-                outputType = trueClass;
-            } else {
-                // TODO: Should this throw an error?
-            }
-        }
-
-
-
-        generator.mark(trueEndLabel);
-        if(shouldBox) {
-            // TODO: Box into a var
-            generator.box(Type.getType(trueClass));
-        }
-        generator.goTo(endLabel);
-
-        generator.mark(falseEndLabel);
-        if(shouldBox) {
-            // TODO: Box into a var
-            generator.box(Type.getType(falseClass));
         }
         generator.goTo(endLabel);
 
         generator.mark(endLabel);
-
         frame.operandStack.push(outputType);
     }
 }

@@ -1,0 +1,49 @@
+
+function(
+    outputs(Object)
+    {
+        branch(true {
+            5
+        } {
+            10.0
+        })
+    }
+)
+
+
+
+function(
+    outputs(Object)
+    {
+        branch(false {
+            5
+        } {
+            10.0
+        })
+    }
+)
+
+
+function(
+    outputs(Object)
+    {
+        branch(false {
+            10.0
+        } {
+            null
+        })
+    }
+)
+
+function(
+    outputs(Object)
+    {
+        branch(true {
+            null
+        } {
+            10.0
+        })
+    }
+)
+
+
