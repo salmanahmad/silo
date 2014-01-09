@@ -29,7 +29,7 @@ public class CoreTest {
         String source = Helper.readResource("/core-test/fn.silo");
 
         Vector<Class> classes = runtime.compile(Parser.parse(source));
-        Object o = runtime.eval(classes.get(0), 5, 5);
-        System.out.println(o);
+        Assert.assertEquals(10, runtime.eval(classes.get(0), 5, 5));
+        Assert.assertEquals(6, runtime.eval(classes.get(1), 1, "a", "b", "c", "d", "e", "f"));
     }
 }

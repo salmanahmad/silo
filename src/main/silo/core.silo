@@ -52,42 +52,87 @@ function(
     {
         inputs : com.github.krukow.clj_lang.IPersistentVector = vector(symbol("inputs"))
         outputs : com.github.krukow.clj_lang.IPersistentVector = vector(symbol("outputs"))
+        varargs : com.github.krukow.clj_lang.IPersistentVector = vector(symbol("varargs"))
 
         i : int = 0
         useInputs : boolean = true
+        isVarArgs : boolean = false
+
+        n : silo.lang.Node = null
+        s : silo.lang.Symbol = null
+
         loop(
             branch(i < (args#length() - 1), null, break())
 
-
             o : Object = args#nth(i)
 
-            isNode : boolean = invokevirtual(invokevirtual(o getClass()) equals(silo.lang.Node))
-            n : silo.lang.Node = checkcast(silo.lang.Node, o)
-            isArrow : boolean = invokevirtual(invokevirtual(n getLabel()) equals(symbol("=>")))
+            branch(invokevirtual(invokevirtual(o getClass()) equals(silo.lang.Node)) {
+                n = checkcast(silo.lang.Node, o)
+                isArrow : boolean = invokevirtual(invokevirtual(n getLabel()) equals(symbol("=>")))
+            })
+
+            branch(invokevirtual(invokevirtual(o getClass()) equals(silo.lang.Symbol)) {
+                s = checkcast(silo.lang.Symbol, o)
+                isDots : boolean = s#equals(symbol("..."))
+            })
 
             branch(isArrow {
-                inputs = inputs#cons(n#getFirstChild())
+                n = checkcast(silo.lang.Node, o)
+
+                branch(invokevirtual(invokevirtual(n#getFirstChild() getClass()) equals(silo.lang.Symbol)) {
+                    s = checkcast(silo.lang.Symbol, n#getFirstChild())
+                    branch(s#equals(symbol("...")) {
+                        isVarArgs = true
+                    } {
+                        inputs = inputs#cons(n#getFirstChild())
+                    })
+                } {
+                    inputs = inputs#cons(n#getFirstChild())
+                })
+
                 outputs = outputs#cons(n#getSecondChild())
             } {
-                branch(useInputs {
-                    inputs = inputs#cons(o)
+                branch(isDots {
+                    isVarArgs = true
                 } {
-                    outputs = outputs#cons(o)
+                    branch(useInputs {
+                        inputs = inputs#cons(o)
+                    } {
+                        outputs = outputs#cons(o)
+                    })
                 })
             })
 
             i = i + 1
         )
 
-        node(
-            symbol("function")
-            silo.lang.Node.fromVector(inputs)
-            silo.lang.Node.fromVector(outputs)
+        branch(isVarArgs {
+            obj : Object = inputs#nth(inputs#length() - 1)
+
+            varargs = varargs#cons(obj)
+            inputs = checkcast(com.github.krukow.clj_lang.IPersistentVector, com.github.krukow.clj_lang.RT.pop(inputs))
+
             node(
-                symbol("do")
-                args#nth(args#length() - 1)
+                symbol("function")
+                silo.lang.Node.fromVector(inputs)
+                silo.lang.Node.fromVector(outputs)
+                silo.lang.Node.fromVector(varargs)
+                node(
+                    symbol("do")
+                    args#nth(args#length() - 1)
+                )
             )
-        )
+        } {
+            node(
+                symbol("function")
+                silo.lang.Node.fromVector(inputs)
+                silo.lang.Node.fromVector(outputs)
+                node(
+                    symbol("do")
+                    args#nth(args#length() - 1)
+                )
+            )
+        })
     }
 )
 

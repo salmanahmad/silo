@@ -2,3 +2,7 @@
 fn(a : int, b: int => int {
     a + b
 })
+
+fn(a : int, b ... => int {
+    b#length()
+})
