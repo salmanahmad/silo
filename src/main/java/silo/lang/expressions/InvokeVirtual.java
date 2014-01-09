@@ -143,7 +143,7 @@ public class InvokeVirtual implements Expression {
                 generator.push((String)null);
             }
 
-            frame.operandStack.push(Object.class);
+            frame.operandStack.push(Null.class);
         } else {
             frame.operandStack.push(m.getReturnType());
         }

@@ -1,0 +1,22 @@
+function(
+    outputs(String) {
+        s : String = null
+        return(s)
+    }
+)
+
+
+
+function(
+    name(foo)
+    inputs(s : String)
+    outputs(String) {
+        s
+    }
+)
+
+function(
+    outputs(String) {
+        o : String = foo(null)
+    }
+)

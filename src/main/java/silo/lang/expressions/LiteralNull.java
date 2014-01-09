@@ -19,11 +19,11 @@ public class LiteralNull implements Expression {
     }
 
     public Class type(CompilationContext context) {
-        return Object.class;
+        return Null.class;
     }
 
     public void emit(CompilationContext context) {
-        context.currentFrame().operandStack.push(Object.class);
+        context.currentFrame().operandStack.push(Null.class);
         context.currentFrame().generator.push((String)null);
     }
 }

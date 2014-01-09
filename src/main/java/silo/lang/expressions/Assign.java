@@ -112,7 +112,7 @@ public class Assign implements Expression {
                 value.emit(context);
             } else {
                 generator.push((String)null);
-                frame.operandStack.push(Object.class);
+                frame.operandStack.push(Null.class);
             }
 
             java.lang.reflect.Field staticField = klass.getField(f.toString());
@@ -268,7 +268,7 @@ public class Assign implements Expression {
             value.emit(context);
         } else {
             generator.push((String)null);
-            frame.operandStack.push(Object.class);
+            frame.operandStack.push(Null.class);
         }
 
         Class valueClass = frame.operandStack.peek();

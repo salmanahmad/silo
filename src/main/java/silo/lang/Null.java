@@ -11,4 +11,6 @@
 
 package silo.lang;
 
+// TODO: Instead of pushing Null.class all over the place, should I just use Void.TYPE
+// this will make Invoke and InvokeVirtual work much nicer as well.
 public final class Null {}

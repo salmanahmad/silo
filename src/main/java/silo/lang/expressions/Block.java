@@ -41,8 +41,7 @@ public class Block implements Expression {
             Expression e = expressions.get(expressions.size() - 1);
             return e.type(context);
         } else {
-            // TODO: Should be var
-            return Object.class;
+            return Null.class;
         }
     }
 
@@ -75,14 +74,14 @@ public class Block implements Expression {
                 } else {
                     if(size == 0) {
                         // TODO: This should be var.
-                        frame.operandStack.push(Object.class);
+                        frame.operandStack.push(Null.class);
                         frame.generator.push((String)null);
                     }
                 }
             }
         } else {
             // TODO: Is this necessary here? Does this impact performance or code-size in any meaningful way?
-            frame.operandStack.push(Object.class);
+            frame.operandStack.push(Null.class);
             frame.generator.push((String)null);
         }
     }

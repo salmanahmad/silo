@@ -382,4 +382,14 @@ public class CompilerTest {
         Assert.assertEquals("Hello, World!", runtime.eval(classes.get(0)));
         Assert.assertEquals(null, runtime.eval(classes.get(1)));
     }
+
+    @Test
+    public void testNullAssignment() {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/examples/null-assignment.silo");
+
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+        Assert.assertEquals(null, runtime.eval(classes.get(0)));
+        Assert.assertEquals(null, runtime.eval(classes.get(2)));
+    }
 }

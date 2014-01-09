@@ -410,7 +410,13 @@ public class Compiler {
     }
 
     public static boolean isValidAssignment(Class target, Class value) {
-        return target.isAssignableFrom(value);
+        if(!target.isPrimitive() && value.equals(Null.class)) {
+            // TODO: Should null be a valid assignment to a primitive? So there is a
+            // standardized way to make assignments to the default value?
+            return true;
+        } else {
+            return target.isAssignableFrom(value);
+        }
     }
 }
 

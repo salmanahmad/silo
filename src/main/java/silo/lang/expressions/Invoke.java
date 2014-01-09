@@ -682,7 +682,15 @@ public class Invoke implements Expression {
                         frame.operandStack.pop();
                     }
 
-                    frame.operandStack.push(method.getReturnType());
+                    if(method.getReturnType().equals(Void.TYPE)) {
+                        if(shouldEmit) {
+                            generator.push((String)null);
+                        }
+
+                        frame.operandStack.push(Null.class);
+                    } else {
+                        frame.operandStack.push(method.getReturnType());
+                    }
 
                     return;
                 }
