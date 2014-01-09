@@ -1,0 +1,15 @@
+function(outputs(String) {
+    branch(true {
+        s : String = "Hello, World!"
+    })
+
+    s
+})
+
+function(outputs(String) {
+    branch(false {
+        s : String = "Hello, World!"
+    })
+
+    s
+})

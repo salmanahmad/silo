@@ -19,6 +19,7 @@ import java.util.Vector;
 import com.github.krukow.clj_lang.IPersistentVector;
 
 import org.objectweb.asm.Type;
+import org.objectweb.asm.Label;
 import org.objectweb.asm.commons.GeneratorAdapter;
 import org.objectweb.asm.*;
 import org.objectweb.asm.commons.*;
@@ -238,8 +239,8 @@ public class FunctionExpression implements Expression, Opcodes {
         av = g.visitAnnotation(Type.getType(Function.Body.class).getDescriptor(), true);
         av.visitEnd();
 
+        // Start a new frame...
         CompilationFrame frame = new CompilationFrame(ACC_PUBLIC + ACC_STATIC, m, g, outputClass);
-
         context.frames.push(frame);
 
         if(inputClasses.size() == inputNames.size()) {
@@ -250,13 +251,36 @@ public class FunctionExpression implements Expression, Opcodes {
             throw new RuntimeException("Internal error. The length of the input names and types should be the same.");
         }
 
+        // TODO: Optimize this so I dont' have to be jumping all over the place...
+        // TODO: Intead of doing this...leverage the Expression abstraction and walk the syntax tree and
+        // extract all of the local variables along with their types.
+        Label initializationLabel = frame.generator.newLabel();
+        Label startLabel = frame.generator.newLabel();
+        frame.generator.goTo(initializationLabel);
+
+        frame.generator.mark(startLabel);
         body.emit(context);
         (new Return(null, false)).emit(context);
+
+        frame.generator.mark(initializationLabel);
+        for(Symbol local : frame.locals.keySet()) {
+            if(inputNames.contains(local)) {
+                continue;
+            }
+
+            int index = frame.locals.get(local);
+            Class klass = frame.localTypes.get(local);
+
+            // TODO: Redo this by using the AssignExpression. Just create a node and pass it into `Assign.build` or `new Assign`
+            Compiler.pushInitializationValue(klass, frame.generator);
+            frame.generator.visitVarInsn(Type.getType(klass).getOpcode(Opcodes.ISTORE), index);
+        }
+        frame.generator.goTo(startLabel);
+
         context.frames.pop();
+        // End the frame...
 
-        //g.returnValue();
         g.endMethod();
-
         cw.visitEnd();
 
         byte[] code = cw.toByteArray();

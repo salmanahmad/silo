@@ -247,6 +247,22 @@ public class Compiler {
         }
     }
 
+    public static void pushInitializationValue(Class klass, GeneratorAdapter generator) {
+        if(klass.isPrimitive()) {
+            if(klass.equals(Double.TYPE)) {
+                generator.push(0.0d);
+            } else if(klass.equals(Float.TYPE)) {
+                generator.push(0.0f);
+            } else if(klass.equals(Long.TYPE)) {
+                generator.push(0L);
+            } else {
+                generator.push(0);
+            }
+        } else {
+            generator.push((String)null);
+        }
+    }
+
     public static Class resolveType(String qualifiedName, RuntimeClassLoader loader) {
         try {
             Class klass = Compiler.primitives.get(qualifiedName);

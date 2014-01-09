@@ -115,8 +115,6 @@ public class CompilerTest {
         String source = Helper.readResource("/examples/branch-single.silo");
         Vector<Class> classes = runtime.compile(Parser.parse(source));
 
-        Object o = null;
-
         Assert.assertEquals(3, runtime.eval(classes.get(0)));
         Assert.assertEquals(3, runtime.eval(classes.get(1)));
         Assert.assertEquals(3, runtime.eval(classes.get(2)));
@@ -371,5 +369,17 @@ public class CompilerTest {
 
         o = runtime.eval(classes.get(1));
         Assert.assertEquals("[\"a\" \"b\" \"c\" \"d\" \"e\" \"f\"]", o);
+    }
+
+    @Test
+    public void testNestedVariables() {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/examples/nested-variables.silo");
+
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+        Object o = null;
+
+        Assert.assertEquals("Hello, World!", runtime.eval(classes.get(0)));
+        Assert.assertEquals(null, runtime.eval(classes.get(1)));
     }
 }

@@ -42,7 +42,8 @@ function(
     name(branch_test4)
     outputs(int)
     {
-        i : int = 0;
+        i : int = 0
+
         branch(true {
             i = 3
         } null)
