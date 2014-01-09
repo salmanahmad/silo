@@ -118,7 +118,7 @@ public class Assign implements Expression {
             java.lang.reflect.Field staticField = klass.getField(f.toString());
             Class fieldClass = staticField.getType();
 
-            if(!fieldClass.isAssignableFrom(valueClass)) {
+            if(!Compiler.isValidAssignment(fieldClass, valueClass)) {
                 throw new RuntimeException("Invalid assignment to static field of type " + fieldClass + " from type of " + valueClass);
             }
 
@@ -167,7 +167,7 @@ public class Assign implements Expression {
             }
         }
 
-        if(!typeClass.isAssignableFrom(valueClass)) {
+        if(!Compiler.isValidAssignment(typeClass, valueClass)) {
             // TODO: Abstract this out so that it handles things likes autoboxing, and conversion, etc.
             throw new RuntimeException("Invalid assignment from type " + valueClass + " to " + typeClass);
         }
@@ -196,7 +196,7 @@ public class Assign implements Expression {
 
             Class fieldClass = staticField.getType();
 
-            if(!fieldClass.isAssignableFrom(valueClass)) {
+            if(!Compiler.isValidAssignment(fieldClass, valueClass)) {
                 throw new RuntimeException("Invalid assignment to field of type " + fieldClass + " from type of " + valueClass);
             }
 
@@ -230,7 +230,7 @@ public class Assign implements Expression {
 
         generator.swap(Type.getType(valueClass), Type.getType(Integer.TYPE));
 
-        if(!klass.getComponentType().isAssignableFrom(valueClass)) {
+        if(!Compiler.isValidAssignment(klass.getComponentType(), valueClass)) {
             throw new RuntimeException("Attempting to assign value into array of invalid types");
         }
 

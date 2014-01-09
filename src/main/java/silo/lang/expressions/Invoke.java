@@ -123,7 +123,7 @@ public class Invoke implements Expression {
                 Class e = expected[j];
                 Class p = args[j];
 
-                if(!(e.isAssignableFrom(p))) {
+                if(!Compiler.isValidAssignment(e, p)) {
                     match = false;
                 }
             }
@@ -195,8 +195,8 @@ public class Invoke implements Expression {
                     e = expected[j];
                 }
 
-                // TODO: isAssignableFrom does not handle boxing and unboxing
-                if(e.isAssignableFrom(arg)) {
+                // TODO: isValidAssignment does not handle boxing and unboxing
+                if(Compiler.isValidAssignment(e, arg)) {
                     match = match && true;
                 } else {
                     match = false;
@@ -583,7 +583,7 @@ public class Invoke implements Expression {
                             Class expectedType = params[i];
                             Class providedType = types.get(i);
 
-                            if(!(expectedType.isAssignableFrom(providedType))) {
+                            if(!Compiler.isValidAssignment(expectedType, providedType)) {
                                 throw new RuntimeException("Parameter mismatch in " + klass + ". Expected: " + expectedType + " Provided: " + providedType);
                             }
                         }

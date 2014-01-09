@@ -408,6 +408,10 @@ public class Compiler {
 
         return null;
     }
+
+    public static boolean isValidAssignment(Class target, Class value) {
+        return target.isAssignableFrom(value);
+    }
 }
 
 

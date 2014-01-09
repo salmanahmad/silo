@@ -91,7 +91,7 @@ public class Return implements Expression {
                 g.push((String)null);
                 g.returnValue();
             } else {
-                if(outputClass.isAssignableFrom(operand)) {
+                if(Compiler.isValidAssignment(outputClass, operand)) {
                     g.returnValue();
                 } else if(outputClass.isPrimitive() && isBoxClass(operand)) {
                     // TODO: This statement above should be: "equals object OR var"
