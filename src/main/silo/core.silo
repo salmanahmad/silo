@@ -29,7 +29,7 @@ function(
 function(
     name(vector)
     varargs(args)
-    outputs(com.github.krukow.clj_lang.IPersistentVector)
+    outputs(IPersistentVector)
     {
         args
     }
@@ -50,9 +50,9 @@ function(
     varargs(args)
     outputs(silo.lang.Node)
     {
-        inputs : com.github.krukow.clj_lang.IPersistentVector = vector(symbol("inputs"))
-        outputs : com.github.krukow.clj_lang.IPersistentVector = vector(symbol("outputs"))
-        varargs : com.github.krukow.clj_lang.IPersistentVector = vector(symbol("varargs"))
+        inputs : IPersistentVector = vector(symbol("inputs"))
+        outputs : IPersistentVector = vector(symbol("outputs"))
+        varargs : IPersistentVector = vector(symbol("varargs"))
 
         i : int = 0
         useInputs : boolean = true
@@ -110,7 +110,7 @@ function(
             obj : Object = inputs#nth(inputs#length() - 1)
 
             varargs = varargs#cons(obj)
-            inputs = checkcast(com.github.krukow.clj_lang.IPersistentVector, com.github.krukow.clj_lang.RT.pop(inputs))
+            inputs = checkcast(IPersistentVector, RT.pop(inputs))
 
             node(
                 symbol("function")

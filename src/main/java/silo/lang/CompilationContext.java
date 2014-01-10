@@ -70,5 +70,6 @@ public class CompilationContext {
         this.imports.add("java.io");
         this.imports.add("silo.core");
         this.aliases.put("IPersistentVector", "com.github.krukow.clj_lang.IPersistentVector");
+        this.aliases.put("RT", "com.github.krukow.clj_lang.RT");
     }
 }
