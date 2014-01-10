@@ -29,3 +29,7 @@ TODO List
 - `vararg : silo.lang.Symbol = null` this does not work. I need to figure out a way to allow null assignments to objects that are not strictly "Object.class"
 
 - How do I pass in an array to a varargs method. Like the splat operator in ruby. http://stackoverflow.com/questions/5227290/pass-array-into-vararg-in-ruby
+
+- How do I create a subclass of a certain interface or class? In particular, how would I create a class that implements `runnable` or `actionlistener` so that it could be used with swing or threads? http://tech.puredanger.com/2011/08/12/subclassing-in-clojure/
+
+

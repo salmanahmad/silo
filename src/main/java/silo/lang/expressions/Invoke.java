@@ -546,6 +546,10 @@ public class Invoke implements Expression {
         if(identifier != null) {
             Vector result = Compiler.resolveIdentifierPath(identifier, context);
 
+            if(frame.locals.containsKey(identifier.get(0))) {
+                result = null;
+            }
+
             if(result != null) {
                 Class klass = (Class)result.get(0);
                 Vector<Symbol> path = (Vector<Symbol>)result.get(1);

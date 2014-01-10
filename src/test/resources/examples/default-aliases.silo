@@ -1,0 +1,7 @@
+function(
+    outputs(IPersistentVector)
+    {
+        v : IPersistentVector = vector()
+        return(v)
+    }
+)

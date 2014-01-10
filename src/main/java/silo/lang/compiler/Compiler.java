@@ -280,6 +280,16 @@ public class Compiler {
     }
 
     public static Class resolveType(Vector<Symbol> path, CompilationContext context) {
+        if(path.size() == 1) {
+            String alias = context.aliases.get(path.get(0).toString());
+            if(alias != null) {
+                Class klass = resolveType(alias, context.runtime.loader);
+                if(klass != null) {
+                    return klass;
+                }
+            }
+        }
+
         String name = null;
         for(Symbol symbol : path) {
             if(name == null) {
@@ -372,37 +382,25 @@ public class Compiler {
         int index = 0;
         String name = null;
 
+        Vector<Symbol> buffer = new Vector<Symbol>();
+
         for(Symbol symbol : path) {
             index++;
 
-            if(name == null) {
-                name = symbol.toString();
-            } else {
-                name += "." + symbol.toString();
-            }
+            buffer.add(symbol);
+            Class klass = resolveType(buffer, context);
 
-            for(String p : context.imports) {
-                String qualifiedName = p;
-                if(qualifiedName.equals("")) {
-                    qualifiedName = name;
-                } else {
-                    qualifiedName += "." + name;
+            if(klass != null) {
+                Vector remaining = new Vector();
+                for(int i = index; i < path.size(); i++) {
+                    remaining.add(path.get(i));
                 }
 
-                Class klass = resolveType(qualifiedName, context.runtime.loader);
+                Vector vec = new Vector();
+                vec.add(klass);
+                vec.add(remaining);
 
-                if(klass != null) {
-                    Vector remaining = new Vector();
-                    for(int i = index; i < path.size(); i++) {
-                        remaining.add(path.get(i));
-                    }
-
-                    Vector vec = new Vector();
-                    vec.add(klass);
-                    vec.add(remaining);
-
-                    return vec;
-                }
+                return vec;
             }
         }
 

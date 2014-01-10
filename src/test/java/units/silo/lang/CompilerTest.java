@@ -19,6 +19,9 @@ import silo.lang.compiler.*;
 import silo.lang.compiler.Compiler;
 import silo.lang.compiler.grammar.*;
 
+import com.github.krukow.clj_lang.IPersistentVector;
+import com.github.krukow.clj_lang.PersistentVector;
+
 import org.objectweb.asm.Type;
 
 public class CompilerTest {
@@ -392,5 +395,14 @@ public class CompilerTest {
         Vector<Class> classes = runtime.compile(Parser.parse(source));
         Assert.assertEquals(null, runtime.eval(classes.get(0)));
         Assert.assertEquals(null, runtime.eval(classes.get(2)));
+    }
+
+    @Test
+    public void testDefaultAliases() {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/examples/default-aliases.silo");
+
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+        Assert.assertEquals(PersistentVector.emptyVector(), runtime.eval(classes.get(0)));
     }
 }
