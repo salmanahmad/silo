@@ -214,7 +214,16 @@ public class FunctionExpression implements Expression, Opcodes {
         // TODO - Figure out how to propagate the file name
         ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
         cw.visitSource("app", null);
-        cw.visit(V1_6, ACC_PUBLIC + ACC_SUPER, name.toString(), null, Type.getType(Function.class).getInternalName(), null);
+
+        String fullyQualifiedName = context.packageName;
+        if(fullyQualifiedName == null || fullyQualifiedName.equals("")) {
+            fullyQualifiedName = name.toString();
+        } else {
+            fullyQualifiedName = fullyQualifiedName + "." + name.toString();
+            fullyQualifiedName = fullyQualifiedName.replace(".", "/");
+        }
+
+        cw.visit(V1_6, ACC_PUBLIC + ACC_SUPER, fullyQualifiedName, null, Type.getType(Function.class).getInternalName(), null);
         av = cw.visitAnnotation(Type.getType(Function.Definition.class).getDescriptor(), true);
         if(macro) {
             av.visit("macro", Boolean.TRUE);

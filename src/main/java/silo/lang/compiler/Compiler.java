@@ -11,9 +11,10 @@
 
 package silo.lang.compiler;
 
-import silo.lang.Runtime;
 import silo.lang.*;
+import silo.lang.Runtime;
 import silo.lang.expressions.*;
+import silo.lang.expressions.Package;
 
 import java.util.Vector;
 import java.util.HashMap;
@@ -156,6 +157,12 @@ public class Compiler {
                 return LiteralArrayType.build(node);
             } else if(label.equals(new Symbol("arraynew"))) {
                 return LiteralArray.build(node);
+            } else if(label.equals(new Symbol("package"))) {
+                return new Package(node);
+            } else if(label.equals(new Symbol("alias"))) {
+                return new Alias(node);
+            } else if(label.equals(new Symbol("import"))) {
+                return new Import(node);
             } else if(label.equals(new Symbol("function"))) {
                 return FunctionExpression.build(node);
             } else if(label.equals(new Symbol("declare"))) {
@@ -415,6 +422,21 @@ public class Compiler {
         } else {
             return target.isAssignableFrom(value);
         }
+    }
+
+    public static Vector<Symbol> symbolList(Object o) {
+        if(o instanceof Symbol) {
+            Vector<Symbol> v = new Vector<Symbol>();
+            v.add((Symbol)o);
+            return v;
+        } else if(o instanceof Node) {
+            Vector<Symbol> list = Node.symbolListFromNode(Node.flattenTree((Node)o, new Symbol(".")));
+            if(list != null) {
+                return list;
+            }
+        }
+
+        return null;
     }
 }
 

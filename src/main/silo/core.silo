@@ -1,4 +1,6 @@
 
+package(silo.core)
+
 function(
     name(while)
     macro

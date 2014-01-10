@@ -1,0 +1,9 @@
+
+alias(d, java.util.Date)
+
+function(
+    outputs(d)
+    {
+        d(1, 1, 1)
+    }
+)
