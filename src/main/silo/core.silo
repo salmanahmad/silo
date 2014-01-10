@@ -68,12 +68,12 @@ function(
 
             o : Object = args#nth(i)
 
-            branch(invokevirtual(invokevirtual(o getClass()) equals(silo.lang.Node)) {
+            branch(instanceof(silo.lang.Node, o) {
                 n = checkcast(silo.lang.Node, o)
                 isArrow : boolean = invokevirtual(invokevirtual(n getLabel()) equals(symbol("=>")))
             })
 
-            branch(invokevirtual(invokevirtual(o getClass()) equals(silo.lang.Symbol)) {
+            branch(instanceof(silo.lang.Symbol, o) {
                 s = checkcast(silo.lang.Symbol, o)
                 isDots : boolean = s#equals(symbol("..."))
             })
@@ -81,7 +81,7 @@ function(
             branch(isArrow {
                 n = checkcast(silo.lang.Node, o)
 
-                branch(invokevirtual(invokevirtual(n#getFirstChild() getClass()) equals(silo.lang.Symbol)) {
+                branch(instanceof(silo.lang.Symbol, n#getFirstChild()) {
                     s = checkcast(silo.lang.Symbol, n#getFirstChild())
                     branch(s#equals(symbol("...")) {
                         isVarArgs = true

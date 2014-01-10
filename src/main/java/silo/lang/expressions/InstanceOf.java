@@ -17,36 +17,34 @@ import silo.lang.compiler.Compiler;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.GeneratorAdapter;
 
-public class CheckCast implements Expression {
+public class InstanceOf implements Expression {
 
     Node node;
 
-    public CheckCast(Node node) {
+    public InstanceOf(Node node) {
         this.node = node;
     }
 
     public Class type(CompilationContext context) {
-        Object o = node.getFirstChild();
-        Class klass = Compiler.resolveType(o, context);
-
-        if(klass == null) {
-            throw new RuntimeException("Could not resolve type: " + o);
-        }
-
-        return klass;
+        return Boolean.TYPE;
     }
 
     public void emit(CompilationContext context) {
         GeneratorAdapter generator = context.currentFrame().generator;
         CompilationFrame frame = context.currentFrame();
 
-        Class type = type(context);
+        Object o = node.getFirstChild();
+        Class type = Compiler.resolveType(o, context);
+
+        if(type == null) {
+            throw new RuntimeException("Could not resolve type: " + o);
+        }
 
         Expression e = Compiler.buildExpression(node.getSecondChild());
         e.emit(context);
 
-        generator.checkCast(Type.getType(type));
+        generator.instanceOf(Type.getType(type));
         frame.operandStack.pop();
-        frame.operandStack.push(type);
+        frame.operandStack.push(Boolean.TYPE);
     }
 }

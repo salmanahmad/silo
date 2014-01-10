@@ -177,6 +177,8 @@ public class Compiler {
                 return Return.build(node);
             } else if(label.equals(new Symbol("checkcast"))) {
                 return new CheckCast(node);
+            } else if(label.equals(new Symbol("instanceof"))) {
+                return new InstanceOf(node);
             } else if(label.equals(new Symbol("invokevirtual"))) {
                 // TODO: Add macro called "dispatch" to wrap this...
                 return InvokeVirtual.build(node);
