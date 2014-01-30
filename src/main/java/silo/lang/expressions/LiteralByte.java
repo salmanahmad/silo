@@ -29,6 +29,10 @@ public class LiteralByte implements Expression {
         return Byte.TYPE;
     }
 
+    public void emitDeclaration(CompilationContext context) {
+        return;
+    }
+
     public void emit(CompilationContext context) {
         context.currentFrame().operandStack.push(Byte.TYPE);
         context.currentFrame().generator.push(value);

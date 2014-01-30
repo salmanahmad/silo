@@ -25,11 +25,14 @@ public class CompilationContext {
 
     public final Vector<String> imports; // TODO: Make import a special form, probably. Alternatively, can I pass CompilationContext to macros?
     public final HashMap<String, String> aliases;
-    public String packageName;
 
-    int uniqueIdentifierCounter = 0;
+    public String packageName;
+    public RuntimeClassLoader declarations;
+
+    int uniqueIdentifierCounter;
 
     public CompilationContext(Runtime runtime) {
+        this.uniqueIdentifierCounter = 0;
         this.runtime = runtime;
 
         this.frames = new Stack<CompilationFrame>();
@@ -64,6 +67,8 @@ public class CompilationContext {
         this.aliases.clear();
 
         this.packageName = "";
+        this.declarations = new RuntimeClassLoader();
+
         this.imports.add("");
         this.imports.add("java.lang");
         this.imports.add("java.util");

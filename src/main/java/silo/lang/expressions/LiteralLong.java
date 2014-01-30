@@ -29,6 +29,10 @@ public class LiteralLong implements Expression {
         return Long.TYPE;
     }
 
+    public void emitDeclaration(CompilationContext context) {
+        return;
+    }
+
     public void emit(CompilationContext context) {
         context.currentFrame().operandStack.push(Long.TYPE);
         context.currentFrame().generator.push(value);

@@ -31,6 +31,28 @@ public class Alias implements Expression {
         return Null.class;
     }
 
+    public void emitDeclaration(CompilationContext context) {
+        // TODO: Refactor this method with emit below...
+        String source = null;
+        String target = null;
+
+        Object o = node.getFirstChild();
+        if(o instanceof Symbol) {
+            source = o.toString();
+        } else {
+            throw new RuntimeException("Invalid alias declaration");
+        }
+
+        Vector<Symbol> list = Compiler.symbolList(node.getSecondChild());
+        if(list != null) {
+            target = StringUtils.join(list, ".");
+        } else {
+            throw new RuntimeException("Invalid alias declaration");
+        }
+
+        context.aliases.put(source, target);
+    }
+
     public void emit(CompilationContext context) {
         CompilationFrame frame = context.currentFrame();
         GeneratorAdapter generator = frame.generator;

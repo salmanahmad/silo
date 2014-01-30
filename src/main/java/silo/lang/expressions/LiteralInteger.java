@@ -29,6 +29,10 @@ public class LiteralInteger implements Expression {
         return Integer.TYPE;
     }
 
+    public void emitDeclaration(CompilationContext context) {
+        return;
+    }
+
     public void emit(CompilationContext context) {
         context.currentFrame().operandStack.push(Integer.TYPE);
         context.currentFrame().generator.push(value);

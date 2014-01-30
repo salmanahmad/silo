@@ -79,6 +79,11 @@ public class RelationalOperation implements Expression {
         return Boolean.TYPE;
     }
 
+    public void emitDeclaration(CompilationContext context) {
+        e1.emitDeclaration(context);
+        e2.emitDeclaration(context);
+    }
+
     public void emit(CompilationContext context) {
         // TODO: Add support for non-primitive types.
 

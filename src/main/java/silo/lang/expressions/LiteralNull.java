@@ -22,6 +22,10 @@ public class LiteralNull implements Expression {
         return Null.class;
     }
 
+    public void emitDeclaration(CompilationContext context) {
+        return;
+    }
+
     public void emit(CompilationContext context) {
         context.currentFrame().operandStack.push(Null.class);
         context.currentFrame().generator.push((String)null);

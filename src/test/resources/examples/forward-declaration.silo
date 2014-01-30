@@ -1,0 +1,14 @@
+
+function(
+    name(foo)
+    outputs(String) {
+        bar()
+    }
+)
+
+function(
+    name(bar)
+    outputs(String) {
+        return("Hello, World!")
+    }
+)

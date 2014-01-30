@@ -424,4 +424,13 @@ public class CompilerTest {
         Assert.assertEquals(true, runtime.eval(classes.get(0), new Integer(0)));
         Assert.assertEquals(false, runtime.eval(classes.get(0), new Float(0)));
     }
+
+    @Test
+    public void forwardDeclaration() {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/examples/forward-declaration.silo");
+
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+        Assert.assertEquals("Hello, World!", runtime.eval(classes.get(0)));
+    }
 }

@@ -30,6 +30,8 @@ public class Assign implements Expression {
     public final Object type;
     public final Expression value;
 
+    private final Node originalNode;
+
     public static Assign build(Node node) {
         if(node.getChildren().size() != 2) {
             throw new RuntimeException("Assignment requires at least 2 arguments.");
@@ -86,10 +88,11 @@ public class Assign implements Expression {
             throw new RuntimeException("Invalid assignment form. The first argument must be a variable identifier or a typed expression");
         }
 
-        return new Assign(path, head, field, args, type, value);
+        return new Assign(node, path, head, field, args, type, value);
     }
 
-    public Assign(Node path, Expression head, Symbol field, Vector<Expression> args, Object type, Expression value) {
+    public Assign(Node node, Node path, Expression head, Symbol field, Vector<Expression> args, Object type, Expression value) {
+        this.originalNode = node;
         this.path = path;
         this.head = head;
         this.field = field;
@@ -245,6 +248,12 @@ public class Assign implements Expression {
 
     public Class type(CompilationContext context) {
         return this.value.type(context);
+    }
+
+    public void emitDeclaration(CompilationContext context) {
+        for(Object child : originalNode.getChildren()) {
+            Compiler.buildExpression(child).emitDeclaration(context);
+        }
     }
 
     public void emit(CompilationContext context) {

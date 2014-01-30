@@ -82,6 +82,19 @@ public class Branch implements Expression {
         return Object.class;
     }
 
+    public void emitDeclaration(CompilationContext context) {
+        condition.emitDeclaration(context);
+
+        if(trueBranch != null) {
+            trueBranch.emitDeclaration(context);
+        }
+
+        if(falseBranch != null) {
+            falseBranch.emitDeclaration(context);
+        }
+    }
+
+
     public void emit(CompilationContext context) {
         CompilationFrame frame = context.currentFrame();
         GeneratorAdapter generator = frame.generator;

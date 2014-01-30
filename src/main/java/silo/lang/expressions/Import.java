@@ -31,6 +31,18 @@ public class Import implements Expression {
         return Null.class;
     }
 
+    public void emitDeclaration(CompilationContext context) {
+        // TODO: Refactor this with emit Below...
+
+        Vector<Symbol> list = Compiler.symbolList(node.getFirstChild());
+        if(list != null) {
+            String i = StringUtils.join(list, ".");
+            context.imports.add(i);
+        } else {
+            throw new RuntimeException("Invalid import declaration");
+        }
+    }
+
     public void emit(CompilationContext context) {
         CompilationFrame frame = context.currentFrame();
         GeneratorAdapter generator = frame.generator;

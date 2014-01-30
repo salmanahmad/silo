@@ -22,6 +22,9 @@ import java.lang.reflect.Array;
 
 import org.objectweb.asm.commons.GeneratorAdapter;
 
+import com.github.krukow.clj_lang.IPersistentVector;
+import com.github.krukow.clj_lang.PersistentVector;
+
 // TODO: Consider moving Compiler and Parser out of the 'compiler' package and simply into the 'lang' package instead.
 
 public class Compiler {
@@ -42,6 +45,8 @@ public class Compiler {
     public static Vector<Class> compile(CompilationContext context, Node node) {
         Object expanded = expandMacros(node, context);
         Expression expression = buildExpression(expanded);
+
+        expression.emitDeclaration(context);
         expression.emit(context);
 
         return context.classes;
@@ -134,9 +139,73 @@ public class Compiler {
         return false;
     }
 
-    public static Vector<Node> extractDeclarations(Node node) {
-        return null;
+    public static Object defaultValueForType(Class klass) {
+        if(klass.equals(Boolean.TYPE)) {
+            return new Boolean(false);
+        } else if(klass.equals(Character.TYPE)) {
+            return new Character((char)0);
+        } else if(klass.equals(Byte.TYPE)) {
+            return new Byte((byte)0);
+        } else if(klass.equals(Short.TYPE)) {
+            return new Short((short)0);
+        } else if(klass.equals(Integer.TYPE)) {
+            return new Integer(0);
+        } else if(klass.equals(Long.TYPE)) {
+            return new Long(0);
+        } else if(klass.equals(Float.TYPE)) {
+            return new Float(0);
+        } else if(klass.equals(Double.TYPE)) {
+            return new Double(0);
+        } else {
+            return null;
+        }
     }
+
+    /*
+    public static void extractDeclarations(Object o, CompilationContext context) {
+        // You cannot re-define a special form or use it as a named identifier
+        // so I do not need to worry about "function" and the like appearing accidentally.
+
+        // TODO: What about special forms that have "function" inside of them? For example,
+        // Suppose I define an array that has an anonymous "structure"  as a type name or something... won't that
+        // screw stuff up? Instead of processing an AST, shouldn't this function process an expression
+        // instead?
+
+        // TODO: Change this function to process expressions instead of Nodes. --- This may be problematic
+        // because Expression has been re-worked so that Expression.build does very little and most of the
+        // work is inside "emit" now... This may be easier once I go back to having "one way of doing everything"
+        // so "::" is scope and "." is JUST get field. I may have a "java" special form that allows the
+        // use of java expression in a more natural way...
+
+        Runtime runtime = new Runtime(context.declarations);
+        CompilationContext declarationsContext = new CompilationContext(runtime);
+
+        if(o instanceof Node) {
+            Node node = (Node)o;
+            IPersistentVector vector = node.getDescendants(new Symbol("package"), new Symbol("import"), new Symbol("alias"), new Symbol("function"), new Symbol("structure"), new Symbol("quote"));
+
+            for(int i = 0; i < vector.length(); i++) {
+                Node n = (Node)vector.nth(i);
+
+                if(n.getLabel().equals(new Symbol("function"))) {
+                    //FunctionExpression e = FunctionExpression.build(removeBodyFromFunction(n, declarationsContext));
+                    //e.emitDeclaration(declarationsContext);
+                } else if(n.getLabel().equals(new Symbol("package"))) {
+                    //e = new Package(n);
+                    //e.emitDeclaration(declarationsContext);
+                } else if(n.getLabel().equals(new Symbol("import"))) {
+                    //e = new Import(n);
+                    //e.emitDeclaration(declarationsContext);
+                } else if(n.getLabel().equals(new Symbol("alias"))) {
+                    //e = new Alias(n);
+                    //e.emitDeclaration(declarationsContext);
+                } else {
+                    throw new RuntimeException("Unhandled Case!");
+                }
+            }
+        }
+    }
+    */
 
     public static Expression buildExpression(Object value) {
         if(value instanceof Node) {
@@ -233,7 +302,7 @@ public class Compiler {
     }
 
     public static void emit(Node node) {
-        
+        // TODO: Remove this?
     }
 
     public static boolean isCategory2(Class klass) {
@@ -272,20 +341,24 @@ public class Compiler {
         }
     }
 
-    public static Class resolveType(String qualifiedName, RuntimeClassLoader loader) {
-        try {
-            Class klass = Compiler.primitives.get(qualifiedName);
+    public static Class resolveType(String qualifiedName, RuntimeClassLoader... loaders) {
+        Class klass = Compiler.primitives.get(qualifiedName);
 
-            if(klass == null) {
-                klass = loader.loadClass(qualifiedName);
+        for(RuntimeClassLoader loader : loaders) {
+            if(klass != null) {
+                break;
             }
 
-            return klass;
-        } catch(ClassNotFoundException e) {
-            return null;
-        } catch(NoClassDefFoundError e) {
-            return null;
+            try {
+                klass = loader.loadClass(qualifiedName);
+            } catch(ClassNotFoundException e) {
+                klass = null;
+            } catch(NoClassDefFoundError e) {
+                klass = null;
+            }
         }
+
+        return klass;
     }
 
     public static Class resolveType(Vector<Symbol> path, CompilationContext context) {
@@ -316,7 +389,7 @@ public class Compiler {
                 qualifiedName += "." + name;
             }
 
-            Class klass = resolveType(qualifiedName, context.runtime.loader);
+            Class klass = resolveType(qualifiedName, context.runtime.loader, context.declarations);
 
             if(klass != null) {
                 return klass;

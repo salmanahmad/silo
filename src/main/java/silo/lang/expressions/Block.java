@@ -45,6 +45,12 @@ public class Block implements Expression {
         }
     }
 
+    public void emitDeclaration(CompilationContext context) {
+        for(Expression e : expressions) {
+            e.emitDeclaration(context);
+        }
+    }
+
     public void emit(CompilationContext context) {
         CompilationFrame frame = context.currentFrame();
 

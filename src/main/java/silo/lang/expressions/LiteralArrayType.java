@@ -35,6 +35,13 @@ public class LiteralArrayType implements Expression {
         return Class.class;
     }
 
+    public void emitDeclaration(CompilationContext context) {
+        // TODO: Handle the case where the array type is an anonymous structure of some sort...
+        for(Object child : node.getChildren()) {
+            Compiler.buildExpression(child).emitDeclaration(context);
+        }
+    }
+
     public void emit(CompilationContext context) {
         GeneratorAdapter generator = context.currentFrame().generator;
         CompilationFrame frame = context.currentFrame();

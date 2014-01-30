@@ -32,6 +32,10 @@ public class Declare implements Expression {
         throw new RuntimeException("Unimplemented");
     }
 
+    public void emitDeclaration(CompilationContext context) {
+        throw new RuntimeException("Unimplemented");
+    }
+
     public void emit(CompilationContext context) {
         throw new RuntimeException("Unimplemented");
     }

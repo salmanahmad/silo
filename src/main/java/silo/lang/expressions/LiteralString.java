@@ -25,6 +25,10 @@ public class LiteralString implements Expression {
         return String.class;
     }
 
+    public void emitDeclaration(CompilationContext context) {
+        return;
+    }
+
     public void emit(CompilationContext context) {
         context.currentFrame().operandStack.push(String.class);
         context.currentFrame().generator.push(string);

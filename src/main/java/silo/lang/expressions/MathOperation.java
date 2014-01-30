@@ -102,6 +102,11 @@ public class MathOperation implements Expression {
         return implicitConversion(this.e1.type(context), this.e2.type(context));
     }
 
+    public void emitDeclaration(CompilationContext context) {
+        e1.emitDeclaration(context);
+        e2.emitDeclaration(context);
+    }
+
     public void emit(CompilationContext context) {
         // TODO: Autoboxing and Var support...
 

@@ -53,6 +53,10 @@ public class Return implements Expression {
         return Object.class;
     }
 
+    public void emitDeclaration(CompilationContext context) {
+        value.emitDeclaration(context);
+    }
+
     public void emit(CompilationContext context) {
         if(value != null) {
             value.emit(context);

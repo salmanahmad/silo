@@ -509,6 +509,14 @@ public class Invoke implements Expression {
         return frame.operandStack.pop();
     }
 
+    public void emitDeclaration(CompilationContext context) {
+        for(Object child : node.getChildren()) {
+            Compiler.buildExpression(child).emitDeclaration(context);
+        }
+
+        Compiler.buildExpression(node.getLabel()).emitDeclaration(context);
+    }
+
     public void emit(CompilationContext context) {
         emit(context, true);
     }

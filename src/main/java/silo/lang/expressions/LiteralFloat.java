@@ -29,6 +29,10 @@ public class LiteralFloat implements Expression {
         return Float.TYPE;
     }
 
+    public void emitDeclaration(CompilationContext context) {
+        return;
+    }
+
     public void emit(CompilationContext context) {
         context.currentFrame().operandStack.push(Float.TYPE);
         context.currentFrame().generator.push(value);

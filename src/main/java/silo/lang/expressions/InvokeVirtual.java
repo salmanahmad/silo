@@ -73,6 +73,14 @@ public class InvokeVirtual implements Expression {
         return frame.operandStack.pop();
     }
 
+    public void emitDeclaration(CompilationContext context) {
+        receiver.emitDeclaration(context);
+
+        for(Expression e : arguments) {
+            e.emitDeclaration(context);
+        }
+    }
+
     public void emit(CompilationContext context) {
         emit(context, true);
     }

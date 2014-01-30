@@ -17,5 +17,6 @@ import org.objectweb.asm.commons.GeneratorAdapter;
 
 public interface Expression {
     public void emit(CompilationContext context);
+    public void emitDeclaration(CompilationContext context);
     public Class type(CompilationContext context);
 }

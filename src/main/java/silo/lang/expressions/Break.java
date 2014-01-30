@@ -41,6 +41,10 @@ public class Break implements Expression {
         return Object.class;
     }
 
+    public void emitDeclaration(CompilationContext context) {
+        value.emitDeclaration(context);
+    }
+
     public void emit(CompilationContext context) {
         CompilationFrame frame = context.currentFrame();
         GeneratorAdapter generator = frame.generator;

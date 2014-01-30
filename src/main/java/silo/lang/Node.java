@@ -12,6 +12,7 @@
 package silo.lang;
 
 import com.github.krukow.clj_lang.IPersistentVector;
+import com.github.krukow.clj_lang.PersistentVector;
 
 import java.util.Vector;
 import java.util.Arrays;
@@ -23,6 +24,7 @@ import org.apache.commons.lang3.StringUtils;
 // TODO: Should I rename "Node" to "Tree"?
 // TODO: Change "children" to a PersistentDataStructure
 
+// TODO: I need to make Node immutable...
 public class Node {
     // TODO: Rename label to head?
     Object label;
@@ -94,7 +96,7 @@ public class Node {
         }
     }
 
-    // TODO: Should the following methods also be static so that it makes jav interop seamless?
+    // TODO: Should the following methods also be static so that it makes java interop seamless?
     public Node getChildNode(Symbol name) {
         for(Object child : children) {
             if(child instanceof Node) {

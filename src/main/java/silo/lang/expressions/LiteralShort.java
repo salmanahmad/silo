@@ -29,6 +29,10 @@ public class LiteralShort implements Expression {
         return Short.TYPE;
     }
 
+    public void emitDeclaration(CompilationContext context) {
+        return;
+    }
+
     public void emit(CompilationContext context) {
         context.currentFrame().operandStack.push(Short.TYPE);
         context.currentFrame().generator.push(value);

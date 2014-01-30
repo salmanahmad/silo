@@ -192,6 +192,7 @@ parenExpression returns [Node value]
   ;
 
 blockExpression returns [Node value]
+// TODO: Should this return a node with a null label instead of do?
   : OPEN_BRACE                         { $value = new Node(new Symbol("do")); }
     terminator?
     ( expressions                      { $value = new Node(new Symbol("do"), $expressions.value.getChildren()); }

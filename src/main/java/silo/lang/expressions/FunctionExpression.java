@@ -88,6 +88,7 @@ public class FunctionExpression implements Expression, Opcodes {
             outputs = n.getChildren();
         }
 
+        // TODO: Should this be null instead? See grammar.g's comment about braces...
         n = node.getChildNode(new Symbol("do"));
         if(n != null) {
             body = Block.build(n);
@@ -111,7 +112,15 @@ public class FunctionExpression implements Expression, Opcodes {
         return Object.class;
     }
 
+    public void emitDeclaration(CompilationContext context) {
+        emit(context, false);
+    }
+
     public void emit(CompilationContext context) {
+        emit(context, true);
+    }
+
+    public void emit(CompilationContext context, boolean shouldEmit) {
 
         if(name == null) {
             name = context.uniqueIdentifier("function");
@@ -213,7 +222,7 @@ public class FunctionExpression implements Expression, Opcodes {
         // The function class definition
         // TODO - Figure out how to propagate the file name
         ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
-        cw.visitSource("app", null);
+        cw.visitSource("app.silo", null);
 
         String fullyQualifiedName = context.packageName;
         if(fullyQualifiedName == null || fullyQualifiedName.equals("")) {
@@ -268,7 +277,19 @@ public class FunctionExpression implements Expression, Opcodes {
         frame.generator.goTo(initializationLabel);
 
         frame.generator.mark(startLabel);
-        body.emit(context);
+
+        if(shouldEmit) {
+            body.emit(context);
+        } else {
+            Node newBody = new Node(
+                new Symbol("return"),
+                Compiler.defaultValueForType(outputClass)
+            );
+
+            Compiler.buildExpression(newBody).emit(context);
+            body.emitDeclaration(context);
+        }
+
         (new Return(null, false)).emit(context);
 
         frame.generator.mark(initializationLabel);
@@ -314,8 +335,12 @@ public class FunctionExpression implements Expression, Opcodes {
         System.out.println();
         */
 
-        Class klass = context.runtime.loader.loadClass(code);
-        context.classes.add(klass);
-        context.bytecode.add(code);
+        if(shouldEmit) {
+            Class klass = context.runtime.loader.loadClass(code);
+            context.classes.add(klass);
+            context.bytecode.add(code);
+        } else {
+            context.declarations.loadClass(code);
+        }
     }
 }

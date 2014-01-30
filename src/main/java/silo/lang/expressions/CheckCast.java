@@ -36,6 +36,12 @@ public class CheckCast implements Expression {
         return klass;
     }
 
+    public void emitDeclaration(CompilationContext context) {
+        for(Object child : node.getChildren()) {
+            Compiler.buildExpression(child).emitDeclaration(context);
+        }
+    }
+
     public void emit(CompilationContext context) {
         GeneratorAdapter generator = context.currentFrame().generator;
         CompilationFrame frame = context.currentFrame();

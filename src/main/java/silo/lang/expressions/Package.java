@@ -40,7 +40,27 @@ public class Package implements Expression {
         throw new RuntimeException("Invalid package declaration");
     }
 
+    public void emitDeclaration(CompilationContext context) {
+        // TODO: Refactor this code with emit below it... perhaps with an anonymous function
+        // that calls emit vs emitDeclaration...
+
+        if(node.getChildren().size() == 1) {
+            context.packageName = packageName(node);
+        } else if(node.getChildren().size() == 2) {
+            String name = context.packageName;
+            context.packageName = packageName(node);
+
+            Compiler.buildExpression(node.getSecondChild()).emitDeclaration(context);
+
+            context.packageName = name;
+        } else {
+            throw new RuntimeException("Invalid package declaration");
+        }
+    }
+
     public void emit(CompilationContext context) {
+        // TODO: Refactor this code with emitDeclaration below it...
+
         CompilationFrame frame = context.currentFrame();
         GeneratorAdapter generator = frame.generator;
 

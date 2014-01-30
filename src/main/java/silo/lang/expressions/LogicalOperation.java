@@ -19,6 +19,8 @@ import java.util.HashMap;
 import org.objectweb.asm.*;
 import org.objectweb.asm.commons.*;
 
+// TODO: Redo this as a macro...
+
 public class LogicalOperation implements Expression {
 
     public static boolean accepts(Object value) {
@@ -100,6 +102,10 @@ public class LogicalOperation implements Expression {
     }
 
     public Class type(CompilationContext context) {
+        throw new RuntimeException("LogicalOperation should not ever be called...");
+    }
+
+    public void emitDeclaration(CompilationContext context) {
         throw new RuntimeException("LogicalOperation should not ever be called...");
     }
 
