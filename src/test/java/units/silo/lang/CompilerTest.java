@@ -433,4 +433,13 @@ public class CompilerTest {
         Vector<Class> classes = runtime.compile(Parser.parse(source));
         Assert.assertEquals("Hello, World!", runtime.eval(classes.get(0)));
     }
+
+    @Test
+    public void mutualRecursion() {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/examples/mutual-recursion.silo");
+
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+        Assert.assertEquals(true, runtime.eval(classes.get(0), new Integer(10)));
+    }
 }
