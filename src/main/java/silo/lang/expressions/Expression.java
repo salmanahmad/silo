@@ -17,6 +17,13 @@ import org.objectweb.asm.commons.GeneratorAdapter;
 
 public interface Expression {
     public void emit(CompilationContext context);
+    //public Node scaffold(CompilationContext context);
     public void emitDeclaration(CompilationContext context);
     public Class type(CompilationContext context);
+
+    // TODO - Understand the following comment and then remove it.
+    // There are far-easier way to accomplish this...
+    // TODO - Is this useful to include here? Could be nice to abstract
+    // functionality that is ahred implicity between here and scaffold...
+    //public Node macroexpand(CompilationContext context);
 }

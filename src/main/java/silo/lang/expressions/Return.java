@@ -21,15 +21,15 @@ import org.objectweb.asm.commons.GeneratorAdapter;
 
 public class Return implements Expression {
 
-    public final Expression value;
+    public final Node node;
     public final boolean explicit;
 
-    public static Return build(Node node) {
-        return new Return(Block.build(node), true);
+    public Return(Node node) {
+        this(node, true);
     }
 
-    public Return(Expression value, boolean explicit) {
-        this.value = value;
+    public Return(Node node, boolean explicit) {
+        this.node = node;
         this.explicit = explicit;
     }
 
@@ -54,10 +54,18 @@ public class Return implements Expression {
     }
 
     public void emitDeclaration(CompilationContext context) {
+        // TODO: Remove this once I add scaffold...
+        Expression value = Compiler.buildExpression(new Node(null, node.getChildren()));
         value.emitDeclaration(context);
     }
 
     public void emit(CompilationContext context) {
+        Expression value = null;
+
+        if(node != null) {
+            value = Compiler.buildExpression(new Node(null, node.getChildren()));
+        }
+
         if(value != null) {
             value.emit(context);
         }

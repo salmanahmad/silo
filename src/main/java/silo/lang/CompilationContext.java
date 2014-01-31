@@ -14,6 +14,7 @@ package silo.lang;
 import java.util.Stack;
 import java.util.Vector;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 public class CompilationContext {
 
@@ -22,6 +23,7 @@ public class CompilationContext {
         public Class klass;
         public Node code;
         public Namespace namespace;
+        public boolean compiled;
     }
 
     public static class Namespace {
@@ -40,7 +42,7 @@ public class CompilationContext {
     public final Vector<byte[]> bytecode;
 
     public RuntimeClassLoader symbolLoader;
-    public final HashMap<String, SymbolEntry> symbolTable;
+    public final LinkedHashMap<String, SymbolEntry> symbolTable;
 
     private int uniqueIdentifierCounter;
 
@@ -54,7 +56,7 @@ public class CompilationContext {
         this.bytecode = new Vector<byte[]>();
 
         this.symbolLoader = new RuntimeClassLoader();
-        this.symbolTable = new HashMap<String, SymbolEntry>();
+        this.symbolTable = new LinkedHashMap<String, SymbolEntry>();
 
         this.uniqueIdentifierCounter = 0;
 

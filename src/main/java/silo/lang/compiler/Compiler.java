@@ -43,6 +43,20 @@ public class Compiler {
     }
 
     public static Vector<Class> compile(CompilationContext context, Node node) {
+        /*
+        buildExpression(node).scaffold(context);
+
+        for(String name : context.symbolTable.keySet()) {
+            CompilationContext.SymbolEntry entry = context.symbolTable.get(name);
+            context.namespaces.push(entry.namespace);
+
+            buildExpression(entry.code).emit(context);
+
+            context.namespaces.pop();
+            context.symbolTable.remove(name);
+        }
+        */
+
         Object expanded = expandMacros(node, context);
         Expression expression = buildExpression(expanded);
 
@@ -243,7 +257,7 @@ public class Compiler {
             } else if(label.equals(new Symbol("branch"))) {
                 return Branch.build(node);
             } else if(label.equals(new Symbol("return"))) {
-                return Return.build(node);
+                return new Return(node);
             } else if(label.equals(new Symbol("checkcast"))) {
                 return new CheckCast(node);
             } else if(label.equals(new Symbol("instanceof"))) {
@@ -268,7 +282,7 @@ public class Compiler {
             }
         } else if(value instanceof Symbol) {
             if(value.equals(new Symbol("return"))) {
-                return Return.build(new Node(new Symbol("return")));
+                return new Return(new Node(new Symbol("return")));
             } else if(value.equals(new Symbol("break"))) {
                 return Break.build(new Node(new Symbol("break")));
             } else if(value.equals(new Symbol("continue"))) {
