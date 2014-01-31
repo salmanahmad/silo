@@ -363,7 +363,7 @@ public class Compiler {
 
     public static Class resolveType(Vector<Symbol> path, CompilationContext context) {
         if(path.size() == 1) {
-            String alias = context.aliases.get(path.get(0).toString());
+            String alias = context.currentNamespace().aliases.get(path.get(0).toString());
             if(alias != null) {
                 Class klass = resolveType(alias, context.runtime.loader);
                 if(klass != null) {
@@ -381,7 +381,7 @@ public class Compiler {
             }
         }
 
-        for(String p : context.imports) {
+        for(String p : context.currentNamespace().imports) {
             String qualifiedName = p;
             if(qualifiedName.equals("")) {
                 qualifiedName = name;
@@ -389,7 +389,7 @@ public class Compiler {
                 qualifiedName += "." + name;
             }
 
-            Class klass = resolveType(qualifiedName, context.runtime.loader, context.declarations);
+            Class klass = resolveType(qualifiedName, context.runtime.loader, context.symbolLoader);
 
             if(klass != null) {
                 return klass;

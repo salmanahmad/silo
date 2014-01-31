@@ -1,0 +1,18 @@
+
+function(
+    name(createVar)
+    macro
+    outputs(silo.lang.Node)
+    {
+        silo.lang.Node(silo.lang.Symbol("="), silo.lang.Symbol("i"), "Hello, Macro!")
+    }
+)
+
+function(
+    name(foo)
+    outputs(Object)
+    {
+        createVar()
+        return(i)
+    }
+)

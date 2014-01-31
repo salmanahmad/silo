@@ -50,7 +50,7 @@ public class Alias implements Expression {
             throw new RuntimeException("Invalid alias declaration");
         }
 
-        context.aliases.put(source, target);
+        context.currentNamespace().aliases.put(source, target);
     }
 
     public void emit(CompilationContext context) {
@@ -74,7 +74,7 @@ public class Alias implements Expression {
             throw new RuntimeException("Invalid alias declaration");
         }
 
-        context.aliases.put(source, target);
+        context.currentNamespace().aliases.put(source, target);
 
         generator.push((String)null);
         frame.operandStack.push(Null.class);

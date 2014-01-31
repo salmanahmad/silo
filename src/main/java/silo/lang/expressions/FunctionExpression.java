@@ -224,7 +224,7 @@ public class FunctionExpression implements Expression, Opcodes {
         ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
         cw.visitSource("app.silo", null);
 
-        String fullyQualifiedName = context.packageName;
+        String fullyQualifiedName = context.currentNamespace().packageName;
         if(fullyQualifiedName == null || fullyQualifiedName.equals("")) {
             fullyQualifiedName = name.toString();
         } else {
@@ -340,7 +340,7 @@ public class FunctionExpression implements Expression, Opcodes {
             context.classes.add(klass);
             context.bytecode.add(code);
         } else {
-            context.declarations.loadClass(code);
+            context.symbolLoader.loadClass(code);
         }
     }
 }

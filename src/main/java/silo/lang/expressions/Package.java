@@ -45,14 +45,14 @@ public class Package implements Expression {
         // that calls emit vs emitDeclaration...
 
         if(node.getChildren().size() == 1) {
-            context.packageName = packageName(node);
+            context.currentNamespace().packageName = packageName(node);
         } else if(node.getChildren().size() == 2) {
-            String name = context.packageName;
-            context.packageName = packageName(node);
+            String name = context.currentNamespace().packageName;
+            context.currentNamespace().packageName = packageName(node);
 
             Compiler.buildExpression(node.getSecondChild()).emitDeclaration(context);
 
-            context.packageName = name;
+            context.currentNamespace().packageName = name;
         } else {
             throw new RuntimeException("Invalid package declaration");
         }
@@ -65,14 +65,14 @@ public class Package implements Expression {
         GeneratorAdapter generator = frame.generator;
 
         if(node.getChildren().size() == 1) {
-            context.packageName = packageName(node);
+            context.currentNamespace().packageName = packageName(node);
         } else if(node.getChildren().size() == 2) {
-            String name = context.packageName;
-            context.packageName = packageName(node);
+            String name = context.currentNamespace().packageName;
+            context.currentNamespace().packageName = packageName(node);
 
             Compiler.buildExpression(node.getSecondChild()).emit(context);
 
-            context.packageName = name;
+            context.currentNamespace().packageName = name;
         } else {
             throw new RuntimeException("Invalid package declaration");
         }

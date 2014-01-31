@@ -37,7 +37,7 @@ public class Import implements Expression {
         Vector<Symbol> list = Compiler.symbolList(node.getFirstChild());
         if(list != null) {
             String i = StringUtils.join(list, ".");
-            context.imports.add(i);
+            context.currentNamespace().imports.add(i);
         } else {
             throw new RuntimeException("Invalid import declaration");
         }
@@ -56,7 +56,7 @@ public class Import implements Expression {
         Vector<Symbol> list = Compiler.symbolList(node.getFirstChild());
         if(list != null) {
             String i = StringUtils.join(list, ".");
-            context.imports.add(i);
+            context.currentNamespace().imports.add(i);
         } else {
             throw new RuntimeException("Invalid import declaration");
         }

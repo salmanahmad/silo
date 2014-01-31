@@ -1,7 +1,7 @@
 
 TODO List
 
-- `return 5` is parsed differently from `return(5)` and could be really confusing to many people. I should add error reporting for this case. The same goes for things like `import()` --- THIS IS REALLY IMPORTANT. I HAVE MADE THIS MISTAKE MULTIPLE TIMES...
+*- `return 5` is parsed differently from `return(5)` and could be really confusing to many people. I should add error reporting for this case. The same goes for things like `import()` --- THIS IS REALLY IMPORTANT. I HAVE MADE THIS MISTAKE MULTIPLE TIMES...
 
 - flexible pattern matching is really important in the language. perhaps even go beyond what erlang / scala provide and provide a full blow parser combinator DSL.
 
@@ -32,4 +32,4 @@ TODO List
 
 - How do I create a subclass of a certain interface or class? In particular, how would I create a class that implements `runnable` or `actionlistener` so that it could be used with swing or threads? http://tech.puredanger.com/2011/08/12/subclassing-in-clojure/
 
-
+- Do I need (public / private / protected) and inheritance. Is the actor model good enough?
