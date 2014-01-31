@@ -24,16 +24,10 @@ import org.objectweb.asm.tree.MethodNode;
 
 public class Loop implements Expression {
 
-    public final Expression code;
+    Node node;
 
-    public static Loop build(Node node) {
-        return new Loop(
-            Block.build(node)
-        );
-    }
-
-    public Loop(Expression code) {
-        this.code = code;
+    public Loop(Node node) {
+        this.node = node;
     }
 
     public Class type(CompilationContext context) {
@@ -42,10 +36,13 @@ public class Loop implements Expression {
     }
 
     public void emitDeclaration(CompilationContext context) {
+        Expression code = Compiler.buildExpression(new Node(null, node.getChildren()));
         code.emitDeclaration(context);
     }
 
     public void emit(CompilationContext context) {
+        Expression code = Compiler.buildExpression(new Node(null, node.getChildren()));
+
         CompilationFrame frame = context.currentFrame();
         GeneratorAdapter generator = frame.generator;
 
@@ -55,7 +52,7 @@ public class Loop implements Expression {
         frame.pushIterationFrame(startLabel, endLabel);
 
         generator.mark(startLabel);
-        this.code.emit(context);
+        code.emit(context);
 
         frame.operandStack.pop();
         generator.pop();

@@ -443,6 +443,7 @@ public class CompilerTest {
         Assert.assertEquals(true, runtime.eval(classes.get(0), new Integer(10)));
     }
 
+    /*
     @Test
     public void forwardDeclareMacro() {
         Runtime runtime = new Runtime();
@@ -451,4 +452,5 @@ public class CompilerTest {
         Vector<Class> classes = runtime.compile(Parser.parse(source));
         Assert.assertEquals(true, runtime.eval(classes.get(0), new Integer(10)));
     }
+    */
 }

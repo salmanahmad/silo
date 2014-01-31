@@ -251,7 +251,7 @@ public class Compiler {
             } else if(label.equals(new Symbol("declare"))) {
                 return Declare.build(node);
             } else if(label.equals(new Symbol("loop"))) {
-                return Loop.build(node);
+                return new Loop(node);
             } else if(label.equals(new Symbol("break"))) {
                 return Break.build(node);
             } else if(label.equals(new Symbol("branch"))) {
