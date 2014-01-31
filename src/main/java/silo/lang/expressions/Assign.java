@@ -23,26 +23,30 @@ import org.objectweb.asm.commons.GeneratorAdapter;
 
 public class Assign implements Expression {
 
-    public final Node path;
-    public final Expression head;
-    public final Symbol field;
-    public final Vector<Expression> args;
-    public final Object type;
-    public final Expression value;
+    Node node;
 
-    private final Node originalNode;
+    Node path;
+    Expression head;
+    Symbol field;
+    Vector<Expression> args;
+    Object type;
+    Expression value;
 
-    public static Assign build(Node node) {
+    public Assign(Node node) {
+        this.node = node;
+    }
+
+    public void validate() {
         if(node.getChildren().size() != 2) {
             throw new RuntimeException("Assignment requires at least 2 arguments.");
         }
 
-        Node path = null;
-        Expression head = null;
-        Symbol field = null;
-        Vector<Expression> args = new Vector<Expression>(); ;
-        Object type = null;
-        Expression value = null;
+        path = null;
+        head = null;
+        field = null;
+        args = new Vector<Expression>(); ;
+        type = null;
+        value = null;
 
         value = Compiler.buildExpression(node.getSecondChild());
 
@@ -87,18 +91,6 @@ public class Assign implements Expression {
         } else {
             throw new RuntimeException("Invalid assignment form. The first argument must be a variable identifier or a typed expression");
         }
-
-        return new Assign(node, path, head, field, args, type, value);
-    }
-
-    public Assign(Node node, Node path, Expression head, Symbol field, Vector<Expression> args, Object type, Expression value) {
-        this.originalNode = node;
-        this.path = path;
-        this.head = head;
-        this.field = field;
-        this.args = args;
-        this.type = type;
-        this.value = value;
     }
 
     public void performStaticPutField(Class klass, Class valueClass, Class typeClass, CompilationContext context) {
@@ -247,16 +239,20 @@ public class Assign implements Expression {
     }
 
     public Class type(CompilationContext context) {
+        validate();
+
         return this.value.type(context);
     }
 
     public void emitDeclaration(CompilationContext context) {
-        for(Object child : originalNode.getChildren()) {
+        for(Object child : node.getChildren()) {
             Compiler.buildExpression(child).emitDeclaration(context);
         }
     }
 
     public void emit(CompilationContext context) {
+        validate();
+
         GeneratorAdapter generator = context.currentFrame().generator;
         RuntimeClassLoader loader = context.runtime.loader;
         CompilationFrame frame = context.currentFrame();

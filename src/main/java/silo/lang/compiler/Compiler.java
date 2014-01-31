@@ -249,7 +249,7 @@ public class Compiler {
             } else if(label.equals(new Symbol("function"))) {
                 return new FunctionExpression(node);
             } else if(label.equals(new Symbol("declare"))) {
-                return Declare.build(node);
+                return new Declare(node);
             } else if(label.equals(new Symbol("loop"))) {
                 return new Loop(node);
             } else if(label.equals(new Symbol("break"))) {
@@ -270,7 +270,7 @@ public class Compiler {
             } else if(label.equals(new Symbol("."))) {
                 return new Access(node);
             } else if(label.equals(new Symbol("="))) {
-                return Assign.build(node);
+                return new Assign(node);
             } else if(LogicalOperation.accepts(node.getLabel())) {
                 return LogicalOperation.build(node);
             } else if(MathOperation.accepts(node.getLabel())) {

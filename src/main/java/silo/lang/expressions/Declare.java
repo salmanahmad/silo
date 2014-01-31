@@ -20,12 +20,8 @@ import org.objectweb.asm.commons.GeneratorAdapter;
 
 public class Declare implements Expression {
 
-    public static Declare build(Node node) {
-        return null;
-    }
-
-    public Declare() {
-        
+    public Declare(Node node) {
+        throw new RuntimeException("Unimplemented");
     }
 
     public Class type(CompilationContext context) {
