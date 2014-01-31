@@ -247,7 +247,7 @@ public class Compiler {
             } else if(label.equals(new Symbol("import"))) {
                 return new Import(node);
             } else if(label.equals(new Symbol("function"))) {
-                return FunctionExpression.build(node);
+                return new FunctionExpression(node);
             } else if(label.equals(new Symbol("declare"))) {
                 return Declare.build(node);
             } else if(label.equals(new Symbol("loop"))) {

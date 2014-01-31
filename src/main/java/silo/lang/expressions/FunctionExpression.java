@@ -36,74 +36,10 @@ import java.io.PrintStream;
 
 public class FunctionExpression implements Expression, Opcodes {
 
-    Symbol name;
-    Vector inputs;
-    Vector outputs;
-    Block body;
-    boolean macro;
-    Symbol varargs;
+    Node node;
 
-    public static FunctionExpression build(Node node) {
-        Symbol name = null;
-        Vector inputs = null;
-        Vector outputs = null;
-        Block body = null;
-        boolean macro = false;
-        Symbol varargs = null;
-
-        Node n = null;
-        Object o = null;
-
-
-        o = node.getChildNamed(new Symbol("macro"));
-        macro = o != null;
-
-        o = node.getChildNamed(new Symbol("varargs"));
-        if(o != null) {
-            if((o instanceof Node) && (((Node)o).getFirstChild() instanceof Symbol)) {
-                o = ((Node)o).getFirstChild();
-                varargs = (Symbol)o;
-            } else {
-                throw new RuntimeException("The name of a varargs parameter must be a symbol and cannot have a type.");
-            }
-        }
-
-        n = node.getChildNode(new Symbol("name"));
-        if(n != null) {
-            o = n.getFirstChild();
-            if(o instanceof Symbol) {
-                name = (Symbol)o;
-            } else {
-                throw new RuntimeException("The name of a function must be a symbol.");
-            }
-        }
-
-        n = node.getChildNode(new Symbol("inputs"));
-        if(n != null) {
-            inputs = n.getChildren();
-        }
-
-        n = node.getChildNode(new Symbol("outputs"));
-        if(n != null) {
-            outputs = n.getChildren();
-        }
-
-        // TODO: Should this be null instead? See grammar.g's comment about braces...
-        n = node.getChildNode(new Symbol("do"));
-        if(n != null) {
-            body = Block.build(n);
-        }
-
-        return new FunctionExpression(name, inputs, outputs, body, macro, varargs);
-    }
-
-    public FunctionExpression(Symbol name, Vector inputs, Vector outputs, Block body, boolean macro, Symbol varargs) {
-        this.name = name;
-        this.inputs = inputs;
-        this.outputs = outputs;
-        this.body = body;
-        this.macro = macro;
-        this.varargs = varargs;
+    public FunctionExpression(Node node) {
+        this.node = node;
     }
 
     public Class type(CompilationContext context) {
@@ -121,6 +57,60 @@ public class FunctionExpression implements Expression, Opcodes {
     }
 
     public void emit(CompilationContext context, boolean shouldEmit) {
+        Symbol name = null;
+        Vector inputs = null;
+        Vector outputs = null;
+        Block body = null;
+        boolean macro = false;
+        Symbol varargs = null;
+
+        Node tempNode = null;
+        Object tempObject = null;
+
+
+        tempObject = node.getChildNamed(new Symbol("macro"));
+        macro = tempObject != null;
+
+        tempObject = node.getChildNamed(new Symbol("varargs"));
+        if(tempObject != null) {
+            if((tempObject instanceof Node) && (((Node)tempObject).getFirstChild() instanceof Symbol)) {
+                tempObject = ((Node)tempObject).getFirstChild();
+                varargs = (Symbol)tempObject;
+            } else {
+                throw new RuntimeException("The name of a varargs parameter must be a symbol and cannot have a type.");
+            }
+        }
+
+        tempNode = node.getChildNode(new Symbol("name"));
+        if(tempNode != null) {
+            tempObject = tempNode.getFirstChild();
+            if(tempObject instanceof Symbol) {
+                name = (Symbol)tempObject;
+            } else {
+                throw new RuntimeException("The name of a function must be a symbol.");
+            }
+        }
+
+        tempNode = node.getChildNode(new Symbol("inputs"));
+        if(tempNode != null) {
+            inputs = tempNode.getChildren();
+        }
+
+        tempNode = node.getChildNode(new Symbol("outputs"));
+        if(tempNode != null) {
+            outputs = tempNode.getChildren();
+        }
+
+        // TODO: Should this be null instead? See grammar.g's comment about braces...
+        tempNode = node.getChildNode(new Symbol("do"));
+        if(tempNode != null) {
+            body = Block.build(tempNode);
+        }
+
+
+
+
+
 
         if(name == null) {
             name = context.uniqueIdentifier("function");
@@ -168,7 +158,7 @@ public class FunctionExpression implements Expression, Opcodes {
 
                 // TODO: Should I make this label/child instead of firstChild/secondChild. So: name(string)?
                 // TODO: What about generics or arrays?
-                Symbol name = (Symbol)node.getFirstChild();
+                Symbol variableName = (Symbol)node.getFirstChild();
                 Object symbol = node.getSecondChild();
 
                 Class klass = Compiler.resolveType(symbol, context);
@@ -179,7 +169,7 @@ public class FunctionExpression implements Expression, Opcodes {
 
                 inputTypes.add(Type.getType(klass));
                 inputClasses.add(klass);
-                inputNames.add(name);
+                inputNames.add(variableName);
             } else {
                 throw new RuntimeException("Invalid input specification for function: " + o);
             }
