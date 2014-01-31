@@ -237,9 +237,9 @@ public class Compiler {
             } else if(label.equals(new Symbol("do"))) {
                 return Block.build(node);
             } else if(label.equals(new Symbol("array"))) {
-                return LiteralArrayType.build(node);
+                return new LiteralArrayType(node);
             } else if(label.equals(new Symbol("arraynew"))) {
-                return LiteralArray.build(node);
+                return new LiteralArray(node);
             } else if(label.equals(new Symbol("package"))) {
                 return new Package(node);
             } else if(label.equals(new Symbol("alias"))) {

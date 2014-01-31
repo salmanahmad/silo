@@ -23,10 +23,6 @@ public class LiteralArrayType implements Expression {
 
     public final Node node;
 
-    public static LiteralArrayType build(Node node) {
-        return new LiteralArrayType(node);
-    }
-
     public LiteralArrayType(Node node) {
         this.node = node;
     }

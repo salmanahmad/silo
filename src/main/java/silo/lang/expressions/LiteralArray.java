@@ -21,25 +21,25 @@ import org.objectweb.asm.commons.GeneratorAdapter;
 
 public class LiteralArray implements Expression {
 
-    public final Object type;
-    public final Vector<Expression> dimensions;
+    Node node;
 
-    public static LiteralArray build(Node node) {
+    // TODO: Figure out a way to remove this or abstract them out...
+    Object type;
+    Vector<Expression> dimensions;
+
+    public LiteralArray(Node node) {
+        this.node = node;
+    }
+
+    public void process() {
         Vector children = node.getChildren();
 
-        Object type = children.get(0);
-        Vector<Expression> dimensions = new Vector<Expression>();
+        type = children.get(0);
+        dimensions = new Vector<Expression>();
 
         for(int i = 1; i < children.size(); i++) {
             dimensions.add(Compiler.buildExpression(children.get(i)));
         }
-
-        return new LiteralArray(type, dimensions);
-    }
-
-    public LiteralArray(Object type, Vector<Expression> dimensions) {
-        this.type = type;
-        this.dimensions = dimensions;
     }
 
     public Class type(CompilationContext context) {
@@ -56,6 +56,8 @@ public class LiteralArray implements Expression {
     }
 
     public void emitDeclaration(CompilationContext context) {
+        process();
+
         // TODO: Handle the case where the array type is an anonymous structure of some sort...
         Expression e = Compiler.buildExpression(type);
         e.emitDeclaration(context);
@@ -70,6 +72,8 @@ public class LiteralArray implements Expression {
     }
 
     private void emit(CompilationContext context, boolean shouldEmit) {
+        process();
+
         GeneratorAdapter generator = context.currentFrame().generator;
         CompilationFrame frame = context.currentFrame();
 
