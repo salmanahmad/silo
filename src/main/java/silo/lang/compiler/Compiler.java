@@ -233,9 +233,9 @@ public class Compiler {
             // TODO: If you do not create an ExpressionBuilder atleast re-organize this switch table...
 
             if(node.getLabel() == null) {
-                return Block.build(node);
+                return new Block(node);
             } else if(label.equals(new Symbol("do"))) {
-                return Block.build(node);
+                return new Block(node);
             } else if(label.equals(new Symbol("array"))) {
                 return new LiteralArrayType(node);
             } else if(label.equals(new Symbol("arraynew"))) {

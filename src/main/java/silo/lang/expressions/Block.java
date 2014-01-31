@@ -18,25 +18,27 @@ import java.util.Vector;
 
 public class Block implements Expression {
 
-    public final Vector<Expression> expressions;
+    Node node;
 
-    public static Block build(Node node) {
-        Vector<Expression> arguments = new Vector();
+    public Block(Node node) {
+        this.node = node;
+    }
+
+    public Vector<Expression> expressions() {
+        Vector<Expression> expressions = new Vector<Expression>();
 
         if(node.getChildren() != null) {
             for(Object child : node.getChildren()) {
-                arguments.add(Compiler.buildExpression(child));
+                expressions.add(Compiler.buildExpression(child));
             }
         }
 
-        return new Block(arguments);
-    }
-
-    public Block(Vector<Expression> expressions) {
-        this.expressions = expressions;
+        return expressions;
     }
 
     public Class type(CompilationContext context) {
+        Vector<Expression> expressions = expressions();
+
         if(expressions != null && expressions.size() > 0) {
             Expression e = expressions.get(expressions.size() - 1);
             return e.type(context);
@@ -46,12 +48,16 @@ public class Block implements Expression {
     }
 
     public void emitDeclaration(CompilationContext context) {
+        Vector<Expression> expressions = expressions();
+
         for(Expression e : expressions) {
             e.emitDeclaration(context);
         }
     }
 
     public void emit(CompilationContext context) {
+        Vector<Expression> expressions = expressions();
+
         CompilationFrame frame = context.currentFrame();
 
         if(expressions != null && expressions.size() > 0) {

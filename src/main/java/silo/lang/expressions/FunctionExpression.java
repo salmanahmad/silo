@@ -104,7 +104,7 @@ public class FunctionExpression implements Expression, Opcodes {
         // TODO: Should this be null instead? See grammar.g's comment about braces...
         tempNode = node.getChildNode(new Symbol("do"));
         if(tempNode != null) {
-            body = Block.build(tempNode);
+            body = new Block(tempNode);
         }
 
 
