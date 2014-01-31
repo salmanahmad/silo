@@ -23,7 +23,7 @@ public class RelationalOperation implements Expression {
 
     Node node;
 
-    // TODO: Figure out a way to remove these fields...
+    // TODO: Figure out a way to remove or clean up these fields...
     Expression e1;
     Expression e2;
     int operation;

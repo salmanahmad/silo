@@ -21,9 +21,12 @@ import org.objectweb.asm.commons.*;
 
 public class MathOperation implements Expression {
 
-    public final Expression e1;
-    public final Expression e2;
-    public int operation;
+    Node node;
+
+    // TODO: Figure out a way to remove or clean up these fields...
+    Expression e1;
+    Expression e2;
+    int operation;
 
     static HashMap<Symbol, Integer> opcodes = new HashMap<Symbol, Integer>();
 
@@ -47,8 +50,7 @@ public class MathOperation implements Expression {
         return false;
     }
 
-    public static MathOperation build(Node node) {
-
+    public void process() {
         if(node.getLabel() instanceof Symbol) {
             Symbol symbol = (Symbol)node.getLabel();
             Integer opcode = opcodes.get(symbol);
@@ -58,20 +60,18 @@ public class MathOperation implements Expression {
                     throw new RuntimeException("Binary operation '" + symbol + "' must have 2 operands.");
                 }
 
-                return new MathOperation(
-                    Compiler.buildExpression(node.getChildren().get(0)),
-                    Compiler.buildExpression(node.getChildren().get(1)),
-                    opcode.intValue());
+                e1 = Compiler.buildExpression(node.getChildren().get(0));
+                e2 = Compiler.buildExpression(node.getChildren().get(1));
+                operation = opcode.intValue();
+                return;
             }
         }
 
         throw new RuntimeException("Invalid math operation.");
     }
 
-    public MathOperation(Expression e1, Expression e2, int operation) {
-        this.e1 = e1;
-        this.e2 = e2;
-        this.operation = operation;
+    public MathOperation(Node node) {
+        this.node = node;
     }
 
     public static Class implicitConversion(Class klass1, Class klass2) {
@@ -99,16 +99,20 @@ public class MathOperation implements Expression {
     }
 
     public Class type(CompilationContext context) {
+        process();
         return implicitConversion(this.e1.type(context), this.e2.type(context));
     }
 
     public void emitDeclaration(CompilationContext context) {
+        process();
         e1.emitDeclaration(context);
         e2.emitDeclaration(context);
     }
 
     public void emit(CompilationContext context) {
         // TODO: Autoboxing and Var support...
+
+        process();
 
         Class outputType = type(context);
         Class operand = null;

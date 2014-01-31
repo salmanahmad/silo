@@ -274,7 +274,7 @@ public class Compiler {
             } else if(LogicalOperation.accepts(node.getLabel())) {
                 return LogicalOperation.build(node);
             } else if(MathOperation.accepts(node.getLabel())) {
-                return MathOperation.build(node);
+                return new MathOperation(node);
             } else if(RelationalOperation.accepts(node.getLabel())) {
                 return new RelationalOperation(node);
             } else {
