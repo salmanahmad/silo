@@ -21,9 +21,12 @@ import org.objectweb.asm.commons.*;
 
 public class RelationalOperation implements Expression {
 
-    public final Expression e1;
-    public final Expression e2;
-    public int operation;
+    Node node;
+
+    // TODO: Figure out a way to remove these fields...
+    Expression e1;
+    Expression e2;
+    int operation;
 
     static HashMap<Symbol, Integer> opcodes = new HashMap<Symbol, Integer>();
 
@@ -48,8 +51,7 @@ public class RelationalOperation implements Expression {
         return false;
     }
 
-    public static RelationalOperation build(Node node) {
-
+    public void process() {
         if(node.getLabel() instanceof Symbol) {
             Symbol symbol = (Symbol)node.getLabel();
             Integer opcode = opcodes.get(symbol);
@@ -59,20 +61,18 @@ public class RelationalOperation implements Expression {
                     throw new RuntimeException("Binary operation '" + symbol + "' must have 2 operands.");
                 }
 
-                return new RelationalOperation(
-                    Compiler.buildExpression(node.getChildren().get(0)),
-                    Compiler.buildExpression(node.getChildren().get(1)),
-                    opcode.intValue());
+                e1 = Compiler.buildExpression(node.getChildren().get(0));
+                e2 = Compiler.buildExpression(node.getChildren().get(1));
+                operation = opcode.intValue();
+                return;
             }
         }
 
         throw new RuntimeException("Invalid relational operation.");
     }
 
-    public RelationalOperation(Expression e1, Expression e2, int operation) {
-        this.e1 = e1;
-        this.e2 = e2;
-        this.operation = operation;
+    public RelationalOperation(Node node) {
+        this.node = node;
     }
 
     public Class type(CompilationContext context) {
@@ -80,12 +80,15 @@ public class RelationalOperation implements Expression {
     }
 
     public void emitDeclaration(CompilationContext context) {
+        process();
         e1.emitDeclaration(context);
         e2.emitDeclaration(context);
     }
 
     public void emit(CompilationContext context) {
         // TODO: Add support for non-primitive types.
+
+        process();
 
         Class operand1 = null;
         Class operand2 = null;

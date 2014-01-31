@@ -276,7 +276,7 @@ public class Compiler {
             } else if(MathOperation.accepts(node.getLabel())) {
                 return MathOperation.build(node);
             } else if(RelationalOperation.accepts(node.getLabel())) {
-                return RelationalOperation.build(node);
+                return new RelationalOperation(node);
             } else {
                 return new Invoke(node);
             }
