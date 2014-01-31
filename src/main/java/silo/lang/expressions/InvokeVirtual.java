@@ -21,43 +21,46 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.Method;
 import org.objectweb.asm.commons.GeneratorAdapter;
 
+// TODO: Rename this to dispatch? I am not doing JVM virtual-calls all the time...
+
 public class InvokeVirtual implements Expression {
 
-    public final Expression receiver;
-    public final Symbol method;
-    public final Vector<Expression> arguments;
+    Node node;
 
-    public static InvokeVirtual build(Node node) {
+    // TODO: Figure out how to remove this...
+    // As an idea...right now I have these fields to share them between emitDeclaration and emit.
+    // What if I have a method call "validate" which throws an exception if it is of a improper form.
+    // Then I can unpack / use pattern matching in both of these methods at will...
+    Expression receiver;
+    Symbol method;
+    Vector<Expression> arguments;
+
+    public InvokeVirtual(Node node) {
+        this.node = node;
+    }
+
+    public void validate() {
         if(node.getChildren().size() != 2) {
             throw new RuntimeException("invokevirtual requires two arguments.");
         }
 
-        Expression receiver = Compiler.buildExpression(node.getFirstChild());
+        receiver = Compiler.buildExpression(node.getFirstChild());
+        arguments = new Vector<Expression>();
 
-        Vector<Expression> arguments = new Vector<Expression>();
         Object second = node.getSecondChild();
-
         if(second instanceof Node) {
-            Node method = (Node)second;
+            Node methodNode = (Node)second;
 
-            if(method.getLabel() instanceof Symbol) {
-                if(method.getChildren() != null) {
-                    for(Object child : method.getChildren()) {
+            if(methodNode.getLabel() instanceof Symbol) {
+                if(methodNode.getChildren() != null) {
+                    for(Object child : methodNode.getChildren()) {
                         arguments.add(Compiler.buildExpression(child));
                     }
                 }
 
-                return new InvokeVirtual(receiver, (Symbol)method.getLabel(), arguments);
+                method = (Symbol)methodNode.getLabel();
             }
         }
-
-        throw new RuntimeException("Error!");
-    }
-
-    public InvokeVirtual(Expression receiver, Symbol method, Vector<Expression> arguments) {
-        this.receiver = receiver;
-        this.method = method;
-        this.arguments = arguments;
     }
 
     public Class type(CompilationContext context) {
@@ -74,6 +77,8 @@ public class InvokeVirtual implements Expression {
     }
 
     public void emitDeclaration(CompilationContext context) {
+        validate();
+
         receiver.emitDeclaration(context);
 
         for(Expression e : arguments) {
@@ -86,6 +91,8 @@ public class InvokeVirtual implements Expression {
     }
 
     private void emit(CompilationContext context, boolean shouldEmit) {
+        validate();
+
         GeneratorAdapter generator = context.currentFrame().generator;
         RuntimeClassLoader loader = context.runtime.loader;
         CompilationFrame frame = context.currentFrame();

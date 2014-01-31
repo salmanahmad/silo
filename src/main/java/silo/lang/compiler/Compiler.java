@@ -264,9 +264,9 @@ public class Compiler {
                 return new InstanceOf(node);
             } else if(label.equals(new Symbol("invokevirtual"))) {
                 // TODO: Add macro called "dispatch" to wrap this...
-                return InvokeVirtual.build(node);
+                return new InvokeVirtual(node);
             } else if(label.equals(new Symbol("#"))) {
-                return InvokeVirtual.build(node);
+                return new InvokeVirtual(node);
             } else if(label.equals(new Symbol("."))) {
                 return new Access(node);
             } else if(label.equals(new Symbol("="))) {
