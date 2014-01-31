@@ -253,9 +253,9 @@ public class Compiler {
             } else if(label.equals(new Symbol("loop"))) {
                 return new Loop(node);
             } else if(label.equals(new Symbol("break"))) {
-                return Break.build(node);
+                return new Break(node);
             } else if(label.equals(new Symbol("branch"))) {
-                return Branch.build(node);
+                return new Branch(node);
             } else if(label.equals(new Symbol("return"))) {
                 return new Return(node);
             } else if(label.equals(new Symbol("checkcast"))) {
@@ -284,7 +284,7 @@ public class Compiler {
             if(value.equals(new Symbol("return"))) {
                 return new Return(new Node(new Symbol("return")));
             } else if(value.equals(new Symbol("break"))) {
-                return Break.build(new Node(new Symbol("break")));
+                return new Break(new Node(new Symbol("break")));
             } else if(value.equals(new Symbol("continue"))) {
                 // TODO
             }

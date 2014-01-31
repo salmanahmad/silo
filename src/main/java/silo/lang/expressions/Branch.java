@@ -24,43 +24,44 @@ import org.objectweb.asm.tree.MethodNode;
 
 public class Branch implements Expression {
 
-    public final Expression condition;
-    public final Expression trueBranch;
-    public final Expression falseBranch;
+    Node node;
 
-    public static Branch build(Node node) {
+    // TODO: Remove these fields... and clean them up...
+    Expression condition;
+    Expression trueBranch;
+    Expression falseBranch;
+
+    public Branch(Node node) {
+        this.node = node;
+    }
+
+    public void validate() {
         int size = node.getChildren().size();
 
         if(size == 1) {
-            return new Branch(Compiler.buildExpression(node.getChildren().get(0)), null, null);
+            this.condition = Compiler.buildExpression(node.getChildren().get(0));
+            this.trueBranch = null;
+            this.falseBranch = null;
         } else if(size == 2) {
-            return new Branch(
-                Compiler.buildExpression(node.getChildren().get(0)),
-                Compiler.buildExpression(node.getChildren().get(1)),
-                null
-            );
+            this.condition = Compiler.buildExpression(node.getChildren().get(0));
+            this.trueBranch = Compiler.buildExpression(node.getChildren().get(1));
+            this.falseBranch = null;
         } else if(size == 3) {
-            return new Branch(
-                Compiler.buildExpression(node.getChildren().get(0)),
-                Compiler.buildExpression(node.getChildren().get(1)),
-                Compiler.buildExpression(node.getChildren().get(2))
-            );
+            this.condition = Compiler.buildExpression(node.getChildren().get(0));
+            this.trueBranch = Compiler.buildExpression(node.getChildren().get(1));
+            this.falseBranch = Compiler.buildExpression(node.getChildren().get(2));
         } else {
             throw new RuntimeException("Invalid number of arguments to the branch form.");
         }
-    }
 
-    public Branch(Expression condition, Expression trueBranch, Expression falseBranch) {
         if(trueBranch == null && falseBranch != null) {
             throw new RuntimeException("You cannot have a false branch without a true branch");
         }
-
-        this.condition = condition;
-        this.trueBranch = trueBranch;
-        this.falseBranch = falseBranch;
     }
 
     public Class type(CompilationContext context) {
+        validate();
+
         Class trueClass = null;
         Class falseClass = null;
 
@@ -83,6 +84,8 @@ public class Branch implements Expression {
     }
 
     public void emitDeclaration(CompilationContext context) {
+        validate();
+
         condition.emitDeclaration(context);
 
         if(trueBranch != null) {
@@ -96,6 +99,8 @@ public class Branch implements Expression {
 
 
     public void emit(CompilationContext context) {
+        validate();
+
         CompilationFrame frame = context.currentFrame();
         GeneratorAdapter generator = frame.generator;
 
