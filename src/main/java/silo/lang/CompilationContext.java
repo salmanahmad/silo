@@ -26,6 +26,7 @@ public class CompilationContext {
         public boolean compiled;
     }
 
+    // TODO: Is a better name for this "Environment"?
     public static class Namespace {
         // TODO: Make import a special form, probably. Alternatively, can I pass CompilationContext to macros?
         public String packageName;
