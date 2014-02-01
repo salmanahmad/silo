@@ -118,6 +118,8 @@ public class Compiler {
         }
     }
 
+    // TODO: Should I remove this old macro-expansion code now that
+    // macro expansion is done during scaffolding?
     public static Object expandMacros(Object node, CompilationContext context) {
         Object previous = null;
 
@@ -182,18 +184,6 @@ public class Compiler {
                 return definition.macro();
             }
         }
-    }
-
-    public static void emit(Node node) {
-        // TODO: Remove this?
-    }
-
-    private static void checkForDuplicates(Vector<Node> declarations) {
-        
-    }
-
-    private static boolean containsUncompiledMacros(Object value) {
-        return false;
     }
 
     public static Object defaultValueForType(Class klass) {
