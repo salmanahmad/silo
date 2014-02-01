@@ -435,6 +435,15 @@ public class CompilerTest {
     }
 
     @Test
+    public void recursion() {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/examples/recursion.silo");
+
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+        Assert.assertEquals(new Integer(39916800), runtime.eval(classes.get(0), new Integer(11)));
+    }
+
+    @Test
     public void mutualRecursion() {
         Runtime runtime = new Runtime();
         String source = Helper.readResource("/examples/mutual-recursion.silo");
