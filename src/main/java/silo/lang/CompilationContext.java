@@ -19,6 +19,14 @@ import java.util.LinkedHashSet;
 
 public class CompilationContext {
 
+    // TODO: These enum definitions could be useful to determine if compilation is performing
+    // scaffolding, expansion, codegen, etc.
+    /*
+    public static enum Stage {}
+    public static enum Phase {}
+    public static enum Pass {}
+    */
+
     public static class SymbolEntry {
         public String name;
         public Class klass;

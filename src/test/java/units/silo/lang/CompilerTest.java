@@ -443,14 +443,12 @@ public class CompilerTest {
         Assert.assertEquals(true, runtime.eval(classes.get(0), new Integer(10)));
     }
 
-    /*
     @Test
     public void forwardDeclareMacro() {
         Runtime runtime = new Runtime();
         String source = Helper.readResource("/examples/macro-forward-declare.silo");
 
         Vector<Class> classes = runtime.compile(Parser.parse(source));
-        Assert.assertEquals(true, runtime.eval(classes.get(0), new Integer(10)));
+        Assert.assertEquals("Hello, Macro!", runtime.eval(classes.get(1)));
     }
-    */
 }

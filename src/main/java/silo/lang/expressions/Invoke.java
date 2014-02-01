@@ -533,6 +533,15 @@ public class Invoke implements Expression {
                 }
 
                 if(Compiler.isMacro(klass)) {
+                    CompilationContext.SymbolEntry entry = context.symbolTable.get(klass.getName());
+                    if(entry != null && entry.compiled == false) {
+                        context.namespaces.push(entry.namespace);
+                        Compiler.buildExpression(entry.code).emit(context);
+                        context.namespaces.pop();
+
+                        klass = Compiler.resolveType(label, context);
+                    }
+
                     o = context.runtime.eval(klass, children.toArray());
                 } else {
                     break;

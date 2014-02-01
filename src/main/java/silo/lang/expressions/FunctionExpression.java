@@ -83,6 +83,17 @@ public class FunctionExpression implements Expression, Opcodes {
         return scaffolded;
     }
 
+    public String fullyQualifiedName(Symbol name, CompilationContext context) {
+        String fullyQualifiedName = context.currentNamespace().packageName;
+        if(fullyQualifiedName == null || fullyQualifiedName.equals("")) {
+            fullyQualifiedName = name.toString();
+        } else {
+            fullyQualifiedName = fullyQualifiedName + "." + name.toString();
+        }
+
+        return fullyQualifiedName;
+    }
+
     public void emit(CompilationContext context) {
         doEmit(node, context, true);
     }
@@ -157,6 +168,20 @@ public class FunctionExpression implements Expression, Opcodes {
 
         if(body == null) {
             body = new Block(null);
+        }
+
+
+
+
+
+
+
+        String fullyQualifiedName = fullyQualifiedName(name, context);
+        CompilationContext.SymbolEntry symbolEntry = context.symbolTable.get(fullyQualifiedName);
+        if(symbolEntry != null) {
+            if(symbolEntry.compiled) {
+                return;
+            }
         }
 
         if(outputs.size() > 1) {
@@ -245,15 +270,7 @@ public class FunctionExpression implements Expression, Opcodes {
         ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
         cw.visitSource("app.silo", null);
 
-        String fullyQualifiedName = context.currentNamespace().packageName;
-        if(fullyQualifiedName == null || fullyQualifiedName.equals("")) {
-            fullyQualifiedName = name.toString();
-        } else {
-            fullyQualifiedName = fullyQualifiedName + "." + name.toString();
-            fullyQualifiedName = fullyQualifiedName.replace(".", "/");
-        }
-
-        cw.visit(V1_6, ACC_PUBLIC + ACC_SUPER, fullyQualifiedName, null, Type.getType(Function.class).getInternalName(), null);
+        cw.visit(V1_6, ACC_PUBLIC + ACC_SUPER, fullyQualifiedName.replace(".", "/"), null, Type.getType(Function.class).getInternalName(), null);
         av = cw.visitAnnotation(Type.getType(Function.Definition.class).getDescriptor(), true);
         if(macro) {
             av.visit("macro", Boolean.TRUE);
@@ -359,6 +376,11 @@ public class FunctionExpression implements Expression, Opcodes {
             Class klass = context.runtime.loader.loadClass(code);
             context.classes.add(klass);
             context.bytecode.add(code);
+
+            CompilationContext.SymbolEntry entry = context.symbolTable.get(fullyQualifiedName);
+            if(entry != null) {
+                entry.compiled = true;
+            }
         } else {
             CompilationContext.SymbolEntry entry = new CompilationContext.SymbolEntry();
             entry.name = fullyQualifiedName;
