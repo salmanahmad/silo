@@ -35,9 +35,13 @@ public class Break implements Expression {
         return Object.class;
     }
 
-    public void emitDeclaration(CompilationContext context) {
-        Expression value = Compiler.buildExpression(new Node(null, node.getChildren()));
-        value.emitDeclaration(context);
+    public Object scaffold(CompilationContext context) {
+        // TODO: This line appeared in the old version of emitDeclarations and was present
+        // in many other exprerssions, like return where I wrap the children in a block. Do I
+        // need to wrap the children in a block in scaffold?
+        //Expression value = Compiler.buildExpression(new Node(null, node.getChildren()));
+
+        return Compiler.scaffoldNodeChildren(node, context);
     }
 
     public void emit(CompilationContext context) {

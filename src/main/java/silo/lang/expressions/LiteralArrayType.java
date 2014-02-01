@@ -31,11 +31,8 @@ public class LiteralArrayType implements Expression {
         return Class.class;
     }
 
-    public void emitDeclaration(CompilationContext context) {
-        // TODO: Handle the case where the array type is an anonymous structure of some sort...
-        for(Object child : node.getChildren()) {
-            Compiler.buildExpression(child).emitDeclaration(context);
-        }
+    public Object scaffold(CompilationContext context) {
+        return Compiler.scaffoldNodeChildren(node, context);
     }
 
     public void emit(CompilationContext context) {

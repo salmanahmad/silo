@@ -29,10 +29,8 @@ public class InstanceOf implements Expression {
         return Boolean.TYPE;
     }
 
-    public void emitDeclaration(CompilationContext context) {
-        for(Object child : node.getChildren()) {
-            Compiler.buildExpression(child).emitDeclaration(context);
-        }
+    public Object scaffold(CompilationContext context) {
+        return Compiler.scaffoldNodeChildren(node, context);
     }
 
     public void emit(CompilationContext context) {

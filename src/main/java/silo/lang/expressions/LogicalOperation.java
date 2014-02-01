@@ -105,7 +105,7 @@ public class LogicalOperation implements Expression {
         throw new RuntimeException("LogicalOperation should not ever be called...");
     }
 
-    public void emitDeclaration(CompilationContext context) {
+    public Object scaffold(CompilationContext context) {
         throw new RuntimeException("LogicalOperation should not ever be called...");
     }
 

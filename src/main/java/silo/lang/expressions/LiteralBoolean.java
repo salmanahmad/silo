@@ -29,8 +29,8 @@ public class LiteralBoolean implements Expression {
         return Boolean.TYPE;
     }
 
-    public void emitDeclaration(CompilationContext context) {
-        return;
+    public Object scaffold(CompilationContext context) {
+        return value;
     }
 
     public void emit(CompilationContext context) {

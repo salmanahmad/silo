@@ -22,8 +22,8 @@ public class LiteralNull implements Expression {
         return Null.class;
     }
 
-    public void emitDeclaration(CompilationContext context) {
-        return;
+    public Object scaffold(CompilationContext context) {
+        return null;
     }
 
     public void emit(CompilationContext context) {

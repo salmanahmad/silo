@@ -103,10 +103,8 @@ public class MathOperation implements Expression {
         return implicitConversion(this.e1.type(context), this.e2.type(context));
     }
 
-    public void emitDeclaration(CompilationContext context) {
-        process();
-        e1.emitDeclaration(context);
-        e2.emitDeclaration(context);
+    public Object scaffold(CompilationContext context) {
+        return Compiler.scaffoldNodeChildren(node, context);
     }
 
     public void emit(CompilationContext context) {

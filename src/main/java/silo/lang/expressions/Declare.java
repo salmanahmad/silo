@@ -28,7 +28,7 @@ public class Declare implements Expression {
         throw new RuntimeException("Unimplemented");
     }
 
-    public void emitDeclaration(CompilationContext context) {
+    public Object scaffold(CompilationContext context) {
         throw new RuntimeException("Unimplemented");
     }
 

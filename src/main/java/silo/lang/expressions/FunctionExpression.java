@@ -48,15 +48,46 @@ public class FunctionExpression implements Expression, Opcodes {
         return Object.class;
     }
 
-    public void emitDeclaration(CompilationContext context) {
-        emit(context, false);
+    public Object scaffold(CompilationContext context) {
+        Node name = null;
+        if(node.getChildNamed(new Symbol("name")) == null) {
+            name = new Node(new Symbol("name"), context.uniqueIdentifier("function"));
+        }
+
+        Vector children = new Vector();
+        for(Object child : node.getChildren()) {
+            if(child instanceof Node) {
+                // TODO: Should this be null instead? Perhaps just node.getLastChild()? See grammar.g's comment about braces... Also see the comment in emit()
+                if(((Node)child).getLabel().equals(new Symbol("do"))) {
+                    continue;
+                }
+            }
+
+            children.add(child);
+        }
+
+        if(name != null) {
+            children.add(name);
+        }
+
+        Object body = node.getChildNode(new Symbol("do"));
+        if(body != null) {
+            body = Compiler.buildExpression(body).scaffold(context);
+            children.add(body);
+        }
+
+        Node scaffolded = new Node(node.getLabel(), children);
+
+        doEmit(scaffolded, context, false);
+
+        return scaffolded;
     }
 
     public void emit(CompilationContext context) {
-        emit(context, true);
+        doEmit(node, context, true);
     }
 
-    public void emit(CompilationContext context, boolean shouldEmit) {
+    public void doEmit(Node node, CompilationContext context, boolean shouldEmit) {
         Symbol name = null;
         Vector inputs = null;
         Vector outputs = null;
@@ -101,7 +132,7 @@ public class FunctionExpression implements Expression, Opcodes {
             outputs = tempNode.getChildren();
         }
 
-        // TODO: Should this be null instead? See grammar.g's comment about braces...
+        // TODO: Should this be null instead? Perhaps just node.getLastChild()? See grammar.g's comment about braces... Also see the comment in scaffold()
         tempNode = node.getChildNode(new Symbol("do"));
         if(tempNode != null) {
             body = new Block(tempNode);
@@ -154,12 +185,12 @@ public class FunctionExpression implements Expression, Opcodes {
                 inputClasses.add(Object.class);
                 inputNames.add((Symbol)o);
             } else if(o instanceof Node) {
-                Node node = (Node)o;
+                Node n = (Node)o;
 
                 // TODO: Should I make this label/child instead of firstChild/secondChild. So: name(string)?
                 // TODO: What about generics or arrays?
-                Symbol variableName = (Symbol)node.getFirstChild();
-                Object symbol = node.getSecondChild();
+                Symbol variableName = (Symbol)n.getFirstChild();
+                Object symbol = n.getSecondChild();
 
                 Class klass = Compiler.resolveType(symbol, context);
 
@@ -277,7 +308,6 @@ public class FunctionExpression implements Expression, Opcodes {
             );
 
             Compiler.buildExpression(newBody).emit(context);
-            body.emitDeclaration(context);
         }
 
         (new Return(null, false)).emit(context);
@@ -330,7 +360,14 @@ public class FunctionExpression implements Expression, Opcodes {
             context.classes.add(klass);
             context.bytecode.add(code);
         } else {
-            context.symbolLoader.loadClass(code);
+            CompilationContext.SymbolEntry entry = new CompilationContext.SymbolEntry();
+            entry.name = fullyQualifiedName;
+            entry.klass = context.symbolLoader.loadClass(code);
+            entry.code = node;
+            entry.namespace = context.currentNamespace();
+            entry.compiled = false;
+
+            context.symbolTable.put(entry.name, entry);
         }
     }
 }

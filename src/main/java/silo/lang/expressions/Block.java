@@ -47,12 +47,8 @@ public class Block implements Expression {
         }
     }
 
-    public void emitDeclaration(CompilationContext context) {
-        Vector<Expression> expressions = expressions();
-
-        for(Expression e : expressions) {
-            e.emitDeclaration(context);
-        }
+    public Object scaffold(CompilationContext context) {
+        return Compiler.scaffoldNodeChildren(node, context);
     }
 
     public void emit(CompilationContext context) {

@@ -509,12 +509,44 @@ public class Invoke implements Expression {
         return frame.operandStack.pop();
     }
 
-    public void emitDeclaration(CompilationContext context) {
-        for(Object child : node.getChildren()) {
-            Compiler.buildExpression(child).emitDeclaration(context);
+    public Object scaffold(CompilationContext context) {
+        Object o = node;
+
+        while(true) {
+            if(o instanceof Node) {
+                Node n = (Node)o;
+
+                Object label = n.getLabel();
+                Vector children = n.getChildren();
+
+                Class klass = null;
+
+                try {
+                    klass = Compiler.resolveType(label, context);
+                } catch(Exception e) {
+                    klass = null;
+                } catch(NoClassDefFoundError e) {
+                    // TODO: This sometimes can generator a NoClassDefFoundError that can NOT be caught.
+                    // The reproduce this errors, compile a program that uses `Node(null, null)`. Keep the
+                    // CompilationContext imports the same as the commit where this comment was introduced.
+                    klass = null;
+                }
+
+                if(Compiler.isMacro(klass)) {
+                    o = context.runtime.eval(klass, children.toArray());
+                } else {
+                    break;
+                }
+            } else {
+                break;
+            }
         }
 
-        Compiler.buildExpression(node.getLabel()).emitDeclaration(context);
+        if(o instanceof Node) {
+            return Compiler.scaffoldNode((Node)o, context);
+        } else {
+            return o;
+        }
     }
 
     public void emit(CompilationContext context) {

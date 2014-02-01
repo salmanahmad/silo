@@ -29,8 +29,8 @@ public class LiteralCharacter implements Expression {
         return Character.TYPE;
     }
 
-    public void emitDeclaration(CompilationContext context) {
-        return;
+    public Object scaffold(CompilationContext context) {
+        return value;
     }
 
     public void emit(CompilationContext context) {

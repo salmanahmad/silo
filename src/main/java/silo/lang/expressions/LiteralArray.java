@@ -55,16 +55,8 @@ public class LiteralArray implements Expression {
         return frame.operandStack.pop();
     }
 
-    public void emitDeclaration(CompilationContext context) {
-        process();
-
-        // TODO: Handle the case where the array type is an anonymous structure of some sort...
-        Expression e = Compiler.buildExpression(type);
-        e.emitDeclaration(context);
-
-        for(Expression d : dimensions) {
-            d.emitDeclaration(context);
-        }
+    public Object scaffold(CompilationContext context) {
+        return Compiler.scaffoldNodeChildren(node, context);
     }
 
     public void emit(CompilationContext context) {

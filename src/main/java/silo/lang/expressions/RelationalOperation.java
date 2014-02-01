@@ -79,10 +79,8 @@ public class RelationalOperation implements Expression {
         return Boolean.TYPE;
     }
 
-    public void emitDeclaration(CompilationContext context) {
-        process();
-        e1.emitDeclaration(context);
-        e2.emitDeclaration(context);
+    public Object scaffold(CompilationContext context) {
+        return Compiler.scaffoldNodeChildren(node, context);
     }
 
     public void emit(CompilationContext context) {

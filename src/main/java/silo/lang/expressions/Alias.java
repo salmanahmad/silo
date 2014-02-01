@@ -19,6 +19,8 @@ import java.util.Vector;
 import org.objectweb.asm.commons.GeneratorAdapter;
 import org.apache.commons.lang3.StringUtils;
 
+// TODO: Update Alias to take a block in which the changes to namespaces are visible. After the block, the namespaces are reverted. Similar to package.
+
 public class Alias implements Expression {
 
     public final Node node;
@@ -31,7 +33,7 @@ public class Alias implements Expression {
         return Null.class;
     }
 
-    public void emitDeclaration(CompilationContext context) {
+    public Object scaffold(CompilationContext context) {
         // TODO: Refactor this method with emit below...
         String source = null;
         String target = null;
@@ -51,6 +53,8 @@ public class Alias implements Expression {
         }
 
         context.currentNamespace().aliases.put(source, target);
+
+        return node;
     }
 
     public void emit(CompilationContext context) {

@@ -35,9 +35,8 @@ public class Loop implements Expression {
         return Object.class;
     }
 
-    public void emitDeclaration(CompilationContext context) {
-        Expression code = Compiler.buildExpression(new Node(null, node.getChildren()));
-        code.emitDeclaration(context);
+    public Object scaffold(CompilationContext context) {
+        return Compiler.scaffoldNodeChildren(node, context);
     }
 
     public void emit(CompilationContext context) {

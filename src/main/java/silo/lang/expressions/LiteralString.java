@@ -25,8 +25,8 @@ public class LiteralString implements Expression {
         return String.class;
     }
 
-    public void emitDeclaration(CompilationContext context) {
-        return;
+    public Object scaffold(CompilationContext context) {
+        return string;
     }
 
     public void emit(CompilationContext context) {

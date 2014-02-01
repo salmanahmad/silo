@@ -17,8 +17,7 @@ import org.objectweb.asm.commons.GeneratorAdapter;
 
 public interface Expression {
     public void emit(CompilationContext context);
-    //public Node scaffold(CompilationContext context);
-    public void emitDeclaration(CompilationContext context);
+    public Object scaffold(CompilationContext context);
     public Class type(CompilationContext context);
 
     // TODO - Understand the following comment and then remove it.

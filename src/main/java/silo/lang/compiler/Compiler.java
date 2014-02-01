@@ -42,7 +42,18 @@ public class Compiler {
         primitives.put("silo.core.void", Void.TYPE);
     }
 
-    public static Vector<Class> compile(CompilationContext context, Node node) {
+    public static Vector<Class> compile(CompilationContext context, Object code) {
+        // TODO: Next consider updating this logic with the "macro-extract" algorithm described
+        // in the TODO.md file... That way I have two steps: "macro-extract", "macro-expand", and "scaffold".
+        // Macro-Extract just extracts out the macros and populates the symbol table... that I need and makes them available... macro-expand just
+        // expands with the current defined macros (independent of macro-extract). Scaffold populates the symbol
+        // table...
+
+        code = buildExpression(code).scaffold(context);
+        buildExpression(code).emit(context);
+
+        return context.classes;
+
         /*
         buildExpression(node).scaffold(context);
 
@@ -55,8 +66,11 @@ public class Compiler {
             context.namespaces.pop();
             context.symbolTable.remove(name);
         }
+
+        return context.classes;
         */
 
+        /*
         Object expanded = expandMacros(node, context);
         Expression expression = buildExpression(expanded);
 
@@ -64,6 +78,7 @@ public class Compiler {
         expression.emit(context);
 
         return context.classes;
+        */
 
         /*
         node = expandMacros(node);
@@ -79,6 +94,30 @@ public class Compiler {
         */
     }
 
+    public static Object scaffoldNode(Node node, CompilationContext context) {
+        Object l = buildExpression(node.getLabel()).scaffold(context);
+        Node n = new Node(l, node.getChildren());
+
+        return scaffoldNodeChildren(n, context);
+    }
+
+    public static Object scaffoldNodeChildren(Node node, CompilationContext context) {
+        Vector children = node.getChildren();
+
+        if(children == null) {
+            return new Node(node.getLabel(), null);
+        } else {
+            Vector newChildren = new Vector();
+
+            for(Object child : children) {
+                child = buildExpression(child).scaffold(context);
+                newChildren.add(child);
+            }
+
+            return new Node(node.getLabel(), newChildren);
+        }
+    }
+
     public static Object expandMacros(Object node, CompilationContext context) {
         Object previous = null;
 
@@ -92,10 +131,6 @@ public class Compiler {
         }
 
         return node;
-    }
-
-    private static void checkForDuplicates(Vector<Node> declarations) {
-        
     }
 
     public static Object expandMacrosOnce(Object o, CompilationContext context) {
@@ -147,6 +182,14 @@ public class Compiler {
                 return definition.macro();
             }
         }
+    }
+
+    public static void emit(Node node) {
+        // TODO: Remove this?
+    }
+
+    private static void checkForDuplicates(Vector<Node> declarations) {
+        
     }
 
     private static boolean containsUncompiledMacros(Object value) {
@@ -313,10 +356,6 @@ public class Compiler {
         } else {
             throw new RuntimeException("Unhandled case..." + value.toString());
         }
-    }
-
-    public static void emit(Node node) {
-        // TODO: Remove this?
     }
 
     public static boolean isCategory2(Class klass) {

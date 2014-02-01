@@ -15,6 +15,7 @@ import java.util.Stack;
 import java.util.Vector;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 
 public class CompilationContext {
 
@@ -30,7 +31,7 @@ public class CompilationContext {
     public static class Namespace {
         // TODO: Make import a special form, probably. Alternatively, can I pass CompilationContext to macros?
         public String packageName;
-        public final Vector<String> imports = new Vector<String>();
+        public final LinkedHashSet<String> imports = new LinkedHashSet<String>();
         public final HashMap<String, String> aliases = new HashMap<String, String>();
     }
 

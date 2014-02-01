@@ -29,8 +29,8 @@ public class LiteralInteger implements Expression {
         return Integer.TYPE;
     }
 
-    public void emitDeclaration(CompilationContext context) {
-        return;
+    public Object scaffold(CompilationContext context) {
+        return value;
     }
 
     public void emit(CompilationContext context) {

@@ -53,10 +53,8 @@ public class Return implements Expression {
         return Object.class;
     }
 
-    public void emitDeclaration(CompilationContext context) {
-        // TODO: Remove this once I add scaffold...
-        Expression value = Compiler.buildExpression(new Node(null, node.getChildren()));
-        value.emitDeclaration(context);
+    public Object scaffold(CompilationContext context) {
+        return Compiler.scaffoldNodeChildren(node, context);
     }
 
     public void emit(CompilationContext context) {

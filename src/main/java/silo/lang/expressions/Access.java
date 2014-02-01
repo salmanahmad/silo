@@ -69,13 +69,11 @@ public class Access implements Expression {
         return frame.operandStack.pop();
     }
 
-    public void emitDeclaration(CompilationContext context) {
+    public Object scaffold(CompilationContext context) {
         if(value instanceof Node) {
-            Node node = (Node)value;
-
-            for(Object child : node.getChildren()) {
-                Compiler.buildExpression(child).emitDeclaration(context);
-            }
+            return Compiler.scaffoldNodeChildren((Node)value, context);
+        } else {
+            return value;
         }
     }
 
