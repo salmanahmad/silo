@@ -141,31 +141,39 @@ function(
         while(i < children#size() {
             o : Object = children#get(i)
 
+            isArrow : boolean = false
+            isDots : boolean = false
+
             branch(instanceof(silo.lang.Node, o) {
                 n = checkcast(silo.lang.Node, o)
-                isArrow : boolean = invokevirtual(invokevirtual(n getLabel()) equals(symbol("=>")))
+                isArrow = invokevirtual(invokevirtual(n getLabel()) equals(symbol("=>")))
             })
 
             branch(instanceof(silo.lang.Symbol, o) {
                 s = checkcast(silo.lang.Symbol, o)
-                isDots : boolean = s#equals(symbol("..."))
+                isDots = s#equals(symbol("..."))
+                isArrow = s#equals(symbol("=>"))
             })
 
             branch(isArrow {
-                n = checkcast(silo.lang.Node, o)
+                useInputs = false
 
-                branch(instanceof(silo.lang.Symbol, n#getFirstChild()) {
-                    s = checkcast(silo.lang.Symbol, n#getFirstChild())
-                    branch(s#equals(symbol("...")) {
-                        isVarArgs = true
+                branch(instanceof(silo.lang.Node, o) {
+                    n = checkcast(silo.lang.Node, o)
+
+                    branch(instanceof(silo.lang.Symbol, n#getFirstChild()) {
+                        s = checkcast(silo.lang.Symbol, n#getFirstChild())
+                        branch(s#equals(symbol("...")) {
+                            isVarArgs = true
+                        } {
+                            inputs = inputs#cons(n#getFirstChild())
+                        })
                     } {
                         inputs = inputs#cons(n#getFirstChild())
                     })
-                } {
-                    inputs = inputs#cons(n#getFirstChild())
-                })
 
-                outputs = outputs#cons(n#getSecondChild())
+                    outputs = outputs#cons(n#getSecondChild())
+                })
             } {
                 branch(isDots {
                     isVarArgs = true
@@ -224,6 +232,8 @@ function(
         n : silo.lang.Node = null
         s : silo.lang.Symbol = null
 
+        isArrow : boolean = false
+        isDots : boolean = false
 
         i : int = 0
         while(i < (args#length() - 1) {
@@ -231,29 +241,34 @@ function(
 
             branch(instanceof(silo.lang.Node, o) {
                 n = checkcast(silo.lang.Node, o)
-                isArrow : boolean = invokevirtual(invokevirtual(n getLabel()) equals(symbol("=>")))
+                isArrow = invokevirtual(invokevirtual(n getLabel()) equals(symbol("=>")))
             })
 
             branch(instanceof(silo.lang.Symbol, o) {
                 s = checkcast(silo.lang.Symbol, o)
-                isDots : boolean = s#equals(symbol("..."))
+                isDots = s#equals(symbol("..."))
+                isArrow = s#equals(symbol("=>"))
             })
 
             branch(isArrow {
-                n = checkcast(silo.lang.Node, o)
+                useInputs = false
 
-                branch(instanceof(silo.lang.Symbol, n#getFirstChild()) {
-                    s = checkcast(silo.lang.Symbol, n#getFirstChild())
-                    branch(s#equals(symbol("...")) {
-                        isVarArgs = true
+                branch(instanceof(silo.lang.Node, o) {
+                    n = checkcast(silo.lang.Node, o)
+
+                    branch(instanceof(silo.lang.Symbol, n#getFirstChild()) {
+                        s = checkcast(silo.lang.Symbol, n#getFirstChild())
+                        branch(s#equals(symbol("...")) {
+                            isVarArgs = true
+                        } {
+                            inputs = inputs#cons(n#getFirstChild())
+                        })
                     } {
                         inputs = inputs#cons(n#getFirstChild())
                     })
-                } {
-                    inputs = inputs#cons(n#getFirstChild())
-                })
 
-                outputs = outputs#cons(n#getSecondChild())
+                    outputs = outputs#cons(n#getSecondChild())
+                })
             } {
                 branch(isDots {
                     isVarArgs = true

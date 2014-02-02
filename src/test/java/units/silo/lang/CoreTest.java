@@ -54,4 +54,18 @@ public class CoreTest {
         Class main = runtime.loader.loadClass("silo.test.core.fib");
         Assert.assertEquals(610, runtime.eval(main, 15));
     }
+
+    @Test
+    public void testFuncWithOnlyOutput() throws ClassNotFoundException {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/core-test/only-output.silo");
+
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+
+        Assert.assertEquals("This is a cool string!", runtime.eval(classes.get(0)));
+        Assert.assertEquals("This is a cool string!", runtime.eval("foo"));
+        Assert.assertEquals("This is a cool string!", runtime.eval("bar"));
+    }
 }
+
+

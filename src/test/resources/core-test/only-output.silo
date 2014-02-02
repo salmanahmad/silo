@@ -1,0 +1,12 @@
+
+import(silo.core)
+
+fn(=> String return("This is a cool string!"))
+
+func(foo(=> String) {
+    return("This is a cool string!")
+})
+
+func(bar(=> String) {
+    "This is a cool string!"
+})
