@@ -53,6 +53,30 @@ public class ParserTest {
     }
 
     @Test
+    public void testMultiLineString() {
+        String source = Helper.readResource("/examples/multiline-string.silo");
+        Node program = Parser.parse(source);
+
+        String string = "\n";
+        string += "a\n";
+        string += " b\n";
+        string += "  c\n";
+        string += "   d\n";
+        string += "   e\n";
+        string += "  f\n";
+        string += " g\n";
+        string += "h\n";
+
+        Node expected = new Node(null, new Node(
+            new Symbol("="),
+            new Symbol("s"),
+            string
+        ));
+
+        Assert.assertEquals(expected, program);
+    }
+
+    @Test
     public void testLeftAssociativity() throws Exception {
         Node program = Parser.parse("a.b.c.d");
 

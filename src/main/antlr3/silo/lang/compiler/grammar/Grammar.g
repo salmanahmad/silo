@@ -256,7 +256,7 @@ STRING
 @init{ StringBuilder buf = new StringBuilder(); }
   : '"'
     ( escape=ESC                       {buf.append(getText());}
-    | normal=~('"'|'\\'|'\n'|'\r')     {buf.appendCodePoint($normal);}
+    | normal=~('"'|'\\')               {buf.appendCodePoint($normal);}
     )*
     '"'                                {setText(buf.toString());}
   | '\''
