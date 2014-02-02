@@ -105,9 +105,26 @@ function(
 function(
     name(func)
     macro
-    inputs(id : silo.lang.Node, body : silo.lang.Node)
+    inputs(id_ : Object, body : silo.lang.Node)
     outputs(silo.lang.Node)
     {
+        id : silo.lang.Node = null
+
+        branch(instanceof(silo.lang.Node, id_) {
+            id = checkcast(silo.lang.Node, id_)
+        } branch(instanceof(silo.lang.Symbol, id_)
+            id = silo.lang.Node(id_)
+        ))
+
+// TODO: Fix this bug with if statements...
+//        if(instanceof(silo.lang.Node, id_) {
+//            id = checkcast(silo.lang.Node, id_)
+//        } else(instanceof(silo.lang.Symbol, id_)) {
+//            id = silo.lang.Node(id_)
+//        } else {
+//            // TODO: Support and then throw an exception
+//        })
+
         children : Vector = id#getChildren();
 
         inputs : IPersistentVector = vector(symbol("inputs"))

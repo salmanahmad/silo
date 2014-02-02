@@ -3,5 +3,10 @@ package(silo.cli)
 import(silo.core)
 
 func(main(args : IPersistentVector) {
-    println("Hello, World!")
+    println(version(0))
 })
+
+func(version(i : int => String) {
+    return(String.format("Silo %s (Codename: %s)", silo.lang.Version.string, silo.lang.Version.codename))
+})
+
