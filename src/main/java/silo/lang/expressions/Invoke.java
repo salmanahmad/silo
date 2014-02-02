@@ -511,6 +511,7 @@ public class Invoke implements Expression {
 
     public Object scaffold(CompilationContext context) {
         Object o = node;
+        boolean didMacroExpansion = false;
 
         while(true) {
             if(o instanceof Node) {
@@ -543,6 +544,7 @@ public class Invoke implements Expression {
                     }
 
                     o = context.runtime.eval(klass, children.toArray());
+                    didMacroExpansion = true;
                 } else {
                     break;
                 }
@@ -552,7 +554,11 @@ public class Invoke implements Expression {
         }
 
         if(o instanceof Node) {
-            return Compiler.scaffoldNode((Node)o, context);
+            if(didMacroExpansion) {
+                return Compiler.buildExpression(o).scaffold(context);
+            } else {
+                return Compiler.scaffoldNode((Node)o, context);
+            }
         } else {
             return o;
         }

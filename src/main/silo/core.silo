@@ -20,6 +20,63 @@ function(
 )
 
 function(
+    name(if)
+    macro
+    varargs(args)
+    outputs(silo.lang.Node)
+    {
+        vec : IPersistentVector = vector()
+
+        n : silo.lang.Node = null
+
+        i : int = 0
+        while(i < args#length() {
+            o : Object = args#nth(i)
+
+            branch(i % 2 == 0 {
+                branch(i == 0 {
+                    vec = vec#cons(o)
+                } {
+                    branch(instanceof(silo.lang.Node, o) {
+                        n = checkcast(silo.lang.Node, o)
+
+                        vec = vec#cons(silo.lang.Node(
+                            silo.lang.Symbol("do")
+                            n#getChildren()
+                        ))
+                    } {
+                        vec = vec#cons(Boolean.TRUE)
+                    })
+                })
+            } {
+                vec = vec#cons(o)
+            })
+
+            i = i + 1
+        })
+
+        expression : silo.lang.Node = null
+
+        i : int = vec#length() - 1
+        while(i >= 0 {
+            condition : Object = vec#nth(i - 1)
+            body : Object = vec#nth(i)
+
+            expression = silo.lang.Node(
+                silo.lang.Symbol("branch")
+                condition
+                body
+                expression
+            )
+
+            i = i - 2;
+        })
+
+        return(expression)
+    }
+)
+
+function(
     name(symbol)
     inputs(s : String)
     outputs(silo.lang.Symbol)

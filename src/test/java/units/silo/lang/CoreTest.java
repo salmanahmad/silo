@@ -43,4 +43,15 @@ public class CoreTest {
         Class main = runtime.loader.loadClass("silo.test.core.main");
         Assert.assertEquals(12, runtime.eval(main, 6, 6));
     }
+
+    @Test
+    public void testIf() throws ClassNotFoundException {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/core-test/if.silo");
+
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+
+        Class main = runtime.loader.loadClass("silo.test.core.fib");
+        Assert.assertEquals(610, runtime.eval(main, 15));
+    }
 }

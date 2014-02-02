@@ -427,15 +427,29 @@ public class Compiler {
             }
         }
 
+        String qualifiedName = name;
+        Class klass = null;
+
+        if(context.currentNamespace().packageName == null || context.currentNamespace().packageName.equals("")) {
+            qualifiedName = name;
+        } else {
+            qualifiedName = context.currentNamespace().packageName + "." + name;
+        }
+
+        klass = resolveType(qualifiedName, context.runtime.loader, context.symbolLoader);
+        if(klass != null) {
+            return klass;
+        }
+
         for(String p : context.currentNamespace().imports) {
-            String qualifiedName = p;
+            qualifiedName = p;
             if(qualifiedName.equals("")) {
                 qualifiedName = name;
             } else {
                 qualifiedName += "." + name;
             }
 
-            Class klass = resolveType(qualifiedName, context.runtime.loader, context.symbolLoader);
+            klass = resolveType(qualifiedName, context.runtime.loader, context.symbolLoader);
 
             if(klass != null) {
                 return klass;
