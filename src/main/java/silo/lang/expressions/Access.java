@@ -25,12 +25,18 @@ import org.objectweb.asm.commons.GeneratorAdapter;
 public class Access implements Expression {
 
     Object value;
+    boolean willMutate;
 
     public Access(Object value) {
         // TODO: If I bring back the idea of a "ExpressionBuilder" I should use that here
         // to validate the value before accepting it. This will make it less likely to have to
         // check all issues in the emit.
         this.value = value;
+    }
+
+    public Access(Object value, boolean willMutate) {
+        this.value = value;
+        this.willMutate = willMutate;
     }
 
     public static void resolveSymbol(Symbol symbol, CompilationContext context) {

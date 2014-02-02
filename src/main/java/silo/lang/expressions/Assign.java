@@ -15,102 +15,32 @@ import silo.lang.*;
 import silo.lang.compiler.Compiler;
 
 import java.util.Vector;
+import java.lang.reflect.Modifier;
 
 import org.objectweb.asm.Type;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.commons.Method;
 import org.objectweb.asm.commons.GeneratorAdapter;
 
+// TODO: Multiple-assignment / destructuring?
+
 public class Assign implements Expression {
 
     Node node;
-
-    Node path;
-    Expression head;
-    Symbol field;
-    Vector<Expression> args;
-    Object type;
-    Expression value;
 
     public Assign(Node node) {
         this.node = node;
     }
 
-    public void validate() {
-        if(node.getChildren().size() != 2) {
-            throw new RuntimeException("Assignment requires at least 2 arguments.");
-        }
-
-        path = null;
-        head = null;
-        field = null;
-        args = new Vector<Expression>(); ;
-        type = null;
-        value = null;
-
-        value = Compiler.buildExpression(node.getSecondChild());
-
-        Object o = node.getFirstChild();
-        if(o instanceof Symbol) {
-            field = (Symbol)o;
-        } else if(o instanceof Node) {
-            if(((Node)o).getLabel().equals(new Symbol(":"))) {
-                type = ((Node)o).getSecondChild();
-                o = ((Node)o).getFirstChild();
-            }
-
-            if(o instanceof Symbol) {
-                head = null;
-                field = (Symbol)o;
-            } else if(o instanceof Node) {
-                Node n = (Node)o;
-                Object label = n.getLabel();
-
-                if(label.equals(new Symbol("."))) {
-                    if(null == Node.symbolListFromNode(Node.flattenTree(n, new Symbol(".")))) {
-                        head = Compiler.buildExpression(n.getFirstChild());
-
-                        if(n.getSecondChild() instanceof Symbol) {
-                            field = (Symbol)n.getSecondChild();
-                        } else {
-                            throw new RuntimeException("Invalid assignment form.");
-                        }
-                    } else {
-                        path = node;
-                    }
-                } else {
-                    head = Compiler.buildExpression(label);
-
-                    for(Object child : n.getChildren()) {
-                        args.add(Compiler.buildExpression(child));
-                    }
-                }
-            } else {
-                throw new RuntimeException("Invalid assignment form.");
-            }
-        } else {
-            throw new RuntimeException("Invalid assignment form. The first argument must be a variable identifier or a typed expression");
-        }
-    }
-
-    public void performStaticPutField(Class klass, Class valueClass, Class typeClass, CompilationContext context) {
+    public void performStaticPutField(Symbol field, Class klass, Class valueClass, Class typeClass, CompilationContext context) {
         GeneratorAdapter generator = context.currentFrame().generator;
         RuntimeClassLoader loader = context.runtime.loader;
         CompilationFrame frame = context.currentFrame();
 
-        Symbol f = (Symbol)path.getSecondChild();
-
         try {
             // TODO: Validate against typeClass?
 
-            if(value != null) {
-                value.emit(context);
-            } else {
-                generator.push((String)null);
-                frame.operandStack.push(Null.class);
-            }
-
-            java.lang.reflect.Field staticField = klass.getField(f.toString());
+            java.lang.reflect.Field staticField = klass.getField(field.toString());
             Class fieldClass = staticField.getType();
 
             if(!Compiler.isValidAssignment(fieldClass, valueClass)) {
@@ -123,7 +53,7 @@ public class Assign implements Expression {
 
             return;
         } catch(NoSuchFieldException e) {
-            throw new RuntimeException("No such field was found: " + f.toString());
+            throw new RuntimeException("No such field was found: " + field.toString());
         }
     }
 
@@ -180,16 +110,17 @@ public class Assign implements Expression {
         RuntimeClassLoader loader = context.runtime.loader;
         CompilationFrame frame = context.currentFrame();
 
-        Symbol f = field;
-
         try {
             // TODO: Validate against typeClass?
 
             Class klass = frame.operandStack.peek();
 
-            java.lang.reflect.Field staticField = klass.getField(f.toString());
-
+            java.lang.reflect.Field staticField = klass.getField(field.toString());
             Class fieldClass = staticField.getType();
+
+            if(Modifier.isStatic(staticField.getModifiers())) {
+                throw new RuntimeException("Invalid assignment to a static field where a instance was provided.");
+            }
 
             if(!Compiler.isValidAssignment(fieldClass, valueClass)) {
                 throw new RuntimeException("Invalid assignment to field of type " + fieldClass + " from type of " + valueClass);
@@ -202,22 +133,22 @@ public class Assign implements Expression {
 
             return;
         } catch(NoSuchFieldException e) {
-            throw new RuntimeException("No such field was found: " + f.toString());
+            throw new RuntimeException("No such field was found: " + field.toString());
         }
     }
 
-    public void performArrayAssignment(Class valueClass, Class typeClass, CompilationContext context) {
+    public void performArrayAssignment(Vector index, Class valueClass, Class typeClass, CompilationContext context) {
         GeneratorAdapter generator = context.currentFrame().generator;
         RuntimeClassLoader loader = context.runtime.loader;
         CompilationFrame frame = context.currentFrame();
 
         Class klass = frame.operandStack.peek();
 
-        if(args.size() != 1) {
+        if(index.size() != 1) {
             throw new RuntimeException("Cannot access array with more than one number...");
         }
 
-        args.get(0).emit(context);
+        Compiler.buildExpression(index.get(0)).emit(context);
 
         if(!frame.operandStack.peek().equals(Integer.TYPE)) {
             throw new RuntimeException("Array access must be provided an integer index...");
@@ -239,9 +170,7 @@ public class Assign implements Expression {
     }
 
     public Class type(CompilationContext context) {
-        validate();
-
-        return this.value.type(context);
+        return Compiler.buildExpression(node.getSecondChild()).type(context);
     }
 
     public Object scaffold(CompilationContext context) {
@@ -249,26 +178,16 @@ public class Assign implements Expression {
     }
 
     public void emit(CompilationContext context) {
-        validate();
-
         GeneratorAdapter generator = context.currentFrame().generator;
         RuntimeClassLoader loader = context.runtime.loader;
         CompilationFrame frame = context.currentFrame();
 
-        // TODO: Augment compilationcontext to indicate that an assignment is taking p lace for access and invoke use the proper immutable access principles...
-        // This is trickier than you may think. What about cases liked `i = getUser(currentUser.id).name = "Bob"`
-
-        Class typeClass = null;
-        if(type != null) {
-            typeClass = Compiler.resolveType(type, context);
-
-            if(typeClass == null) {
-                throw new RuntimeException("Could not find symbol: " + type.toString());
-            }
+        if(node.getChildren().size() != 2) {
+            throw new RuntimeException("Assignment requires at least 2 arguments.");
         }
 
-        if(value != null) {
-            value.emit(context);
+        if(node.getSecondChild() != null) {
+            Compiler.buildExpression(node.getSecondChild()).emit(context);
         } else {
             generator.push((String)null);
             frame.operandStack.push(Null.class);
@@ -278,47 +197,72 @@ public class Assign implements Expression {
         Compiler.dup(valueClass, generator);
         frame.operandStack.push(valueClass);
 
-        Expression h = head;
-        Symbol f = field;
+        if(node.getFirstChild() instanceof Symbol) {
+            performLocalVariableAssignment((Symbol)node.getFirstChild(), valueClass, null, context);
+            return;
+        } else if(node.getFirstChild() instanceof Node) {
+            Node n = (Node)node.getFirstChild();
+            Class typeClass = null;
 
-        if(path != null) {
-            // Attempt static lookup
-            Class klass = Compiler.resolveType(path.getFirstChild(), context);
+            if(n.getLabel().equals(new Symbol(":"))) {
+                typeClass = Compiler.resolveType(n.getSecondChild(), context);
+                if(typeClass == null) {
+                    throw new RuntimeException("Could not resolve type: " + typeClass);
+                }
 
-            if(klass == null) {
-                // Static put field
-                performStaticPutField(klass, valueClass, typeClass, context);
-                return;
+                if(n.getFirstChild() instanceof Symbol) {
+                    performLocalVariableAssignment((Symbol)n.getFirstChild(), valueClass, typeClass, context);
+                    return;
+                } else if(n.getFirstChild() instanceof Node){
+                    n = (Node)n.getFirstChild();
+                } else {
+                    throw new RuntimeException("Invalid Assignment Form.");
+                }
+            }
+
+            Object label = n.getLabel();
+            if(label.equals(new Symbol("."))) {
+                Object structure = n.getFirstChild();
+                Object field = n.getSecondChild();
+
+                if(!(field instanceof Symbol)) {
+                    throw new RuntimeException("Invalid Assignment Form.");
+                }
+
+                Class klass = Compiler.resolveType(structure, context);
+                if(klass == null) {
+                    performStaticPutField((Symbol)field, klass, valueClass, typeClass, context);
+                    return;
+                }
+
+                if(structure instanceof Symbol || (structure instanceof Node && ((Node)structure).getLabel().equals("."))) {
+                    // TODO: Note: with the "willMutate" field in Access, if the "left" most leaf in
+                    // the tree is NOT a Symbol, but some other non-"dot"-node, then I should throw
+                    // an exception...
+                    (new Access(structure, true)).emit(context);
+                } else {
+                    Compiler.buildExpression(structure).emit(context);
+                }
+
+                generator.swap(Type.getType(valueClass), Type.getType(frame.operandStack.peek()));
+
+                // TODO: Support mutated field type if a "Structure" or "Var" is on the operandStack
+                if(true) {
+                    // Normal Field Put
+                    performSetField((Symbol)field, valueClass, typeClass, context);
+                    return;
+                } else {
+                    // Mutated Field Put
+                    throw new RuntimeException("Unimplemented");
+                }
+
             } else {
-                h = Compiler.buildExpression(path.getFirstChild());
-                f = (Symbol)path.getSecondChild();
-            }
-        }
-
-        if(h == null) {
-            if(f != null) {
-                // Local variable
-                performLocalVariableAssignment(f, valueClass, typeClass, context);
-                return;
-            } else if(args != null) {
-                // TODO: Multiple-assignment / destructuring?
-                throw new RuntimeException("Multiple assignment and destructuring has not been implemented yet...");
-            }
-        } else {
-            h.emit(context);
-
-            generator.swap(Type.getType(valueClass), Type.getType(frame.operandStack.peek()));
-
-            if(f != null) {
-                // Set field
-                performSetField(f, valueClass, typeClass, context);
-                return;
-            } else if(args != null) {
-                // Array and dynamic assignment
+                // DynamicSet or Array Set
+                Compiler.buildExpression(label).emit(context);
+                generator.swap(Type.getType(valueClass), Type.getType(frame.operandStack.peek()));
 
                 if(frame.operandStack.peek().isArray()) {
-                    performArrayAssignment(valueClass, typeClass, context);
-                    return;
+                    performArrayAssignment(n.getChildren(), valueClass, typeClass, context);
                 } else {
                     // TODO: Handle Vars as well as the AssignableTrait
                     // In fact, is the AssignableTrait even possible? AccessibleTrait perhaps but does the assignable trait
@@ -335,7 +279,11 @@ public class Assign implements Expression {
                     // return type is ALWAYS this.value.
                     throw new RuntimeException("Vars and AssignableTrait are not yet supported...");
                 }
+
+                return;
             }
+        } else {
+            throw new RuntimeException("Invalid assignment form. The first argument must be a symbol or a node.");
         }
     }
 }
