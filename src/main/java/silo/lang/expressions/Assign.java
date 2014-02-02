@@ -32,31 +32,6 @@ public class Assign implements Expression {
         this.node = node;
     }
 
-    public void performStaticPutField(Symbol field, Class klass, Class valueClass, Class typeClass, CompilationContext context) {
-        GeneratorAdapter generator = context.currentFrame().generator;
-        RuntimeClassLoader loader = context.runtime.loader;
-        CompilationFrame frame = context.currentFrame();
-
-        try {
-            // TODO: Validate against typeClass?
-
-            java.lang.reflect.Field staticField = klass.getField(field.toString());
-            Class fieldClass = staticField.getType();
-
-            if(!Compiler.isValidAssignment(fieldClass, valueClass)) {
-                throw new RuntimeException("Invalid assignment to static field of type " + fieldClass + " from type of " + valueClass);
-            }
-
-            generator.putStatic(Type.getType(klass), staticField.getName(), Type.getType(staticField.getType()));
-
-            frame.operandStack.pop();
-
-            return;
-        } catch(NoSuchFieldException e) {
-            throw new RuntimeException("No such field was found: " + field.toString());
-        }
-    }
-
     public void performLocalVariableAssignment(Symbol field, Class valueClass, Class typeClass, CompilationContext context) {
         GeneratorAdapter generator = context.currentFrame().generator;
         RuntimeClassLoader loader = context.runtime.loader;
@@ -103,6 +78,31 @@ public class Assign implements Expression {
         frame.operandStack.pop();
 
         return;
+    }
+
+    public void performStaticPutField(Symbol field, Class klass, Class valueClass, Class typeClass, CompilationContext context) {
+        GeneratorAdapter generator = context.currentFrame().generator;
+        RuntimeClassLoader loader = context.runtime.loader;
+        CompilationFrame frame = context.currentFrame();
+
+        try {
+            // TODO: Validate against typeClass?
+
+            java.lang.reflect.Field staticField = klass.getField(field.toString());
+            Class fieldClass = staticField.getType();
+
+            if(!Compiler.isValidAssignment(fieldClass, valueClass)) {
+                throw new RuntimeException("Invalid assignment to static field of type " + fieldClass + " from type of " + valueClass);
+            }
+
+            generator.putStatic(Type.getType(klass), staticField.getName(), Type.getType(staticField.getType()));
+
+            frame.operandStack.pop();
+
+            return;
+        } catch(NoSuchFieldException e) {
+            throw new RuntimeException("No such field was found: " + field.toString());
+        }
     }
 
     public void performSetField(Symbol field, Class valueClass, Class typeClass, CompilationContext context) {
