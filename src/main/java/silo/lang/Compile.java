@@ -40,8 +40,6 @@ public class Compile {
         IOUtils.write(code, output);
     }
 
-    
-
     public static void main(String[] args) throws Exception {
         Runtime runtime = new Runtime();
         String outputPath = args[0];

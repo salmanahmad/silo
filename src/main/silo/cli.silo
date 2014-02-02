@@ -1,0 +1,7 @@
+
+package(silo.cli)
+import(silo.core)
+
+func(main(args : IPersistentVector) {
+    println("Hello, World!")
+})

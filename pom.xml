@@ -148,7 +148,9 @@
                     <pathelement location="${project.build.outputDirectory}"/>
                   </classpath>
                   <arg value="${project.build.outputDirectory}" />
-                  <arg line="${files}" />
+                  <!--<arg line="${files}" />-->
+                  <arg value="${basedir}/src/main/silo/core.silo" />
+                  <arg value="${basedir}/src/main/silo/cli.silo" />
                 </java>
               </target>
             </configuration>

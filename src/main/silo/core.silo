@@ -288,8 +288,17 @@ function(
     inputs(value)
     outputs(Object)
     {
-        System.out#println(value)
+        System.out#print(value)
         return(value)
     }
 )
 
+function(
+    name(println)
+    inputs(value)
+    outputs(Object)
+    {
+        System.out#println(value)
+        return(value)
+    }
+)

@@ -42,6 +42,16 @@ public class Runtime {
         return eval(klass);
     }
 
+    public Object eval(String fullyQualifiedFunctionName, Object... args) {
+        try {
+            // TODO: What if klass is a type and not a function?
+            Class klass = loader.loadClass(fullyQualifiedFunctionName);
+            return eval(klass, args);
+        } catch(ClassNotFoundException e) {
+            throw new RuntimeException("Could not load function: " + fullyQualifiedFunctionName);
+        }
+    }
+
     public Object eval(Class klass, Object... args) {
         try {
             if(Function.isVarArgs(klass)) {
