@@ -73,6 +73,8 @@ public class Access implements Expression {
         if(value instanceof Node) {
             return Compiler.scaffoldNodeChildren((Node)value, context);
         } else {
+            // TODO: Should I replace all the value with aliases here?
+            // that way I can use aliases for constructors as well...
             return value;
         }
     }

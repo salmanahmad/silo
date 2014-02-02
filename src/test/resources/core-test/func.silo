@@ -1,0 +1,6 @@
+
+package(silo.test.core)
+
+func(main(a : int, b : int => int) {
+    a + b
+})

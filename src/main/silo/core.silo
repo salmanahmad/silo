@@ -47,6 +47,95 @@ function(
 )
 
 function(
+    name(func)
+    macro
+    inputs(id : silo.lang.Node, body : silo.lang.Node)
+    outputs(silo.lang.Node)
+    {
+        children : Vector = id#getChildren();
+
+        inputs : IPersistentVector = vector(symbol("inputs"))
+        outputs : IPersistentVector = vector(symbol("outputs"))
+        varargs : IPersistentVector = vector(symbol("varargs"))
+
+        useInputs : boolean = true
+        isVarArgs : boolean = false
+
+        n : silo.lang.Node = null
+        s : silo.lang.Symbol = null
+
+        i : int = 0
+        while(i < children#size() {
+            o : Object = children#get(i)
+
+            branch(instanceof(silo.lang.Node, o) {
+                n = checkcast(silo.lang.Node, o)
+                isArrow : boolean = invokevirtual(invokevirtual(n getLabel()) equals(symbol("=>")))
+            })
+
+            branch(instanceof(silo.lang.Symbol, o) {
+                s = checkcast(silo.lang.Symbol, o)
+                isDots : boolean = s#equals(symbol("..."))
+            })
+
+            branch(isArrow {
+                n = checkcast(silo.lang.Node, o)
+
+                branch(instanceof(silo.lang.Symbol, n#getFirstChild()) {
+                    s = checkcast(silo.lang.Symbol, n#getFirstChild())
+                    branch(s#equals(symbol("...")) {
+                        isVarArgs = true
+                    } {
+                        inputs = inputs#cons(n#getFirstChild())
+                    })
+                } {
+                    inputs = inputs#cons(n#getFirstChild())
+                })
+
+                outputs = outputs#cons(n#getSecondChild())
+            } {
+                branch(isDots {
+                    isVarArgs = true
+                } {
+                    branch(useInputs {
+                        inputs = inputs#cons(o)
+                    } {
+                        outputs = outputs#cons(o)
+                    })
+                })
+            })
+
+            i = i + 1
+        })
+
+
+        branch(isVarArgs {
+            obj : Object = inputs#nth(inputs#length() - 1)
+
+            varargs = varargs#cons(obj)
+            inputs = checkcast(IPersistentVector, RT.pop(inputs))
+
+            node(
+                symbol("function")
+                silo.lang.Node(symbol("name"), id#getLabel())
+                silo.lang.Node.fromVector(inputs)
+                silo.lang.Node.fromVector(outputs)
+                silo.lang.Node.fromVector(varargs)
+                body
+            )
+        } {
+            node(
+                symbol("function")
+                silo.lang.Node(symbol("name"), id#getLabel())
+                silo.lang.Node.fromVector(inputs)
+                silo.lang.Node.fromVector(outputs)
+                body
+            )
+        })
+    }
+)
+
+function(
     name(fn)
     macro
     varargs(args)
@@ -56,13 +145,13 @@ function(
         outputs : IPersistentVector = vector(symbol("outputs"))
         varargs : IPersistentVector = vector(symbol("varargs"))
 
-        i : int = 0
         useInputs : boolean = true
         isVarArgs : boolean = false
 
         n : silo.lang.Node = null
         s : silo.lang.Symbol = null
 
+        i : int = 0
         loop(
             branch(i < (args#length() - 1), null, break())
 
