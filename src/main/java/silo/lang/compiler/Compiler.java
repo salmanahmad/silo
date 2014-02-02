@@ -49,6 +49,9 @@ public class Compiler {
         // expands with the current defined macros (independent of macro-extract). Scaffold populates the symbol
         // table...
 
+        // TODO: Also consider adding a special form for "proto" or "declare" to forward declare types and function definitions.
+        // This is really only useful for macros since other functions do not need forward declaration.
+
         code = buildExpression(code).scaffold(context);
         buildExpression(code).emit(context);
 
