@@ -40,7 +40,15 @@ public class Block implements Expression {
         Vector<Expression> expressions = expressions();
 
         if(expressions != null && expressions.size() > 0) {
-            Expression e = expressions.get(expressions.size() - 1);
+            Expression e = null;
+
+            int i = 0;
+            for(i = 0; i < expressions.size() - 1; i++) {
+                e = expressions.get(i);
+                e.type(context);
+            }
+
+            e = expressions.get(i);
             return e.type(context);
         } else {
             return Null.class;

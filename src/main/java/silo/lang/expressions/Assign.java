@@ -169,7 +169,51 @@ public class Assign implements Expression {
         return;
     }
 
+    public Symbol assignmentLocalVariableSymbol() {
+        if(node.getFirstChild() instanceof Symbol) {
+            return (Symbol)node.getFirstChild();
+        } else if(node.getFirstChild() instanceof Node) {
+            Node n = (Node)node.getFirstChild();
+            if(n.getLabel().equals(new Symbol(":"))) {
+                if(n.getFirstChild() instanceof Symbol) {
+                    return (Symbol)n.getFirstChild();
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public Class assignmentTypeClass(CompilationContext context) {
+        if(node.getFirstChild() instanceof Node) {
+            Node n = (Node)node.getFirstChild();
+            if(n.getLabel().equals(new Symbol(":"))) {
+                Class klass = Compiler.resolveType(n.getSecondChild(), context);
+                if(klass == null) {
+                    throw new RuntimeException("Could not resolve type: " + n.getSecondChild());
+                } else {
+                    return klass;
+                }
+            }
+        }
+
+        return null;
+    }
+
     public Class type(CompilationContext context) {
+        Symbol local = assignmentLocalVariableSymbol();
+        if(local != null) {
+            if(!context.currentFrame().locals.containsKey(local)) {
+                Class klass = assignmentTypeClass(context);
+                if(klass == null) {
+                    // TODO: Change this to Var
+                    klass = Object.class;
+                }
+
+                context.currentFrame().newLocal(local, klass);
+            }
+        }
+
         return Compiler.buildExpression(node.getSecondChild()).type(context);
     }
 
@@ -207,7 +251,7 @@ public class Assign implements Expression {
             if(n.getLabel().equals(new Symbol(":"))) {
                 typeClass = Compiler.resolveType(n.getSecondChild(), context);
                 if(typeClass == null) {
-                    throw new RuntimeException("Could not resolve type: " + typeClass);
+                    throw new RuntimeException("Could not resolve type: " + n.getSecondChild());
                 }
 
                 if(n.getFirstChild() instanceof Symbol) {
@@ -239,6 +283,8 @@ public class Assign implements Expression {
                     // TODO: Note: with the "willMutate" field in Access, if the "left" most leaf in
                     // the tree is NOT a Symbol, but some other non-"dot"-node, then I should throw
                     // an exception...
+                    // TODO: The above todo is not actually correct - what if I have a java interop expression
+                    // like user.getAccount().name = "foo"
                     (new Access(structure, true)).emit(context);
                 } else {
                     Compiler.buildExpression(structure).emit(context);

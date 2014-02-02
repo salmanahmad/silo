@@ -27,8 +27,6 @@ function(
     {
         vec : IPersistentVector = vector()
 
-        n : silo.lang.Node = null
-
         i : int = 0
         while(i < args#length() {
             o : Object = args#nth(i)
@@ -38,6 +36,7 @@ function(
                     vec = vec#cons(o)
                 } {
                     branch(instanceof(silo.lang.Node, o) {
+                        n : silo.lang.Node = null
                         n = checkcast(silo.lang.Node, o)
 
                         vec = vec#cons(silo.lang.Node(
