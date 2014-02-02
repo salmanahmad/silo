@@ -174,11 +174,11 @@ literalExpression returns [Object value]
   : NULL                               { $value = null; }
   | TRUE                               { $value = Boolean.TRUE; }
   | FALSE                              { $value = Boolean.FALSE; }
-  | SYMBOL                             { $value = new Symbol($SYMBOL.text); }
   | STRING                             { $value = $text; }
   | INTEGER                            { $value = Integer.parseInt($text); }
   | FLOAT                              { $value = Float.parseFloat($text); }
   | DOUBLE                             { $value = Double.parseDouble($text); }
+  | symbol                             { $value = new Symbol($symbol.text); }
   | blockExpression                    { $value = $blockExpression.value; }
   ;
 
@@ -189,6 +189,32 @@ parenExpression returns [Node value]
     )?
     terminator?
     CLOSE_PAREN
+  ;
+
+symbol returns [Symbol value]
+  : IDENTIFIER
+  | ASSIGN
+  | AND
+  | OR
+  | NOT
+  | EQUAL
+  | NOT_EQUAL
+  | LESS_THAN_EQUAL
+  | GREATER_THAN_EQUAL
+  | LESS_THAN
+  | GREATER_THAN
+  | PLUS
+  | MINUS
+  | MULTIPLY
+  | DIVIDE
+  | MODULO
+  | ARROW
+  | SCOPE
+  | COLON
+  | DOT
+  | PIPE
+  | HASH
+  | OPERATOR
   ;
 
 blockExpression returns [Node value]
@@ -281,88 +307,60 @@ OPEN_BRACE:         '{';
 CLOSE_BRACE:        '}';
 
 ASSIGN: FRAGMENT_ASSIGN;
-
-AND: FRAGMENT_AND;
-OR: FRAGMENT_OR;
+AND: FRAGMENT_AMP FRAGMENT_AMP;
+OR: FRAGMENT_PIPE FRAGMENT_PIPE;
 NOT: FRAGMENT_NOT;
-
-EQUAL: FRAGMENT_EQUAL;
-NOT_EQUAL: FRAGMENT_NOT_EQUAL;
-LESS_THAN_EQUAL: FRAGMENT_LESS_THAN_EQUAL;
-GREATER_THAN_EQUAL: FRAGMENT_GREATER_THAN_EQUAL;
+EQUAL: FRAGMENT_ASSIGN FRAGMENT_ASSIGN;
+NOT_EQUAL: FRAGMENT_NOT FRAGMENT_ASSIGN;
+LESS_THAN_EQUAL: FRAGMENT_LESS_THAN FRAGMENT_ASSIGN;
+GREATER_THAN_EQUAL: FRAGMENT_GREATER_THAN FRAGMENT_ASSIGN;
 LESS_THAN: FRAGMENT_LESS_THAN;
 GREATER_THAN: FRAGMENT_GREATER_THAN;
-
 PLUS: FRAGMENT_PLUS;
 MINUS: FRAGMENT_MINUS;
-
 MULTIPLY: FRAGMENT_MULTIPLY;
 DIVIDE: FRAGMENT_DIVIDE;
 MODULO: FRAGMENT_MODULO;
-
-ARROW: FRAGMENT_ARROW;
-SCOPE: FRAGMENT_SCOPE;
+ARROW: FRAGMENT_ASSIGN FRAGMENT_GREATER_THAN;
+SCOPE: FRAGMENT_COLON FRAGMENT_COLON;
 COLON: FRAGMENT_COLON;
 DOT: FRAGMENT_DOT;
 PIPE: FRAGMENT_PIPE;
 HASH: FRAGMENT_HASH;
+OPERATOR
+  : ( FRAGMENT_ASSIGN
+    | FRAGMENT_LESS_THAN
+    | FRAGMENT_GREATER_THAN
+    | FRAGMENT_PLUS
+    | FRAGMENT_MINUS
+    | FRAGMENT_MULTIPLY
+    | FRAGMENT_DIVIDE
+    | FRAGMENT_MODULO
+    | FRAGMENT_NOT
+    | FRAGMENT_PIPE
+    | FRAGMENT_AMP
+    | FRAGMENT_DOT
+    | FRAGMENT_COLON
+    | FRAGMENT_HASH
+    )+
+  ;
 
 fragment FRAGMENT_ASSIGN:             '=';
-
-fragment FRAGMENT_AND:                '&&';
-fragment FRAGMENT_OR:                 '||';
-fragment FRAGMENT_NOT:                '!';
-
-fragment FRAGMENT_EQUAL:              '==';
-fragment FRAGMENT_NOT_EQUAL:          '!=';
-fragment FRAGMENT_LESS_THAN_EQUAL:    '<=';
-fragment FRAGMENT_GREATER_THAN_EQUAL: '>=';
 fragment FRAGMENT_LESS_THAN:          '<';
 fragment FRAGMENT_GREATER_THAN:       '>';
-
 fragment FRAGMENT_PLUS:               '+';
 fragment FRAGMENT_MINUS:              '-';
-
 fragment FRAGMENT_MULTIPLY:           '*';
 fragment FRAGMENT_DIVIDE:             '/';
 fragment FRAGMENT_MODULO:             '%';
-
-fragment FRAGMENT_ARROW:              '=>';
-fragment FRAGMENT_SCOPE:              '::';
-fragment FRAGMENT_COLON:              ':';
-fragment FRAGMENT_DOT:                '.';
+fragment FRAGMENT_NOT:                '!';
 fragment FRAGMENT_PIPE:               '|';
+fragment FRAGMENT_AMP:                '&';
+fragment FRAGMENT_DOT:                '.';
+fragment FRAGMENT_COLON:              ':';
 fragment FRAGMENT_HASH:               '#';
 
-
-// TODO: Many of these fragments are completely redundant and uncessary. Both in the individual fragments (e.g. FRAGMENT_MULTIPLY) as well as the main FRAGMENT_OPERATOR. For example, I have '=' and '>' this makes it uncessary to have ">=" since it will be matched with FRAGMENT_OPERATOR+. I could reduce the number of rules and fragments here and also make it more intuitive how to add new "infix" operators in the future...
-
-
-fragment FRAGMENT_OPERATOR
-  : FRAGMENT_ASSIGN
-  | FRAGMENT_AND
-  | FRAGMENT_OR
-  | FRAGMENT_NOT
-  | FRAGMENT_EQUAL
-  | FRAGMENT_NOT_EQUAL
-  | FRAGMENT_LESS_THAN_EQUAL
-  | FRAGMENT_GREATER_THAN_EQUAL
-  | FRAGMENT_LESS_THAN
-  | FRAGMENT_GREATER_THAN
-  | FRAGMENT_PLUS
-  | FRAGMENT_MINUS
-  | FRAGMENT_MULTIPLY
-  | FRAGMENT_DIVIDE
-  | FRAGMENT_MODULO
-  | FRAGMENT_ARROW
-  | FRAGMENT_SCOPE
-  | FRAGMENT_COLON
-  | FRAGMENT_DOT
-  | FRAGMENT_PIPE
-  | FRAGMENT_HASH
-  ;
-
-SYMBOL:             ((LETTER | UNDERSCORE) SYMBOL_CHAR*) | FRAGMENT_OPERATOR+;
+IDENTIFIER:             ((LETTER | UNDERSCORE) SYMBOL_CHAR*);
 
 SEMICOLON:          ';';
 COMMA:              ',';

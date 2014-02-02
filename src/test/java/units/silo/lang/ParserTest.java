@@ -194,4 +194,22 @@ public class ParserTest {
         e = new Node(null, new Node(new Symbol("fn"), new Node(new Symbol(":"), new Symbol("a"), new Symbol("int")), new Node(new Symbol("=>"), new Symbol("..."), new Symbol("int")), new Node(new Symbol("do"))));
         Assert.assertEquals(e, n);
     }
+
+    @Test
+    public void testReturnTypes() {
+        Node n = null;
+        Node e = null;
+
+        n = Parser.parse("fn(null => String {})");
+        e = new Node(null, new Node(new Symbol("fn"), new Node(new Symbol("=>"), null, new Symbol("String")), new Node(new Symbol("do"))));
+        Assert.assertEquals(e, n);
+
+        n = Parser.parse("fn(void => String {})");
+        e = new Node(null, new Node(new Symbol("fn"), new Node(new Symbol("=>"), new Symbol("void"), new Symbol("String")), new Node(new Symbol("do"))));
+        Assert.assertEquals(e, n);
+
+        n = Parser.parse("fn(=> String {})");
+        e = new Node(null, new Node(new Symbol("fn"), new Symbol("=>"), new Symbol("String"), new Node(new Symbol("do"))));
+        Assert.assertEquals(e, n);
+    }
 }
