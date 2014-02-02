@@ -151,10 +151,9 @@ function(
         n : silo.lang.Node = null
         s : silo.lang.Symbol = null
 
-        i : int = 0
-        loop(
-            branch(i < (args#length() - 1), null, break())
 
+        i : int = 0
+        while(i < (args#length() - 1) {
             o : Object = args#nth(i)
 
             branch(instanceof(silo.lang.Node, o) {
@@ -195,7 +194,7 @@ function(
             })
 
             i = i + 1
-        )
+        })
 
         branch(isVarArgs {
             obj : Object = inputs#nth(inputs#length() - 1)
