@@ -6,3 +6,12 @@ function(
         Arrays.asList("Hello", null, "Hi!", null, "Welcome!")
     )
 )
+
+
+function(
+    name(test2)
+    outputs(List)
+    do(
+        Arrays.asList()
+    )
+)
