@@ -169,7 +169,9 @@ function(
                             inputs = inputs#cons(n#getFirstChild())
                         })
                     } {
-                        inputs = inputs#cons(n#getFirstChild())
+                        branch(n#getFirstChild() {
+                            inputs = inputs#cons(n#getFirstChild())
+                        })
                     })
 
                     outputs = outputs#cons(n#getSecondChild())
@@ -264,7 +266,9 @@ function(
                             inputs = inputs#cons(n#getFirstChild())
                         })
                     } {
-                        inputs = inputs#cons(n#getFirstChild())
+                        branch(n#getFirstChild() {
+                            inputs = inputs#cons(n#getFirstChild())
+                        })
                     })
 
                     outputs = outputs#cons(n#getSecondChild())

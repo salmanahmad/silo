@@ -1,0 +1,12 @@
+
+import(silo.core)
+
+fn(null => String return("This is a cool str!"))
+
+func(foo(null => String) {
+    return("This is a cool str!")
+})
+
+func(bar(null => String) {
+    "This is a cool str!"
+})

@@ -66,6 +66,18 @@ public class CoreTest {
         Assert.assertEquals("This is a cool string!", runtime.eval("foo"));
         Assert.assertEquals("This is a cool string!", runtime.eval("bar"));
     }
+
+    @Test
+    public void testFuncWithOnlyOutputAlt() throws ClassNotFoundException {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/core-test/only-output-alt.silo");
+
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+
+        Assert.assertEquals("This is a cool str!", runtime.eval(classes.get(0)));
+        Assert.assertEquals("This is a cool str!", runtime.eval("foo"));
+        Assert.assertEquals("This is a cool str!", runtime.eval("bar"));
+    }
 }
 
 
