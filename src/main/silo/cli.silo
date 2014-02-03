@@ -13,6 +13,8 @@ func(main(args : IPersistentVector) {
         println(help(args#nth(1, null)))
     } else(first#equals("version")) {
         println(version())
+    } else(first#equals("copyright")) {
+        println(copyright())
     } else {
         println(help(null))
     })
@@ -20,6 +22,10 @@ func(main(args : IPersistentVector) {
 
 func(version {
     String.format("Silo %s (Codename: %s)", silo.lang.Version.string, silo.lang.Version.codename)
+})
+
+func(copyright() {
+    String.format("%s - %s", version(), "Copyright (c) 2014 Salman Ahmad")
 })
 
 func(help(command) {
@@ -65,6 +71,12 @@ Usage: silo version
 
   Show Silo version.
 "
+    } else(command#equals("copyright")) {
+"
+Usage: silo copyright
+
+  Show Silo copyright.
+"
     } else {
 "
 Usage: silo COMMAND [command-specific-arguments]
@@ -75,6 +87,7 @@ List of commands, type \"silo help COMMAND\" for more details:
   compile     # Compile Silo source files and output JVM bytecode
   help        # Show the help page for a command
   version     # Show the Silo version
+  copyright   # Show the Silo copyright
 "
     })
 })
