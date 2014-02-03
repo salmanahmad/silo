@@ -74,7 +74,7 @@ func(version {
 })
 
 func(copyright() {
-    String.format("%s - %s", version(), "Copyright (c) 2014 Salman Ahmad")
+    String.format("%s - %s", version(), "Copyright (c) 2014 by Salman Ahmad")
 })
 
 func(help(command) {
