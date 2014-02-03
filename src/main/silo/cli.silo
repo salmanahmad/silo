@@ -39,10 +39,10 @@ func(run(file_ : Object) {
     runtime : Runtime = Runtime();
     source : String = FileUtils.readFileToString(File(file))
     code : silo.lang.Node = silo.lang.compiler.Parser.parse(source)
-    
-    classes : Vector = null
-    runtime#compile(code)
-    //runtime#eval(classes#get(classes#size() - 1))
+
+    classes : Vector = runtime#compile(code)
+    c : Class = checkcast(java.lang.Class, classes#get(classes#size() - 1))
+    runtime#eval(c)
 })
 
 func(compile(file_ : Object) {
