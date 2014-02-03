@@ -3,10 +3,10 @@ package(silo.cli)
 import(silo.core)
 
 func(main(args : IPersistentVector) {
-    println(version(0))
+    println(version())
 })
 
-func(version(i : int => String) {
+func(version(null => String) {
     return(String.format("Silo %s (Codename: %s)", silo.lang.Version.string, silo.lang.Version.codename))
 })
 
