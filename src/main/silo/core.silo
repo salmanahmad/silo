@@ -25,7 +25,7 @@ function(
     varargs(args)
     outputs(silo.lang.Node)
     {
-        vec : IPersistentVector = vector()
+        vec : IPersistentVector = com.github.krukow.clj_lang.PersistentVector.emptyVector()
 
         i : int = 0
         while(i < args#length() {
@@ -110,25 +110,18 @@ function(
     {
         id : silo.lang.Node = null
 
-        branch(instanceof(silo.lang.Node, id_) {
+        if(instanceof(silo.lang.Node, id_) {
             id = checkcast(silo.lang.Node, id_)
-        } branch(instanceof(silo.lang.Symbol, id_)
+        } else(instanceof(silo.lang.Symbol, id_)) {
             id = silo.lang.Node(id_)
-        ))
+        } else {
+            // TODO: Support and then throw an exception
+        })
 
         body : silo.lang.Node = node(
             symbol("do")
             body_
         )
-
-// TODO: Fix this bug with if statements...
-//        if(instanceof(silo.lang.Node, id_) {
-//            id = checkcast(silo.lang.Node, id_)
-//        } else(instanceof(silo.lang.Symbol, id_)) {
-//            id = silo.lang.Node(id_)
-//        } else {
-//            // TODO: Support and then throw an exception
-//        })
 
         children : Vector = id#getChildren();
 
