@@ -26,3 +26,15 @@ function(
         })
     }
 )
+
+function(
+    name(bar0)
+    outputs(boolean)
+    {
+        o : Object = Integer(0)
+
+        branch(o {
+            true
+        })
+    }
+)

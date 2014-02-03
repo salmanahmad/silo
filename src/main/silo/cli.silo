@@ -3,7 +3,9 @@ package(silo.cli)
 import(silo.core)
 
 alias(Runtime, silo.lang.Runtime)
+alias(CompilationContext, silo.lang.CompilationContext)
 alias(FileUtils, org.apache.commons.io.FileUtils)
+alias(FilenameUtils, org.apache.commons.io.FilenameUtils)
 
 func(main(args : IPersistentVector) {
     if(args#length() == 0 {
@@ -36,17 +38,35 @@ func(run(file_ : Object) {
         return
     })
 
-    runtime : Runtime = Runtime();
     source : String = FileUtils.readFileToString(File(file))
     code : silo.lang.Node = silo.lang.compiler.Parser.parse(source)
 
+    runtime : Runtime = Runtime();
     classes : Vector = runtime#compile(code)
     c : Class = checkcast(java.lang.Class, classes#get(classes#size() - 1))
     runtime#eval(c)
 })
 
 func(compile(file_ : Object) {
-    println("Compile is not implemented yet!")
+    if(file_ {
+        file : String = file_#toString();
+    } else {
+        return
+    })
+
+    source : String = FileUtils.readFileToString(File(file))
+    code : silo.lang.Node = silo.lang.compiler.Parser.parse(source)
+
+    runtime : Runtime = Runtime();
+    context : CompilationContext = runtime#contextByCompiling(source)
+
+//    i : int = 0
+//    while(i < arraylength(context.bytecode) {
+//        code : array(byte) = context.bytecode(i)
+//        silo.lang.Compile.writeBytecodeToDirectory(code, FilenameUtils.removeExtension(file))
+//
+//        i = i + 1
+//    })
 })
 
 func(version {

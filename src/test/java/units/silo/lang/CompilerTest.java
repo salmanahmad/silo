@@ -469,6 +469,15 @@ public class CompilerTest {
         Vector<Class> classes = runtime.compile(Parser.parse(source));
         Assert.assertEquals(false, runtime.eval("foo"));
         Assert.assertEquals(true, runtime.eval("bar"));
-        //Assert.assertEquals(true, runtime.eval(classes.get(2)));
+        Assert.assertEquals(true, runtime.eval("bar0"));
+    }
+
+    @Test
+    public void testArrayLength() {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/examples/array-length.silo");
+
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+        Assert.assertEquals(" 0 1 2 3 4 5", runtime.eval("join", new int[] {0, 1, 2, 3, 4, 5}));
     }
 }

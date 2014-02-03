@@ -1,0 +1,17 @@
+
+function(
+    name(join)
+    inputs(a : array(int))
+    outputs(String)
+    {
+        s : String = ""
+
+        i : int = 0
+        while(i < arraylength(a) {
+            s = String.format("%s %s", s, Integer(a(i)))
+            i = i + 1
+        })
+
+        s
+    }
+)

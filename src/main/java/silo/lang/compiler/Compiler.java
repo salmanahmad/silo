@@ -276,6 +276,8 @@ public class Compiler {
                 return new LiteralArrayType(node);
             } else if(label.equals(new Symbol("arraynew"))) {
                 return new LiteralArray(node);
+            } else if(label.equals(new Symbol("arraylength"))) {
+                return new ArrayLength(node);
             } else if(label.equals(new Symbol("package"))) {
                 return new Package(node);
             } else if(label.equals(new Symbol("alias"))) {
