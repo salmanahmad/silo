@@ -41,6 +41,15 @@ public class Compile {
     }
 
     public static void main(String[] args) throws Exception {
+        // To not compile the standard library invoke Maven
+        // with "-Dbootstrap.skip=true" on the commandline.
+        // Example: "mvn test -Dbootstrap.skip=true"
+        if(System.getProperty("bootstrap.skip") != null) {
+            if(System.getProperty("bootstrap.skip").equals("true")) {
+                return;
+            }
+        }
+
         Runtime runtime = new Runtime();
         String outputPath = args[0];
 
