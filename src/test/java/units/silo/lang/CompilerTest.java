@@ -341,8 +341,8 @@ public class CompilerTest {
         Vector<Class> classes = runtime.compile(Parser.parse(source));
         Object o = null;
 
-        o = runtime.eval(classes.get(0));
-        Assert.assertEquals(Arrays.asList("Hello", null, "Hi!", null, "Welcome!"), o);
+        Assert.assertEquals(Arrays.asList("Hello", null, "Hi!", null, "Welcome!"), runtime.eval(classes.get(0)));
+        Assert.assertEquals(Arrays.asList(), runtime.eval(classes.get(1)));
     }
 
     @Test

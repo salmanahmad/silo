@@ -25,6 +25,8 @@ function(
     varargs(args)
     outputs(silo.lang.Node)
     {
+        // I cannot use "vector()" here because the if-macro is called by the func-macro and the
+        // vector function is not compiled yet at that point.
         vec : IPersistentVector = com.github.krukow.clj_lang.PersistentVector.emptyVector()
 
         i : int = 0

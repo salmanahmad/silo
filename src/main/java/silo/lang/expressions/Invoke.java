@@ -486,6 +486,8 @@ public class Invoke implements Expression {
 
         if(args.length > params.length) {
             shouldVarArgs = true;
+        } else if(args.length == params.length - 1) {
+            shouldVarArgs = true;
         } else if(args.length == params.length) {
             shouldVarArgs = params[params.length - 1].equals(args[params.length - 1]);
             shouldVarArgs = !shouldVarArgs;
