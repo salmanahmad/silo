@@ -1,0 +1,28 @@
+
+function(
+    name(foo)
+    outputs(boolean)
+    {
+        o : Object = null
+
+        branch(o {
+            true
+        } {
+            false
+        })
+    }
+)
+
+function(
+    name(bar)
+    outputs(boolean)
+    {
+        o : Object = Integer(0)
+
+        branch(o {
+            true
+        } {
+            false
+        })
+    }
+)
