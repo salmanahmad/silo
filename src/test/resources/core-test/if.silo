@@ -11,6 +11,4 @@ func(fib(a : int => int) {
         y : int = fib(a - 2)
         return(x + y)
     })
-
-    return(-1)
 })

@@ -106,6 +106,7 @@ public class Return implements Expression {
                 } else if(outputClass.isPrimitive() && isBoxClass(operand)) {
                     // TODO: This statement above should be: "equals object OR var"
                     g.unbox(Type.getType(outputClass));
+                    g.returnValue();
                 } else {
                     // TODO: Implicit conversion. Aka returning float form a double, etc. Not sure I want to support that yet.
                     // TODO: At the very least, do I want support inserting a CHECKCAST if operand is a Var?

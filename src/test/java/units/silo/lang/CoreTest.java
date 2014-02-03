@@ -56,6 +56,17 @@ public class CoreTest {
     }
 
     @Test
+    public void testSimpleBranch() throws ClassNotFoundException {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/core-test/simple-branch.silo");
+
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+
+        Class main = runtime.loader.loadClass("main");
+        Assert.assertEquals(5, runtime.eval(main));
+    }
+
+    @Test
     public void testFuncWithOnlyOutput() {
         Runtime runtime = new Runtime();
         String source = Helper.readResource("/core-test/only-output.silo");
