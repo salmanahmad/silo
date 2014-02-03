@@ -2,13 +2,22 @@
 package(silo.cli)
 import(silo.core)
 
+alias(Runtime, silo.lang.Runtime)
+alias(FileUtils, org.apache.commons.io.FileUtils)
+
 func(main(args : IPersistentVector) {
-    first : Object = args#nth(0, "help")
+    if(args#length() == 0 {
+        // TODO: Perhaps enter a REPL?
+        println(help(null))
+        return()
+    })
+
+    first : Object = args#nth(0, null)
 
     if(first#equals("run") {
-
+        run(args#nth(1, null))
     } else(first#equals("compile")) {
-
+        compile(args#nth(1, null))
     } else(first#equals("help")) {
         println(help(args#nth(1, null)))
     } else(first#equals("version")) {
@@ -16,8 +25,28 @@ func(main(args : IPersistentVector) {
     } else(first#equals("copyright")) {
         println(copyright())
     } else {
-        println(help(null))
+        run(args#nth(0, null))
     })
+})
+
+func(run(file_ : Object) {
+    if(file_ {
+        file : String = file_#toString();
+    } else {
+        return
+    })
+
+    runtime : Runtime = Runtime();
+    source : String = FileUtils.readFileToString(File(file))
+    code : silo.lang.Node = silo.lang.compiler.Parser.parse(source)
+    
+    classes : Vector = null
+    runtime#compile(code)
+    //runtime#eval(classes#get(classes#size() - 1))
+})
+
+func(compile(file_ : Object) {
+    println("Compile is not implemented yet!")
 })
 
 func(version {
