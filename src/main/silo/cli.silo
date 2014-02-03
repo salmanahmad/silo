@@ -60,13 +60,13 @@ func(compile(file_ : Object) {
     runtime : Runtime = Runtime();
     context : CompilationContext = runtime#contextByCompiling(source)
 
-//    i : int = 0
-//    while(i < arraylength(context.bytecode) {
-//        code : array(byte) = context.bytecode(i)
-//        silo.lang.Compile.writeBytecodeToDirectory(code, FilenameUtils.removeExtension(file))
-//
-//        i = i + 1
-//    })
+    i : int = 0
+    while(i < invokevirtual(context.bytecode, size()) {
+        bytecode : array(byte) = checkcast(array(byte), invokevirtual(context.bytecode, get(i)))
+        silo.lang.Compile.writeBytecodeToDirectory(bytecode, FilenameUtils.removeExtension(file))
+
+        i = i + 1
+    })
 })
 
 func(version {
