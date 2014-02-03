@@ -62,7 +62,7 @@ func(help(command) {
 
     if(command#equals("run") {
 "
-Usage: silo run [FILES]
+Usage: silo [run] FILES
 
   Run a Silo program. If files lists raw '.silo' files they will be compiled
   and dynamically executed. If a '.jar' file is present it will be run instead.
@@ -108,7 +108,7 @@ Usage: silo copyright
 "
     } else {
 "
-Usage: silo COMMAND [command-specific-arguments]
+Usage: silo [COMMAND] [command-specific-arguments]
 
 List of commands, type \"silo help COMMAND\" for more details:
 
