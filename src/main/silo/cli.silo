@@ -6,7 +6,5 @@ func(main(args : IPersistentVector) {
     println(version())
 })
 
-func(version(null => String) {
-    return(String.format("Silo %s (Codename: %s)", silo.lang.Version.string, silo.lang.Version.codename))
-})
+func(version String.format("Silo %s (Codename: %s)", silo.lang.Version.string, silo.lang.Version.codename))
 
