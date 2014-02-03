@@ -3,8 +3,78 @@ package(silo.cli)
 import(silo.core)
 
 func(main(args : IPersistentVector) {
-    println(version())
+    first : Object = args#nth(0, "help")
+
+    if(first#equals("run") {
+
+    } else(first#equals("compile")) {
+
+    } else(first#equals("help")) {
+        println(help(args#nth(1, null)))
+    } else(first#equals("version")) {
+        println(version())
+    } else {
+        println(help(null))
+    })
 })
 
-func(version String.format("Silo %s (Codename: %s)", silo.lang.Version.string, silo.lang.Version.codename))
+func(version {
+    String.format("Silo %s (Codename: %s)", silo.lang.Version.string, silo.lang.Version.codename)
+})
 
+func(help(command) {
+    if(!command, command = "")
+
+    if(command#equals("run") {
+"
+Usage: silo run [FILES]
+
+  Run a Silo program. If files lists raw '.silo' files they will be compiled
+  and dynamically executed. If a '.jar' file is present it will be run instead.
+"
+    } else(command#equals("compile")) {
+"
+Usage: silo compile [options] [FILES]
+
+  Compile a Silo source files and output JVM bytecode.
+
+
+Options include:
+  --all                 # Compile all of the files in the current directory.
+                        # This option causes '--output' to default to the
+                        # current directory. This means that .class
+                        # files will appear in the current directory.
+
+  [--jar | --classes]   # Output a single .jar file or individual java .class
+                        # files. The jar file can be directly executed using
+                        # the 'silo run' command. The default is --jar.
+
+  --output NAME         # The name of the .jar file or the location to place
+                        # the .class files. If .jar is used and a directory is
+                        # specified, the name of the jar file will match the
+                        # name of the directory. This option will default to
+                        # the name of the first file listed or the current
+                        # directory if --all is specified.
+
+  --show-bytecode       # Print the compiled byte code. Useful for
+                        # debugging purposes.
+"
+    } else(command#equals("version")) {
+"
+Usage: silo version
+
+  Show Silo version.
+"
+    } else {
+"
+Usage: silo COMMAND [command-specific-arguments]
+
+List of commands, type \"silo help COMMAND\" for more details:
+
+  run         # Run a Silo program
+  compile     # Compile Silo source files and output JVM bytecode
+  help        # Show the help page for a command
+  version     # Show the Silo version
+"
+    })
+})
