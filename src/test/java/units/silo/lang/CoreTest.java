@@ -56,7 +56,7 @@ public class CoreTest {
     }
 
     @Test
-    public void testFuncWithOnlyOutput() throws ClassNotFoundException {
+    public void testFuncWithOnlyOutput() {
         Runtime runtime = new Runtime();
         String source = Helper.readResource("/core-test/only-output.silo");
 
@@ -68,7 +68,7 @@ public class CoreTest {
     }
 
     @Test
-    public void testFuncWithOnlyOutputAlt() throws ClassNotFoundException {
+    public void testFuncWithOnlyOutputAlt() {
         Runtime runtime = new Runtime();
         String source = Helper.readResource("/core-test/only-output-alt.silo");
 
@@ -77,6 +77,22 @@ public class CoreTest {
         Assert.assertEquals("This is a cool str!", runtime.eval(classes.get(0)));
         Assert.assertEquals("This is a cool str!", runtime.eval("foo"));
         Assert.assertEquals("This is a cool str!", runtime.eval("bar"));
+    }
+
+    @Test
+    public void testDefaultReturnType() {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/core-test/default-return-type.silo");
+
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+
+        Assert.assertEquals("0", runtime.eval(classes.get(0)));
+        Assert.assertEquals("1", runtime.eval(classes.get(1)));
+        Assert.assertEquals("2", runtime.eval("foo"));
+        Assert.assertEquals("3", runtime.eval("bar"));
+        Assert.assertEquals("4", runtime.eval("foo0"));
+        Assert.assertEquals("5", runtime.eval("bar0"));
+        Assert.assertEquals("6", runtime.eval("bar1"));
     }
 }
 

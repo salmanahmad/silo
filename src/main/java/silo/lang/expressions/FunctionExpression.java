@@ -257,8 +257,12 @@ public class FunctionExpression implements Expression, Opcodes {
         }
 
         if(outputType.equals(Type.VOID_TYPE)) {
-            // TODO: make this var when you implement vars and traits
+            // TODO: make this Var when you implement vars and traits
             outputType = Type.getType(Object.class);
+            // This line used to be commented out and allowed to stay Void.TYPE
+            // so that I could distinguish between Object / Var returns and
+            // Void returns inside the Return expression.
+            outputClass = Object.class;
         }
 
         GeneratorAdapter g;

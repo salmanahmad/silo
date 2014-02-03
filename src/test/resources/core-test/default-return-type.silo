@@ -1,0 +1,24 @@
+
+import(silo.core)
+
+fn(return("0"))
+
+fn("1")
+
+func(foo() {
+    return("2")
+})
+
+func(bar() {
+    "3"
+})
+
+func(foo0 {
+    return("4")
+})
+
+func(bar0 {
+    "5"
+})
+
+func(bar1 "6")

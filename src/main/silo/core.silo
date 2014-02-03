@@ -105,7 +105,7 @@ function(
 function(
     name(func)
     macro
-    inputs(id_ : Object, body : silo.lang.Node)
+    inputs(id_ : Object, body_ : Object)
     outputs(silo.lang.Node)
     {
         id : silo.lang.Node = null
@@ -115,6 +115,11 @@ function(
         } branch(instanceof(silo.lang.Symbol, id_)
             id = silo.lang.Node(id_)
         ))
+
+        body : silo.lang.Node = node(
+            symbol("do")
+            body_
+        )
 
 // TODO: Fix this bug with if statements...
 //        if(instanceof(silo.lang.Node, id_) {

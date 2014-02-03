@@ -467,12 +467,8 @@ public class CompilerTest {
         String source = Helper.readResource("/examples/null-check.silo");
 
         Vector<Class> classes = runtime.compile(Parser.parse(source));
-
-        System.out.println();
-        System.out.println();
-
-        Assert.assertEquals(false, runtime.eval(classes.get(0)));
-        Assert.assertEquals(true, runtime.eval(classes.get(1)));
-        Assert.assertEquals(true, runtime.eval(classes.get(2)));
+        Assert.assertEquals(false, runtime.eval("foo"));
+        Assert.assertEquals(true, runtime.eval("bar"));
+        //Assert.assertEquals(true, runtime.eval(classes.get(2)));
     }
 }
