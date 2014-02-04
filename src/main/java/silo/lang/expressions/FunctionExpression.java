@@ -181,6 +181,19 @@ public class FunctionExpression implements Expression, Opcodes {
         if(symbolEntry != null) {
             if(symbolEntry.compiled) {
                 return;
+            } else {
+                if(!shouldEmit) {
+                    // We are inside of a scaffolding pass...
+                    if(context.isInsideFinallyClause()) {
+                        return;
+                    } else {
+                        throw new RuntimeException("Attempting to re-define a function named: " + fullyQualifiedName);
+                    }
+                }
+            }
+        } else {
+            if(shouldEmit) {
+                throw new RuntimeException("Internal error, did not scaffold: " + fullyQualifiedName);
             }
         }
 

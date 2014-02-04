@@ -36,6 +36,7 @@ public class CompilationFrame {
 
     public final Stack<Label> iterationFrameStartLabels;
     public final Stack<Label> iterationFrameEndLabels;
+    public final Stack<Node> finallyClauses;
 
     public CompilationFrame(int access, Method method, GeneratorAdapter generator, Class outputClass) {
         this.access = access;
@@ -50,6 +51,7 @@ public class CompilationFrame {
 
         this.iterationFrameStartLabels = new Stack<Label>();
         this.iterationFrameEndLabels = new Stack<Label>();
+        this.finallyClauses = new Stack<Node>();
     }
 
     public int newLocal(Symbol name, Class type) {
@@ -86,5 +88,13 @@ public class CompilationFrame {
     public void popIterationFrame() {
         iterationFrameStartLabels.pop();
         iterationFrameEndLabels.pop();
+    }
+
+    public void pushFinallyClause(Node node) {
+        finallyClauses.push(node);
+    }
+
+    public void popFinallyClause() {
+        finallyClauses.pop();
     }
 }

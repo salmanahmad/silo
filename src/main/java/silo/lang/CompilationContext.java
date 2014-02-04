@@ -55,6 +55,7 @@ public class CompilationContext {
     public final LinkedHashMap<String, SymbolEntry> symbolTable;
 
     private int uniqueIdentifierCounter;
+    private int finallyScaffoldingCount;
 
     public CompilationContext(Runtime runtime) {
         this.runtime = runtime;
@@ -69,6 +70,7 @@ public class CompilationContext {
         this.symbolTable = new LinkedHashMap<String, SymbolEntry>();
 
         this.uniqueIdentifierCounter = 0;
+        this.finallyScaffoldingCount = 0;
 
         this.clear();
     }
@@ -88,6 +90,18 @@ public class CompilationContext {
 
         uniqueIdentifierCounter += 1;
         return new Symbol("__" + tag + "__" + uniqueIdentifierCounter);
+    }
+
+    public boolean isInsideFinallyClause() {
+        return finallyScaffoldingCount != 0;
+    }
+
+    public synchronized void enterFinallyScaffold() {
+        finallyScaffoldingCount++;
+    }
+
+    public synchronized void exitFinallyScaffold() {
+        finallyScaffoldingCount--;
     }
 
     public void clear() {

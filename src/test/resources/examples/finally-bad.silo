@@ -1,0 +1,8 @@
+
+function(name(foo) {
+    return 5
+})
+
+function(name(foo) {
+    return 5
+})

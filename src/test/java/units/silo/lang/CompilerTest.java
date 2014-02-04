@@ -205,6 +205,7 @@ public class CompilerTest {
         try {
              Vector<Class> classes = runtime.compile(Parser.parse(source));
              Object o = runtime.eval(classes.get(0));
+             Assert.fail();
         } catch (Exception e) {
             Assert.assertEquals(e.toString(), "java.lang.RuntimeException: Invalid assignment from type double to int");
         }
@@ -218,6 +219,7 @@ public class CompilerTest {
         try {
              Vector<Class> classes = runtime.compile(Parser.parse(source));
              Object o = runtime.eval(classes.get(0));
+             Assert.fail();
         } catch (Exception e) {
             Assert.assertEquals(e.toString(), "java.lang.RuntimeException: Parameter mismatch in class foo. Expected: int Provided: double");
         }
@@ -490,6 +492,7 @@ public class CompilerTest {
 
         try {
              runtime.eval(classes.get(0));
+             Assert.fail();
         } catch (Exception e) {
             Assert.assertEquals(RuntimeException.class, e.getClass());
             Assert.assertEquals("", e.getMessage());
@@ -497,6 +500,7 @@ public class CompilerTest {
 
         try {
              runtime.eval(classes.get(1));
+             Assert.fail();
         } catch (Exception e) {
             Assert.assertEquals(RuntimeException.class, e.getClass());
             Assert.assertEquals("", e.getMessage());
@@ -504,6 +508,7 @@ public class CompilerTest {
 
         try {
              runtime.eval(classes.get(2));
+             Assert.fail();
         } catch (Exception e) {
             Assert.assertEquals(RuntimeException.class, e.getClass());
             Assert.assertEquals("Exception!", e.getMessage());
@@ -511,6 +516,7 @@ public class CompilerTest {
 
         try {
              runtime.eval(classes.get(3));
+             Assert.fail();
         } catch (Exception e) {
             Assert.assertEquals(RuntimeException.class, e.getClass());
             Assert.assertEquals("5", e.getMessage());
@@ -518,6 +524,7 @@ public class CompilerTest {
 
         try {
              runtime.eval(classes.get(4));
+             Assert.fail();
         } catch (Exception e) {
             Assert.assertEquals(RuntimeException.class, e.getClass());
             Assert.assertEquals("false", e.getMessage());
@@ -525,6 +532,7 @@ public class CompilerTest {
 
         try {
              runtime.eval(classes.get(5));
+             Assert.fail();
         } catch (Exception e) {
             Assert.assertEquals(RuntimeException.class, e.getClass());
             Assert.assertEquals("FooBar!", e.getMessage());
@@ -532,6 +540,7 @@ public class CompilerTest {
 
         try {
              runtime.eval(classes.get(6));
+             Assert.fail();
         } catch (Exception e) {
             Assert.assertEquals(NullPointerException.class, e.getClass());
             Assert.assertEquals("Null!", e.getMessage());
@@ -548,5 +557,21 @@ public class CompilerTest {
         Assert.assertEquals(false, runtime.eval(classes.get(1)));
         Assert.assertEquals("Exception!", runtime.eval(classes.get(2)));
         Assert.assertEquals("Exception!", runtime.eval(classes.get(3)));
+    }
+
+    @Test
+    public void testFinallyDuplicatedDefinitions() {
+        Runtime runtime = new Runtime();
+        String good = Helper.readResource("/examples/finally-good.silo");
+        String bad = Helper.readResource("/examples/finally-bad.silo");
+
+        runtime.compile(Parser.parse(good));
+
+        try {
+            runtime.compile(Parser.parse(bad));
+            Assert.fail();
+        } catch(RuntimeException e) {
+            Assert.assertEquals("Attempting to re-define a function named: foo", e.getMessage());
+        }
     }
 }

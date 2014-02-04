@@ -1,0 +1,10 @@
+
+function(name(foo) {
+    return 5
+})
+
+finally(
+    function(name(foo) {
+        return 5
+    })
+)
