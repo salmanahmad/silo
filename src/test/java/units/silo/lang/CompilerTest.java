@@ -480,4 +480,61 @@ public class CompilerTest {
         Vector<Class> classes = runtime.compile(Parser.parse(source));
         Assert.assertEquals(" 0 1 2 3 4 5", runtime.eval("join", new int[] {0, 1, 2, 3, 4, 5}));
     }
+
+    @Test
+    public void testThrow() {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/examples/throw.silo");
+
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+
+        try {
+             runtime.eval(classes.get(0));
+        } catch (Exception e) {
+            Assert.assertEquals(RuntimeException.class, e.getClass());
+            Assert.assertEquals("", e.getMessage());
+        }
+
+        try {
+             runtime.eval(classes.get(1));
+        } catch (Exception e) {
+            Assert.assertEquals(RuntimeException.class, e.getClass());
+            Assert.assertEquals("", e.getMessage());
+        }
+
+        try {
+             runtime.eval(classes.get(2));
+        } catch (Exception e) {
+            Assert.assertEquals(RuntimeException.class, e.getClass());
+            Assert.assertEquals("Exception!", e.getMessage());
+        }
+
+        try {
+             runtime.eval(classes.get(3));
+        } catch (Exception e) {
+            Assert.assertEquals(RuntimeException.class, e.getClass());
+            Assert.assertEquals("5", e.getMessage());
+        }
+
+        try {
+             runtime.eval(classes.get(4));
+        } catch (Exception e) {
+            Assert.assertEquals(RuntimeException.class, e.getClass());
+            Assert.assertEquals("false", e.getMessage());
+        }
+
+        try {
+             runtime.eval(classes.get(5));
+        } catch (Exception e) {
+            Assert.assertEquals(RuntimeException.class, e.getClass());
+            Assert.assertEquals("FooBar!", e.getMessage());
+        }
+
+        try {
+             runtime.eval(classes.get(6));
+        } catch (Exception e) {
+            Assert.assertEquals(NullPointerException.class, e.getClass());
+            Assert.assertEquals("Null!", e.getMessage());
+        }
+    }
 }

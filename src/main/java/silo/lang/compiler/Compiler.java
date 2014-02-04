@@ -288,6 +288,8 @@ public class Compiler {
                 return new FunctionExpression(node);
             } else if(label.equals(new Symbol("declare"))) {
                 return new Declare(node);
+            } else if(label.equals(new Symbol("throw"))) {
+                return new Throw(node);
             } else if(label.equals(new Symbol("loop"))) {
                 return new Loop(node);
             } else if(label.equals(new Symbol("break"))) {
@@ -325,6 +327,8 @@ public class Compiler {
                 return new Break(new Node(new Symbol("break")));
             } else if(value.equals(new Symbol("continue"))) {
                 // TODO
+            } else if(value.equals(new Symbol("throw"))) {
+                return new Throw(new Node(new Symbol("throw")));
             }
 
             return new Access(value);

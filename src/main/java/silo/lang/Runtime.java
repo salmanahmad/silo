@@ -60,10 +60,18 @@ public class Runtime {
             } else {
                 return ((Function)klass.newInstance()).methodHandle().invoke(null, args);
             }
+        } catch(java.lang.reflect.InvocationTargetException e) {
+            Throwable t = e.getCause();
+
+            if(t instanceof RuntimeException) {
+                throw (RuntimeException)t;
+            } else {
+                throw new RuntimeException(t);
+            }
         } catch(Exception e) {
             // TODO: Better error handling.
             e.printStackTrace();
-            throw new RuntimeException("Error!");
+            throw new RuntimeException(e);
         }
     }
 

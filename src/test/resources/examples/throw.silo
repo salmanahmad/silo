@@ -1,0 +1,28 @@
+
+function({
+    throw
+})
+
+function({
+    throw()
+})
+
+function({
+    throw("Exception!")
+})
+
+function({
+    throw(5)
+})
+
+function({
+    throw(false)
+})
+
+function({
+    throw(RuntimeException("FooBar!"))
+})
+
+function({
+    throw(NullPointerException("Null!"))
+})
