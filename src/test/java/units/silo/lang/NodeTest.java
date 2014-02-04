@@ -87,6 +87,17 @@ public class NodeTest {
         Assert.assertEquals(output.getFirstChild(), new Node(null, new Symbol("a"), new Symbol("b"), new Symbol("c"), new Symbol("d")));
     }
 
+    @Test
+    public void testReplaceSymbol() {
+        // Get first child is needed because parse wraps everything in a node by default.
+        Node input = (Node)Parser.parse("a.b.ZZZ.d + ZZZ.foo - ZZZ(4, ZZZ(ZZZ, 5 + ZZZ))").getFirstChild();
+        Node expected = (Node)Parser.parse("a.b.AAA.d + AAA.foo - AAA(4, AAA(AAA, 5 + AAA))").getFirstChild();
+
+        Node output = Node.replaceSymbol(input, new Symbol("ZZZ"), new Symbol("AAA"));
+
+        Assert.assertEquals(expected, output);
+    }
+
 }
 
 

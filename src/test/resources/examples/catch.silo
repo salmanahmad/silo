@@ -1,0 +1,62 @@
+
+
+function({
+    b : boolean = true
+    s : String = "Hello!"
+
+    catch({
+        branch(true {
+            throw("Exception Took Place...")
+        })
+    } e : Exception {
+        return(s)
+    })
+
+    return(false)
+})
+
+function({
+    b : boolean = true
+    s : String = "Hello!"
+
+    catch({
+        branch(false {
+            throw("Exception Took Place...")
+        })
+    } e : Exception {
+        return(s)
+    })
+
+    return(false)
+})
+
+function({
+    b : boolean = true
+    e : RuntimeException = RuntimeException("Hello!")
+
+    catch({
+        branch(true {
+            throw("Exception!")
+        })
+    } e : Exception {
+        return(e#getMessage())
+    })
+
+    return(false)
+})
+
+
+function({
+    b : boolean = true
+    e : String = "Hello, World!"
+
+    catch({
+        branch(true {
+            throw("Exception!")
+        })
+    } e : Exception {
+        return(e#getMessage())
+    })
+
+    return(false)
+})

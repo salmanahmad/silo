@@ -290,6 +290,8 @@ public class Compiler {
                 return new Declare(node);
             } else if(label.equals(new Symbol("throw"))) {
                 return new Throw(node);
+            } else if(label.equals(new Symbol("catch"))) {
+                return new Catch(node);
             } else if(label.equals(new Symbol("loop"))) {
                 return new Loop(node);
             } else if(label.equals(new Symbol("break"))) {

@@ -81,7 +81,7 @@ public class CompilationContext {
         return namespaces.peek();
     }
 
-    public Symbol uniqueIdentifier(String tag) {
+    public synchronized Symbol uniqueIdentifier(String tag) {
         if(tag == null) {
             tag = "";
         }

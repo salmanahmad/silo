@@ -139,6 +139,10 @@ public class Node {
         return children.get(1);
     }
 
+    public Object getThirdChild() {
+        return children.get(2);
+    }
+
     public Object getLastChild() {
         return children.lastElement();
     }
@@ -185,6 +189,31 @@ public class Node {
         }
 
         return buffer;
+    }
+
+    public static Node replaceSymbol(Node node, Symbol target, Symbol replacement) {
+        // TODO: I suspect that is really slow. Profile and make sure that it is acceptable...
+
+        Object label = node.getLabel();
+        if(label instanceof Node) {
+            label = replaceSymbol((Node)label, target, replacement);
+        } else if(label.equals(target)) {
+            label = replacement;
+        }
+
+        Vector children = new Vector();
+        Vector childs = node.getChildren();
+        for(Object child : childs) {
+            if(child instanceof Node) {
+                children.add(replaceSymbol((Node)child, target, replacement));
+            } else if(child.equals(target)) {
+                children.add(replacement);
+            } else {
+                children.add(child);
+            }
+        }
+
+        return new Node(label, children);
     }
 
     // TODO - Update this so it takes an anonymous function instead...

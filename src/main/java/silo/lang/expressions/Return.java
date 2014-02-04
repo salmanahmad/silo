@@ -114,7 +114,7 @@ public class Return implements Expression {
                 }
             }
         } else {
-            throw new RuntimeException("Too many things on the operand stack when returning from a function.");
+            throw new RuntimeException("Too many things on the operand stack when returning from a function." + context.currentFrame().operandStack);
         }
     }
 }

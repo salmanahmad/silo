@@ -31,19 +31,6 @@ public class Throw implements Expression {
     }
 
     public Class type(CompilationContext context) {
-/*
-        if(this.node.getChildren().size() == 1) {
-            Expression e = Compiler.buildExpression(this.node.getChildren().get(0));
-            Class klass = e.type(context);
-
-            if(Throwable.class.isAssignableFrom(klass)) {
-                return klass;
-            }
-        }
-
-        return String.class;
-*/
-
         return Null.class;
     }
 
