@@ -574,4 +574,16 @@ public class CompilerTest {
             Assert.assertEquals("Attempting to re-define a function named: foo", e.getMessage());
         }
     }
+
+    @Test
+    public void testTry() {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/examples/try.silo");
+
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+        Assert.assertEquals("Hello!", runtime.eval(classes.get(0)));
+        Assert.assertEquals(false, runtime.eval(classes.get(1)));
+        Assert.assertEquals("Exception!", runtime.eval(classes.get(2)));
+        Assert.assertEquals("Exception!", runtime.eval(classes.get(3)));
+    }
 }
