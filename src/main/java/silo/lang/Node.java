@@ -27,6 +27,7 @@ import org.apache.commons.lang3.StringUtils;
 // TODO: I need to make Node immutable...
 public class Node {
     // TODO: Rename label to head?
+    PersistentMap meta;
     Object label;
     Vector children;
 
@@ -40,6 +41,12 @@ public class Node {
         }
 
         return new Node(label, children);
+    }
+
+    public static Node withMeta(PersistentMap meta, Object label, Object ... children) {
+        Node node = new Node(label, children);
+        node.meta = meta;
+        return node;
     }
 
     public Node(Object label) {
@@ -69,6 +76,10 @@ public class Node {
     public int hashCode() {
         int hash = 1;
         return Helper.hashCombine(Helper.hashCode(this.label.hashCode()), this.children.hashCode());
+    }
+
+    public PersistentMap getMeta() {
+        return meta;
     }
 
     public Object getLabel() {

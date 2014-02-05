@@ -261,6 +261,9 @@ public class Invoke implements Expression {
     }
 
     public static Method resolveMethod(Class klass, String name, boolean isStatic, Class[] args) {
+        // Rules from: JLS 15.12
+        // http://docs.oracle.com/javase/specs/jls/se7/html/jls-15.html#jls-15.12
+
         Vector<Method> methods = new Vector<Method>();
 
         for(Method m : klass.getMethods()) {
