@@ -20,6 +20,10 @@ import org.antlr.runtime.*;
 public class Parser {
 
     public static Node parse(String source) {
+        return parse("UNKNOWN_FILE", source);
+    }
+
+    public static Node parse(String fileName, String source) {
         ANTLRStringStream stream = new ANTLRStringStream(source);
         GrammarLexer lexer = new GrammarLexer(stream);
 
@@ -35,7 +39,7 @@ public class Parser {
         */
 
         CommonTokenStream tokens = new CommonTokenStream(lexer);
-        GrammarParser parser = new GrammarParser(tokens);
+        GrammarParser parser = new GrammarParser(fileName, tokens);
 
         try {
             return parser.program().value;

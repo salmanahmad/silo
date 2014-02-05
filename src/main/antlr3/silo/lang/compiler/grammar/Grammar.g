@@ -25,6 +25,14 @@ import silo.lang.*;
 }
 
 @parser::members {
+
+    String fileName;
+
+    public GrammarParser(String fileName, CommonTokenStream tokens) {
+        super(tokens);
+        this.fileName = fileName;
+    }
+
     // TODO - Better error reporting here --- http://www.antlr.org/wiki/display/ANTLR3/Error+reporting+and+recovery
     public void emitErrorMessage(String message) {
         throw new RuntimeException(message);
