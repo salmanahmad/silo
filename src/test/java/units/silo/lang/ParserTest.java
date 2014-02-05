@@ -77,6 +77,45 @@ public class ParserTest {
     }
 
     @Test
+    public void testLineNumbers() {
+        String source = Helper.readResource("/parser-test/line-numbers.silo");
+        Node p = (Node)Parser.parse("line-numbers.silo", source);
+
+        Node a = (Node)p.getFirstChild();
+        Node b = (Node)a.getFirstChild();
+        Node c = (Node)b.getFirstChild();
+        Node d = (Node)c.getChild(0);
+        Node e = (Node)c.getChild(1);
+        Node f = (Node)c.getChild(2);
+
+        Node math = (Node)p.getChild(1);
+
+        Assert.assertEquals("line-numbers.silo", p.getMeta().get("file"));
+        Assert.assertEquals(1, a.getMeta().get("line"));
+        Assert.assertEquals(0, a.getMeta().get("position"));
+
+        Assert.assertEquals(2, b.getMeta().get("line"));
+        Assert.assertEquals(4, b.getMeta().get("position"));
+
+        Assert.assertEquals(3, c.getMeta().get("line"));
+        Assert.assertEquals(8, c.getMeta().get("position"));
+
+        Assert.assertEquals(3, d.getMeta().get("line"));
+        Assert.assertEquals(10, d.getMeta().get("position"));
+
+        Assert.assertEquals(3, e.getMeta().get("line"));
+        Assert.assertEquals(15, e.getMeta().get("position"));
+
+        Assert.assertEquals(3, f.getMeta().get("line"));
+        Assert.assertEquals(20, f.getMeta().get("position"));
+
+        Assert.assertEquals(7, math.getMeta().get("line"));
+
+        Node program = (Node)Parser.parse(source);
+        Assert.assertEquals("UNKNOWN_FILE", program.getMeta().get("file"));
+    }
+
+    @Test
     public void testLeftAssociativity() throws Exception {
         Node program = Parser.parse("a.b.c.d");
 

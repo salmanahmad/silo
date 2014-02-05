@@ -30,4 +30,8 @@ public class PersistentMap {
     public PersistentMap(Map items) {
         this.map = PersistentHashMap.create(items);
     }
+
+    public Object get(Object key) {
+        return map.valAt(key);
+    }
 }

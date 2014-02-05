@@ -48,6 +48,10 @@ public class Helper {
         return o.toString();
     }
 
+    public static PersistentMap meta(String fileName, int line, int pos) {
+        return new PersistentMap("file", fileName, "line", line, "position", pos);
+    }
+
     public static String[] getResourceListing(Class klass, String path) {
         try {
           URL dirURL = klass.getResource(path);

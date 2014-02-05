@@ -48,7 +48,7 @@ import silo.lang.*;
 }
 
 program returns [Node value]
-  : terminator?                        { $value = new Node(null); }
+  : terminator?                        { $value = Node.withMeta(Helper.meta(fileName, $start.getLine(), $start.getCharPositionInLine()), null); }
     ( expressions                      { $value = $expressions.value; }
       terminator
     )?
@@ -56,7 +56,7 @@ program returns [Node value]
   ;
 
 expressions returns [Node value]
-  :                                    { $value = new Node(null); }
+  :                                    { $value = Node.withMeta(Helper.meta(fileName, $start.getLine(), $start.getCharPositionInLine()), null); }
     head=expression                    { $value.addChild($head.value); }
     (
       terminator?
@@ -75,68 +75,68 @@ expression returns [Object value]
 assignmentExpression returns [Object value]
   : n1=orExpression                    { $value = $n1.value; }
     ( op=ASSIGN
-      n2=assignmentExpression          { $value = new Node(new Symbol($op.text), $n1.value, $n2.value); }
+      n2=assignmentExpression          { $value = Node.withMeta(Helper.meta(fileName, $start.getLine(), $start.getCharPositionInLine()), new Symbol($op.text), $n1.value, $n2.value); }
     )?
   ;
   
 orExpression returns [Object value]
   : n1=andExpression                   { $value = $n1.value; }
     ( op=OR
-      n2=orExpression                  { $value = new Node(new Symbol($op.text), $n1.value, $n2.value); }
+      n2=orExpression                  { $value = Node.withMeta(Helper.meta(fileName, $start.getLine(), $start.getCharPositionInLine()), new Symbol($op.text), $n1.value, $n2.value); }
     )?
   ;
 
 andExpression returns [Object value]
   : n1=relationalExpression            { $value = $n1.value; }
     ( op=AND
-      n2=andExpression                 { $value = new Node(new Symbol($op.text), $n1.value, $n2.value); }
+      n2=andExpression                 { $value = Node.withMeta(Helper.meta(fileName, $start.getLine(), $start.getCharPositionInLine()), new Symbol($op.text), $n1.value, $n2.value); }
     )?
   ;
 
 relationalExpression returns [Object value]
   : n1=additiveExpression              { $value = $n1.value; }
     ( op=relationalOperator
-      n2=relationalExpression          { $value = new Node(new Symbol($op.text), $n1.value, $n2.value); }
+      n2=relationalExpression          { $value = Node.withMeta(Helper.meta(fileName, $start.getLine(), $start.getCharPositionInLine()), new Symbol($op.text), $n1.value, $n2.value); }
     )?
   ;
 
 additiveExpression returns [Object value]
   : n1=multiplicativeExpression        { $value = $n1.value; }
     ( op=additiveOperator
-      n2=additiveExpression            { $value = new Node(new Symbol($op.text), $n1.value, $n2.value); }
+      n2=additiveExpression            { $value = Node.withMeta(Helper.meta(fileName, $start.getLine(), $start.getCharPositionInLine()), new Symbol($op.text), $n1.value, $n2.value); }
     )?
   ;
 
 multiplicativeExpression returns [Object value]
   : n1=binaryExpression                { $value = $n1.value; }
     ( op=multiplicativeOperator
-      n2=multiplicativeExpression      { $value = new Node(new Symbol($op.text), $n1.value, $n2.value); }
+      n2=multiplicativeExpression      { $value = Node.withMeta(Helper.meta(fileName, $start.getLine(), $start.getCharPositionInLine()), new Symbol($op.text), $n1.value, $n2.value); }
     )?
   ;
 
 binaryExpression returns [Object value]
   : n1=consExpression                  { $value = $n1.value; }
     ( op=binaryOperator
-      n2=binaryExpression              { $value = new Node(new Symbol($op.text), $n1.value, $n2.value); }
+      n2=binaryExpression              { $value = Node.withMeta(Helper.meta(fileName, $start.getLine(), $start.getCharPositionInLine()), new Symbol($op.text), $n1.value, $n2.value); }
     )?
   ;
 
 consExpression returns [Object value]
   : n1=unaryExpresion                    { $value = $n1.value; }
     ( op=consOperator
-      n2=consExpression                  { $value = new Node(new Symbol($op.text), $n1.value, $n2.value); }
+      n2=consExpression                  { $value = Node.withMeta(Helper.meta(fileName, $start.getLine(), $start.getCharPositionInLine()), new Symbol($op.text), $n1.value, $n2.value); }
     )?
   ;
 
 unaryExpresion returns [Object value]
-  : op=unaryOperator n1=unaryExpresion { $value = new Node(new Symbol($op.text), $n1.value); }
+  : op=unaryOperator n1=unaryExpresion { $value = Node.withMeta(Helper.meta(fileName, $start.getLine(), $start.getCharPositionInLine()), new Symbol($op.text), $n1.value); }
   | chainExpression                    { $value = $chainExpression.value; }
   ;
 
 chainExpression returns [Object value]
   : n1=primaryExpression               { $value = $n1.value; }
     ( op=chainOperator
-      n2=chainExpression               { $value = new Node(new Symbol($op.text), $n1.value, $n2.value); }
+      n2=chainExpression               { $value = Node.withMeta(Helper.meta(fileName, $start.getLine(), $start.getCharPositionInLine()), new Symbol($op.text), $n1.value, $n2.value); }
     )?
   ;
 
@@ -149,16 +149,16 @@ primaryExpression returns [Object value]
 // - I allow parenExpression between accessOperators to make the grammar liberal. The default implementation of
 //   the "dot" operator will reject this but I do not reject it here because it may be useful for macro-developers
 nodeExpression returns [Node value]
-  :                                    { $value = new Node(null); }
-    ( access=accessExpression          { $value = new Node($access.value); }
+  :                                    { $value = Node.withMeta(Helper.meta(fileName, $start.getLine(), $start.getCharPositionInLine()), null); }
+    ( access=accessExpression          { $value = Node.withMeta(Helper.meta(fileName, $start.getLine(), $start.getCharPositionInLine()), $access.value); }
     )?
 
     paren=parenExpression              { $value.addChildren($paren.value); }
 
-    ( ( paren=parenExpression          { $value = new Node($value); $value.addChildren($paren.value); }
+    ( ( paren=parenExpression          { $value = Node.withMeta(Helper.meta(fileName, $paren.start.getLine(), $paren.start.getCharPositionInLine()), $value); $value.addChildren($paren.value); }
       | op=accessOperator
-        ( paren=parenExpression        { $value = new Node(new Symbol($op.text), $value, $paren.value); }
-        | literal=literalExpression    { $value = new Node(new Symbol($op.text), $value, $literal.value); }
+        ( paren=parenExpression        { $value = Node.withMeta(Helper.meta(fileName, $paren.start.getLine(), $paren.start.getCharPositionInLine()), new Symbol($op.text), $value, $paren.value); }
+        | literal=literalExpression    { $value = Node.withMeta(Helper.meta(fileName, $literal.start.getLine(), $literal.start.getCharPositionInLine()), new Symbol($op.text), $value, $literal.value); }
         )
       )
     )*
@@ -167,8 +167,8 @@ nodeExpression returns [Node value]
 accessExpression returns [Object value]
   : n1=literalExpression                 { $value = $n1.value; }
     ( op=accessOperator
-      ( paren=parenExpression            { $value = new Node(new Symbol($op.text), $value, $paren.value); }
-      | literal=literalExpression        { $value = new Node(new Symbol($op.text), $value, $literal.value); }
+      ( paren=parenExpression            { $value = Node.withMeta(Helper.meta(fileName, $paren.start.getLine(), $paren.start.getCharPositionInLine()), new Symbol($op.text), $value, $paren.value); }
+      | literal=literalExpression        { $value = Node.withMeta(Helper.meta(fileName, $literal.start.getLine(), $literal.start.getCharPositionInLine()), new Symbol($op.text), $value, $literal.value); }
       )
 
       //n2=accessExpression              { $value = new Node(new Symbol($op.text), $n1.value, $n2.value); }
@@ -191,7 +191,7 @@ literalExpression returns [Object value]
   ;
 
 parenExpression returns [Node value]
-  : OPEN_PAREN                    { $value = new Node(null); }
+  : OPEN_PAREN                    { $value = Node.withMeta(Helper.meta(fileName, $start.getLine(), $start.getCharPositionInLine()), null); }
     terminator?
     ( expressions                 { $value = $expressions.value; }
     )?
@@ -227,9 +227,9 @@ symbol returns [Symbol value]
 
 blockExpression returns [Node value]
 // TODO: Should this return a node with a null label instead of do?
-  : OPEN_BRACE                         { $value = new Node(new Symbol("do")); }
+  : OPEN_BRACE                         { $value = Node.withMeta(Helper.meta(fileName, $start.getLine(), $start.getCharPositionInLine()), new Symbol("do")); }
     terminator?
-    ( expressions                      { $value = new Node(new Symbol("do"), $expressions.value.getChildren()); }
+    ( expressions                      { $value = Node.withMeta(Helper.meta(fileName, $start.getLine(), $start.getCharPositionInLine()), new Symbol("do")); $value.addChildren($expressions.value.getChildren()); }
     )?
     terminator?
     CLOSE_BRACE
