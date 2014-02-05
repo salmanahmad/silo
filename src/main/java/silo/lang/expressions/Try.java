@@ -38,6 +38,10 @@ public class Try implements Expression {
         Vector oldChildren = node.getChildren();
         Vector children = new Vector();
 
+        if(oldChildren.size() < 3) {
+            throw new RuntimeException("A try statement must have at-least 3 arguments.");
+        }
+
         for(int i = 0; i < oldChildren.size(); i++) {
             Object child = oldChildren.get(i);
             if(i == 0) {
@@ -45,16 +49,10 @@ public class Try implements Expression {
                 children.add(Compiler.buildExpression(child).scaffold(context));
             } else if(i == oldChildren.size() - 1) {
                 // Last - must be finally
-                if(child instanceof Node) {
-                    Node n = (Node)child;
-                    if(n.getLabel().equals(new Symbol("finally"))) {
-                        children.add((new Block(n)).scaffold(context));
-                    } else {
-                        throw new RuntimeException("Invalid finally block in try statement.");
-                    }
-                } else {
-                    throw new RuntimeException("Invalid finally block in try statement.");
-                }
+                // This is really weird control flow. Basically, if the "finally" symbol is not found then "i"
+                // gets increments twice every iteration by the catch logic. Thus, the loop goes around and lands
+                // back here if a finally was found.
+                children.add(Compiler.buildExpression(child).scaffold(context));
             } else {
                 // Not last and not first - must be catch / block
                 if(child instanceof Node) {
@@ -90,6 +88,14 @@ public class Try implements Expression {
                     } else {
                         children.add(code);
                     }
+                } else if(child.equals(new Symbol("finally"))) {
+                    // Ignore the finally symbol. The block is coming next.
+
+                    if(i != oldChildren.size() - 2) {
+                        throw new RuntimeException("Invalid finally specifier in try statement.");
+                    }
+
+                    children.add(child);
                 } else {
                     throw new RuntimeException("Invalid catch statement");
                 }
@@ -110,19 +116,17 @@ public class Try implements Expression {
         Object tryBlock = node.getFirstChild();
         Object finallyBlock = null;
 
-        if(node.getChildren().size() % 2 == 0) {
-            // If there is an even number of children, that means that there is a finally block
+        if(node.getChildren().get(node.getChildren().size() - 2).equals(new Symbol("finally"))) {
             finallyBlock = node.getChildren().get(node.getChildren().size() - 1);
         }
 
         generator.mark(tryStartLabel);
-        if(finallyBlock != null) { context.currentFrame().pushFinallyClause(finallyBlock); }
+        if(finallyBlock != null) { context.currentFrame().finallyClauses.push(finallyBlock); }
         Compiler.buildExpression(tryBlock).emit(context);
         generator.pop();
         context.currentFrame().operandStack.pop();
-        if(finallyBlock != null) { context.currentFrame().popFinallyClause(); }
+        if(finallyBlock != null) { context.currentFrame().finallyClauses.pop(); }
         generator.mark(tryEndLabel);
-        if(finallyBlock != null) { generator.visitTryCatchBlock(tryStartLabel, tryEndLabel, finallyLabel, null); }
 
         if(finallyBlock != null) {
             Compiler.buildExpression(finallyBlock).emit(context);
@@ -133,6 +137,10 @@ public class Try implements Expression {
 
         for(int i = 1; i < node.getChildren().size() - 1; i++) {
             Object child = node.getChildren().get(i);
+
+            if((i == node.getChildren().size() - 2) && child.equals(new Symbol("finally"))) {
+                break;
+            }
 
             Label catchStartLabel = generator.newLabel();
             Label catchEndLabel = generator.newLabel();
@@ -155,13 +163,13 @@ public class Try implements Expression {
             generator.catchException(tryStartLabel, tryEndLabel, Type.getType(klass));
 
             generator.mark(catchStartLabel);
-            if(finallyBlock != null) { context.currentFrame().pushFinallyClause(finallyBlock); }
+            if(finallyBlock != null) { context.currentFrame().finallyClauses.push(finallyBlock); }
             generator.visitFrame(Opcodes.F_NEW, 0, null, 1, new Object[] {Type.getType(klass).getInternalName()});
             generator.visitVarInsn(Opcodes.ASTORE, local);
             Compiler.buildExpression(code).emit(context);
             generator.pop();
             context.currentFrame().operandStack.pop();
-            if(finallyBlock != null) { context.currentFrame().popFinallyClause(); }
+            if(finallyBlock != null) { context.currentFrame().finallyClauses.pop(); }
             generator.mark(catchEndLabel);
             if(finallyBlock != null) { generator.visitTryCatchBlock(catchStartLabel, catchEndLabel, finallyLabel, null); }
 
@@ -174,6 +182,7 @@ public class Try implements Expression {
         }
 
         if(finallyBlock != null) {
+            generator.visitTryCatchBlock(tryStartLabel, tryEndLabel, finallyLabel, null);
             generator.mark(finallyLabel);
             generator.visitFrame(Opcodes.F_NEW, 0, null, 1, new Object[] {Type.getType(Throwable.class).getInternalName()});
             Compiler.buildExpression(finallyBlock).emit(context);

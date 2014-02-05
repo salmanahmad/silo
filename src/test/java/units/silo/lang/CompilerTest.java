@@ -586,4 +586,19 @@ public class CompilerTest {
         Assert.assertEquals("Exception!", runtime.eval(classes.get(2)));
         Assert.assertEquals("Exception!", runtime.eval(classes.get(3)));
     }
+
+    @Test
+    public void testTryFinally() {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/examples/try-finally.silo");
+
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+        Assert.assertEquals("Finally, World!", runtime.eval(classes.get(0)));
+        Assert.assertEquals("Error: ClassCast", runtime.eval(classes.get(1)));
+        Assert.assertEquals("Error: NullPointer", runtime.eval(classes.get(2)));
+        Assert.assertEquals("Error: IndexOutOfBounds", runtime.eval(classes.get(3)));
+        Assert.assertEquals("Message: ClassCast", runtime.eval(classes.get(4)));
+        Assert.assertEquals("Message: NullPointer", runtime.eval(classes.get(5)));
+        Assert.assertEquals("Message: IndexOutOfBounds", runtime.eval(classes.get(6)));
+    }
 }

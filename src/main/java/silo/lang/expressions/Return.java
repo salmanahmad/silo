@@ -58,6 +58,16 @@ public class Return implements Expression {
     }
 
     public void emit(CompilationContext context) {
+        if(!context.currentFrame().finallyClauses.empty()) {
+            for(int i = context.currentFrame().finallyClauses.size() - 1; i >= 0; i--) {
+                Object clause = context.currentFrame().finallyClauses.get(i);
+                Compiler.buildExpression(clause).emit(context);
+
+                context.currentFrame().generator.pop();
+                context.currentFrame().operandStack.pop();
+            }
+        }
+
         Expression value = null;
 
         if(node != null) {

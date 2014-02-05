@@ -89,12 +89,4 @@ public class CompilationFrame {
         iterationFrameStartLabels.pop();
         iterationFrameEndLabels.pop();
     }
-
-    public void pushFinallyClause(Object clause) {
-        finallyClauses.push(clause);
-    }
-
-    public void popFinallyClause() {
-        finallyClauses.pop();
-    }
 }

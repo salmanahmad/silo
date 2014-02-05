@@ -1,0 +1,165 @@
+function({
+    b : boolean = true
+    e : String = "Hello, World!"
+
+    try({
+        return(e)
+    } finally {
+        e = "Finally, World!"
+    })
+
+    return(false)
+})
+
+function({
+    b : boolean = true
+    e : RuntimeException = RuntimeException("Hello!")
+    m : String = "Message: "
+
+    try({
+        branch(true {
+            throw(ClassCastException("ClassCast"))
+        })
+    } catch(e : ClassCastException) {
+        return(String.format("%s%s", m, e#getMessage()))
+    } catch(e : NullPointerException) {
+        return(String.format("%s%s", m, e#getMessage()))
+    } catch(e : IndexOutOfBoundsException) {
+        return(String.format("%s%s", m, e#getMessage()))
+    } catch(e : Exception) {
+        return(String.format("%s%s", m, e#getMessage()))
+    } finally {
+        m = "Error: "
+    })
+
+    return(false)
+})
+
+function({
+    b : boolean = true
+    e : RuntimeException = RuntimeException("Hello!")
+    m : String = "Message: "
+
+    try({
+        branch(true {
+            throw(NullPointerException("NullPointer"))
+        })
+    } catch(e : ClassCastException) {
+        return(String.format("%s%s", m, e#getMessage()))
+    } catch(e : NullPointerException) {
+        return(String.format("%s%s", m, e#getMessage()))
+    } catch(e : IndexOutOfBoundsException) {
+        return(String.format("%s%s", m, e#getMessage()))
+    } catch(e : Exception) {
+        return(String.format("%s%s", m, e#getMessage()))
+    } finally {
+        m = "Error: "
+    })
+
+    return(false)
+})
+
+function({
+    b : boolean = true
+    e : RuntimeException = RuntimeException("Hello!")
+    m : String = "Message: "
+
+    try({
+        branch(true {
+            throw(IndexOutOfBoundsException("IndexOutOfBounds"))
+        })
+    } catch(e : ClassCastException) {
+        return(String.format("%s%s", m, e#getMessage()))
+    } catch(e : NullPointerException) {
+        return(String.format("%s%s", m, e#getMessage()))
+    } catch(e : IndexOutOfBoundsException) {
+        return(String.format("%s%s", m, e#getMessage()))
+    } catch(e : Exception) {
+        return(String.format("%s%s", m, e#getMessage()))
+    } finally {
+        m = "Error: "
+    })
+
+    return(false)
+})
+
+
+
+
+
+
+
+
+
+
+function({
+    b : boolean = true
+    e : RuntimeException = RuntimeException("Hello!")
+    m : String = ""
+
+    try({
+        branch(true {
+            throw(ClassCastException("ClassCast"))
+        })
+    } catch(e : ClassCastException) {
+        m = e#getMessage();
+    } catch(e : NullPointerException) {
+        m = e#getMessage();
+    } catch(e : IndexOutOfBoundsException) {
+        m = e#getMessage();
+    } catch(e : Exception) {
+        m = e#getMessage();
+    } finally {
+        m = String.format("%s%s", "Message: ", m)
+    })
+
+    m
+})
+
+function({
+    b : boolean = true
+    e : RuntimeException = RuntimeException("Hello!")
+    m : String = ""
+
+    try({
+        branch(true {
+            throw(NullPointerException("NullPointer"))
+        })
+    } catch(e : ClassCastException) {
+        m = e#getMessage();
+    } catch(e : NullPointerException) {
+        m = e#getMessage();
+    } catch(e : IndexOutOfBoundsException) {
+        m = e#getMessage();
+    } catch(e : Exception) {
+        m = e#getMessage();
+    } finally {
+        m = String.format("%s%s", "Message: ", m)
+    })
+
+    m
+})
+
+function({
+    b : boolean = true
+    e : RuntimeException = RuntimeException("Hello!")
+    m : String = ""
+
+    try({
+        branch(true {
+            throw(IndexOutOfBoundsException("IndexOutOfBounds"))
+        })
+    } catch(e : ClassCastException) {
+        m = e#getMessage();
+    } catch(e : NullPointerException) {
+        m = e#getMessage();
+    } catch(e : IndexOutOfBoundsException) {
+        m = e#getMessage();
+    } catch(e : Exception) {
+        m = e#getMessage();
+    } finally {
+        m = String.format("%s%s", "Message: ", m)
+    })
+
+    m
+})
