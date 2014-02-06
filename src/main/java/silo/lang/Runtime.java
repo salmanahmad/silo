@@ -76,7 +76,11 @@ public class Runtime {
     }
 
     public CompilationContext contextByCompiling(String source) {
-         compile(Parser.parse(source));
+         return contextByCompiling(null, source);
+    }
+
+    public CompilationContext contextByCompiling(String fileName, String source) {
+         compile(Parser.parse(fileName, source));
          return compilationContext;
     }
 

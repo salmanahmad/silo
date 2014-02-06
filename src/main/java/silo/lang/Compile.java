@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.util.Vector;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.objectweb.asm.ClassReader;
@@ -56,7 +57,7 @@ public class Compile {
         for(int i = 1; i < args.length; i++) {
             String file = args[i];
             String source = FileUtils.readFileToString(new File(file));
-            CompilationContext context = runtime.contextByCompiling(source);
+            CompilationContext context = runtime.contextByCompiling(FilenameUtils.getName(file), source);
             for(byte[] code : context.bytecode) {
                 writeBytecodeToDirectory(code, outputPath);
             }

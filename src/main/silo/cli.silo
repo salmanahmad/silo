@@ -39,7 +39,7 @@ func(run(file_ : Object) {
     })
 
     source : String = FileUtils.readFileToString(File(file))
-    code : silo.lang.Node = silo.lang.compiler.Parser.parse(source)
+    code : silo.lang.Node = silo.lang.compiler.Parser.parse(file, source)
 
     runtime : Runtime = Runtime();
     classes : Vector = runtime#compile(code)
@@ -55,7 +55,7 @@ func(compile(file_ : Object) {
     })
 
     source : String = FileUtils.readFileToString(File(file))
-    code : silo.lang.Node = silo.lang.compiler.Parser.parse(source)
+    code : silo.lang.Node = silo.lang.compiler.Parser.parse(file, source)
 
     runtime : Runtime = Runtime();
     context : CompilationContext = runtime#contextByCompiling(source)
