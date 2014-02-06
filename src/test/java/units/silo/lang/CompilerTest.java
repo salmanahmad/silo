@@ -22,6 +22,9 @@ import silo.lang.compiler.grammar.*;
 import com.github.krukow.clj_lang.IPersistentVector;
 import com.github.krukow.clj_lang.PersistentVector;
 
+import java.io.PrintStream;
+import java.io.ByteArrayOutputStream;
+
 import org.objectweb.asm.Type;
 
 public class CompilerTest {
@@ -29,7 +32,19 @@ public class CompilerTest {
     @Test
     public void testSimple() {
         Runtime runtime = new Runtime();
-        runtime.eval(Parser.parse("invokevirtual(System.out, println(5 + 5))"));
+
+        PrintStream oldOut = System.out;
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        PrintStream ps = new PrintStream(os);
+        System.setOut(ps);
+
+        try {
+            Object o = runtime.eval(Parser.parse("invokevirtual(System.out, println(5 + 5))"));
+            Assert.assertEquals(null, o);
+            Assert.assertEquals("10\n", os.toString());
+        } finally {
+            System.setOut(oldOut);
+        }
     }
 
     @Test
@@ -70,7 +85,18 @@ public class CompilerTest {
         String source = Helper.readResource("/examples/invokevirtual.silo");
         Vector<Class> classes = runtime.compile(Parser.parse(source));
 
-        Object o = runtime.eval(classes.get(0));
+        PrintStream oldOut = System.out;
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        PrintStream ps = new PrintStream(os);
+        System.setOut(ps);
+
+        try {
+            Object o = runtime.eval(classes.get(0));
+            Assert.assertEquals(null, o);
+            Assert.assertEquals("Hello, World!\n", os.toString());
+        } finally {
+            System.setOut(oldOut);
+        }
     }
 
     @Test
@@ -242,9 +268,19 @@ public class CompilerTest {
         String source = Helper.readResource("/examples/stdlib.silo");
 
         Vector<Class> classes = runtime.compile(Parser.parse(source));
-        Object o = runtime.eval(classes.get(0));
 
-        Assert.assertEquals("FooBars", o);
+        PrintStream oldOut = System.out;
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        PrintStream ps = new PrintStream(os);
+        System.setOut(ps);
+
+        try {
+            Object o = runtime.eval(classes.get(0));
+            Assert.assertEquals("FooBars", o);
+            Assert.assertEquals("FooBars\n", os.toString());
+        } finally {
+            System.setOut(oldOut);
+        }
     }
 
     @Test
