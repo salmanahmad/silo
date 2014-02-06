@@ -76,12 +76,12 @@ public class Runtime {
     }
 
     public CompilationContext contextByCompiling(String source) {
-         return contextByCompiling(null, source);
+        return contextByCompiling(null, source);
     }
 
     public CompilationContext contextByCompiling(String fileName, String source) {
-         compile(Parser.parse(fileName, source));
-         return compilationContext;
+        compile(Parser.parse(fileName, source));
+        return compilationContext;
     }
 
     public Vector<Class> compile(Node node) {

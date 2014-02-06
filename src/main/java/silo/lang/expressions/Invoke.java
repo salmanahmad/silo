@@ -560,10 +560,16 @@ public class Invoke implements Expression {
 
         if(o instanceof Node) {
             if(didMacroExpansion) {
-                return Compiler.buildExpression(o).scaffold(context);
+                o = Compiler.buildExpression(o).scaffold(context);
             } else {
-                return Compiler.scaffoldNode((Node)o, context);
+                o = Compiler.scaffoldNode((Node)o, context);
             }
+
+            if(o instanceof Node) {
+                ((Node)o).meta = node.meta;
+            }
+
+            return o;
         } else {
             return o;
         }

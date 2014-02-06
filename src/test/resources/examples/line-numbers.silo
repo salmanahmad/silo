@@ -1,7 +1,16 @@
 
 
+function({
+    s : String = "Hello, World!"
+    s = "A new world!"
+
+    throw(s)
+})
+
+
 s : String = "Hello, World!"
 s = "A new world!"
 
 throw(s)
+
 

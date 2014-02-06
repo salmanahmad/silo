@@ -613,7 +613,7 @@ public class CompilerTest {
             Assert.fail();
         } catch(RuntimeException e) {
             Assert.assertEquals("A new world!", e.getMessage());
-            Assert.assertEquals(6, e.getStackTrace()[0].getLineNumber());
+            Assert.assertEquals(7, e.getStackTrace()[0].getLineNumber());
             Assert.assertEquals("line-numbers.silo", e.getStackTrace()[0].getFileName());
         }
 
@@ -624,6 +624,17 @@ public class CompilerTest {
             Assert.fail();
         } catch(RuntimeException e) {
             Assert.assertEquals("/examples/line-numbers.silo", e.getStackTrace()[0].getFileName());
+        }
+
+        classes = runtime.compile(Parser.parse("line-numbers.silo", source));
+
+        try {
+            runtime.eval(classes.get(1));
+            Assert.fail();
+        } catch(RuntimeException e) {
+            Assert.assertEquals("A new world!", e.getMessage());
+            Assert.assertEquals(14, e.getStackTrace()[0].getLineNumber());
+            Assert.assertEquals("line-numbers.silo", e.getStackTrace()[0].getFileName());
         }
     }
 }
