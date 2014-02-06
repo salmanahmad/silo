@@ -73,13 +73,6 @@ public class CompilationFrame {
         return local;
     }
 
-    // TODO: Do I want to support this? The only use cases are math operation, correct?
-    public GeneratorAdapter useTempGenerator(MethodNode node) {
-        GeneratorAdapter current = generator;
-        this.generator = new GeneratorAdapter(access, method, node);
-        return current;
-    }
-
     public void pushIterationFrame(Label start, Label end) {
         iterationFrameStartLabels.push(start);
         iterationFrameEndLabels.push(end);

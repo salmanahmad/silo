@@ -235,10 +235,6 @@ blockExpression returns [Node value]
     CLOSE_BRACE
   ;
 
-// TODO: Once I decide on the standard library names for operators as well as if
-// operators should be functions or traits, I should update these rules to return
-// the proper symbol representation...
-
 relationalOperator returns [Symbol symbol]
   : EQUAL
   | NOT_EQUAL

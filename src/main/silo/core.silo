@@ -117,7 +117,10 @@ function(
         } else(instanceof(silo.lang.Symbol, id_)) {
             id = silo.lang.Node(id_)
         } else {
-            // TODO: Support and then throw an exception
+            // TODO: Support and then throw an exception. I probably
+            // should have a "report-error" macro or special form that
+            // allows me to report the line number and position of an
+            // error
         })
 
         body : silo.lang.Node = node(

@@ -19,8 +19,6 @@ import java.util.HashMap;
 import org.objectweb.asm.*;
 import org.objectweb.asm.commons.*;
 
-// TODO: Redo this as a macro...
-
 public class LogicalOperation implements Expression {
 
     public static boolean accepts(Object value) {

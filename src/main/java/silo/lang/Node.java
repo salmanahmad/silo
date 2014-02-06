@@ -18,13 +18,9 @@ import java.util.Vector;
 import java.util.Arrays;
 import org.apache.commons.lang3.StringUtils;
 
-// TODO: I need to figure out how to include meta-data like line number
-// and character positions in the Node class.
-
-// TODO: Should I rename "Node" to "Tree"?
 // TODO: Change "children" to a PersistentDataStructure
-
 // TODO: I need to make Node immutable...
+
 public class Node {
     // TODO: Rename label to head?
     public PersistentMap meta;

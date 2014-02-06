@@ -145,7 +145,7 @@ public class Try implements Expression {
             Label catchStartLabel = generator.newLabel();
             Label catchEndLabel = generator.newLabel();
 
-            // TODO: How do I abstract this out for Silo using macros?
+            // TODO: How do I abstract the need for constant casting for Silo using macros?
             Symbol variableName = (Symbol)((Node)child).getFirstChild();
             Object variableType = ((Node)child).getSecondChild();
 
