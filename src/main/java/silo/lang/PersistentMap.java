@@ -34,4 +34,12 @@ public class PersistentMap {
     public Object get(Object key) {
         return map.valAt(key);
     }
+
+    public Object get(Object key, Object notFound) {
+        return map.valAt(key, notFound);
+    }
+
+    public String toString() {
+        return map.toString();
+    }
 }

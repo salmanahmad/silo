@@ -87,6 +87,7 @@ public class Runtime {
             )
         );
 
+        program.meta = node.meta;
         compilationContext.clear();
         Compiler.compile(compilationContext, program);
 

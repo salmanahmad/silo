@@ -20,7 +20,7 @@ import org.antlr.runtime.*;
 public class Parser {
 
     public static Node parse(String source) {
-        return parse("UNKNOWN_FILE", source);
+        return parse(null, source);
     }
 
     public static Node parse(String fileName, String source) {

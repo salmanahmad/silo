@@ -601,4 +601,29 @@ public class CompilerTest {
         Assert.assertEquals("Message: NullPointer", runtime.eval(classes.get(5)));
         Assert.assertEquals("Message: IndexOutOfBounds", runtime.eval(classes.get(6)));
     }
+
+    @Test
+    public void testLineNumbers() {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/examples/line-numbers.silo");
+        Vector<Class> classes = runtime.compile(Parser.parse("line-numbers.silo", source));
+
+        try {
+            runtime.eval(classes.get(0));
+            Assert.fail();
+        } catch(RuntimeException e) {
+            Assert.assertEquals("A new world!", e.getMessage());
+            Assert.assertEquals(6, e.getStackTrace()[0].getLineNumber());
+            Assert.assertEquals("line-numbers.silo", e.getStackTrace()[0].getFileName());
+        }
+
+        classes = runtime.compile(Parser.parse("/examples/line-numbers.silo", source));
+
+        try {
+            runtime.eval(classes.get(0));
+            Assert.fail();
+        } catch(RuntimeException e) {
+            Assert.assertEquals("/examples/line-numbers.silo", e.getStackTrace()[0].getFileName());
+        }
+    }
 }

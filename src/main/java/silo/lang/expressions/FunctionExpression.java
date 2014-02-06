@@ -77,6 +77,7 @@ public class FunctionExpression implements Expression, Opcodes {
         }
 
         Node scaffolded = new Node(node.getLabel(), children);
+        scaffolded.meta = node.meta;
 
         doEmit(scaffolded, context, false);
 
@@ -283,9 +284,12 @@ public class FunctionExpression implements Expression, Opcodes {
         Method m;
 
         // The function class definition
-        // TODO - Figure out how to propagate the file name
         ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
-        cw.visitSource("app.silo", null);
+        if(node.getMeta().get("file") == null) {
+            cw.visitSource("UNKNOWN_FILE", null);
+        } else {
+            cw.visitSource(node.getMeta().get("file").toString(), null);
+        }
 
         cw.visit(V1_6, ACC_PUBLIC + ACC_SUPER, fullyQualifiedName.replace(".", "/"), null, Type.getType(Function.class).getInternalName(), null);
         av = cw.visitAnnotation(Type.getType(Function.Definition.class).getDescriptor(), true);

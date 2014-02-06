@@ -112,7 +112,7 @@ public class ParserTest {
         Assert.assertEquals(7, math.getMeta().get("line"));
 
         Node program = (Node)Parser.parse(source);
-        Assert.assertEquals("UNKNOWN_FILE", program.getMeta().get("file"));
+        Assert.assertEquals(null, program.getMeta().get("file"));
     }
 
     @Test

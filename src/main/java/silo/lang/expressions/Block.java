@@ -60,13 +60,22 @@ public class Block implements Expression {
     }
 
     public void emit(CompilationContext context) {
-        Vector<Expression> expressions = expressions();
-
         CompilationFrame frame = context.currentFrame();
 
-        if(expressions != null && expressions.size() > 0) {
-            for(int i = 0; i < expressions.size(); i++) {
-                Expression expression = expressions.get(i);
+        Vector children = null;
+        if(node != null) {
+            children = node.getChildren();
+        }
+
+        if(children != null && children.size() > 0) {
+            for(int i = 0; i < children.size(); i++) {
+                Object child = children.get(i);
+
+                if(child instanceof Node) {
+                    Compiler.lineNumber((Node)child, context);
+                }
+
+                Expression expression = Compiler.buildExpression(child);
 
                 // TODO - When do I want to cascade the last value up the tree? Conditional statements and loops?
 
@@ -81,7 +90,7 @@ public class Block implements Expression {
                     throw new RuntimeException("The operand stack should not change more than one for nodes. It changed by: " + size);
                 }
 
-                if(i < (expressions.size() - 1)) {
+                if(i < (children.size() - 1)) {
                     for(int j = 0; j < size; j++) {
                         // TODO - What if the value on the stack is a category2 type? I need to pop more than just 1, right?
                         Class operand = frame.operandStack.pop();

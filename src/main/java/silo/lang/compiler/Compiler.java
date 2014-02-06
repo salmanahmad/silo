@@ -100,15 +100,17 @@ public class Compiler {
     public static Object scaffoldNode(Node node, CompilationContext context) {
         Object l = buildExpression(node.getLabel()).scaffold(context);
         Node n = new Node(l, node.getChildren());
+        n.meta = node.meta;
 
         return scaffoldNodeChildren(n, context);
     }
 
     public static Object scaffoldNodeChildren(Node node, CompilationContext context) {
+        Node n = null;
         Vector children = node.getChildren();
 
         if(children == null) {
-            return new Node(node.getLabel(), null);
+            n = new Node(node.getLabel(), null);
         } else {
             Vector newChildren = new Vector();
 
@@ -117,8 +119,11 @@ public class Compiler {
                 newChildren.add(child);
             }
 
-            return new Node(node.getLabel(), newChildren);
+            n = new Node(node.getLabel(), newChildren);
         }
+
+        n.meta = node.meta;
+        return n;
     }
 
     // TODO: Should I remove this old macro-expansion code now that
@@ -584,6 +589,23 @@ public class Compiler {
         }
 
         return null;
+    }
+
+    public static void lineNumber(Node node, CompilationContext context) {
+        if(node.getMeta() == null) {
+            return;
+        }
+
+        Object line = node.getMeta().get("line");
+
+        if(line != null) {
+            if(line instanceof Integer) {
+                context.currentFrame().generator.visitLineNumber(
+                    ((Integer)line).intValue(),
+                    context.currentFrame().generator.mark()
+                );
+            }
+        }
     }
 }
 
