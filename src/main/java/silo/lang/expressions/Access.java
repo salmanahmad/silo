@@ -57,8 +57,32 @@ public class Access implements Expression {
 
             frame.operandStack.push(scope);
         } else {
-            // TODO: Attempt to find Class reference by this name and return it
-            throw new RuntimeException("Could not find local variable: " + symbol);
+            Class klass = Compiler.resolveType(symbol, context);
+
+            if(klass != null) {
+                if(Function.class.isAssignableFrom(klass)) {
+                    // Function reference
+                    if(shouldEmit) {
+                        generator.newInstance(Type.getType(klass));
+                        generator.dup();
+                        generator.invokeConstructor(
+                            Type.getType(klass),
+                            Method.getMethod("void <init> ()")
+                        );
+                    }
+
+                    frame.operandStack.push(Function.class);
+                } else {
+                    // Class reference
+                    if(shouldEmit) {
+                        generator.visitLdcInsn(Type.getType(klass));
+                    }
+
+                    frame.operandStack.push(Class.class);
+                }
+            } else {
+                throw new RuntimeException("Could not find local variable: " + symbol);
+            }
         }
     }
 

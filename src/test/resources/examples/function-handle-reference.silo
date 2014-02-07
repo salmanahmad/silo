@@ -1,0 +1,15 @@
+
+function(
+    name(foo)
+    {
+        return("returned from foo")
+    }
+)
+
+function(
+    name(test)
+    {
+        f : Function = foo
+        f()
+    }
+)

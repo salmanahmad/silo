@@ -696,6 +696,15 @@ public class CompilerTest {
     }
 
     @Test
+    public void testFunctionHandleReference() {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/examples/function-handle-reference.silo");
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+
+        Assert.assertEquals("returned from foo", runtime.eval("test"));
+    }
+
+    @Test
     public void testPassingNull() {
         Runtime runtime = new Runtime();
         String source = Helper.readResource("/examples/null-passing.silo");
