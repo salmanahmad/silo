@@ -1,0 +1,25 @@
+
+function(
+    name(testNative)
+    {
+        foo(null)
+    }
+)
+
+function(
+    name(foo)
+    inputs(s : String)
+    {
+        branch(s, s, "the-string-is-null")
+    }
+)
+
+function(
+    name(testInterop)
+    {
+        m : HashMap = HashMap()
+        m#put("Hello", "Hi")
+        m#put("Hello", null)
+        m#get("Hello")
+    }
+)

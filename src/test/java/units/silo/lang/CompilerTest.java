@@ -685,4 +685,14 @@ public class CompilerTest {
         Assert.assertEquals(5, runtime.eval("functionCall"));
         Assert.assertEquals(11, runtime.eval("functionArgs"));
     }
+
+    @Test
+    public void testPassingNull() {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/examples/null-passing.silo");
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+
+        Assert.assertEquals("the-string-is-null", runtime.eval("testNative"));
+        Assert.assertEquals(null, runtime.eval("testInterop"));
+    }
 }
