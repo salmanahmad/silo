@@ -20,6 +20,7 @@ import java.util.Vector;
 import java.util.HashMap;
 import java.lang.reflect.Array;
 
+import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.GeneratorAdapter;
 
 import com.github.krukow.clj_lang.IPersistentVector;
@@ -604,6 +605,114 @@ public class Compiler {
                     ((Integer)line).intValue(),
                     context.currentFrame().generator.mark()
                 );
+            }
+        }
+    }
+
+    public static enum AssignmentOperation {
+        INVALID,
+        VALID,
+        BOX,
+        UNBOX,
+    }
+
+    public static AssignmentOperation assignmentValidation(Class target, Class source) {
+        // TODO: Var support here?
+
+        if(target.isAssignableFrom(source)) {
+            return AssignmentOperation.VALID;
+        }
+
+        if(target.isAssignableFrom(assignmentUnboxType(source))) {
+            return AssignmentOperation.UNBOX;
+        }
+
+        if(target.isAssignableFrom(assignmentBoxType(source))) {
+            return AssignmentOperation.BOX;
+        }
+
+        return AssignmentOperation.INVALID;
+    }
+
+    public static Class assignmentBox(Class source, CompilationContext context) {
+        context.currentFrame().generator.valueOf(Type.getType(source));
+        context.currentFrame().operandStack.pop();
+        context.currentFrame().operandStack.push(Compiler.assignmentBoxType(source));
+        return assignmentBoxType(source);
+    }
+
+    public static Class assignmentUnbox(Class source, CompilationContext context) {
+        context.currentFrame().generator.unbox(Type.getType(source));
+        context.currentFrame().operandStack.pop();
+        context.currentFrame().operandStack.push(Compiler.assignmentUnboxType(source));
+        return assignmentUnboxType(source);
+    }
+
+    public static Class assignmentBoxType(Class klass) {
+        // TODO: Var support here?
+
+        if(klass.equals(Boolean.TYPE)) {
+            return Boolean.class;
+        } else if(klass.equals(Character.TYPE)) {
+            return Character.class;
+        } else if(klass.equals(Byte.TYPE)) {
+            return Byte.class;
+        } else if(klass.equals(Short.TYPE)) {
+            return Short.class;
+        } else if(klass.equals(Integer.TYPE)) {
+            return Integer.class;
+        } else if(klass.equals(Long.TYPE)) {
+            return Long.class;
+        } else if(klass.equals(Float.TYPE)) {
+            return Float.class;
+        } else if(klass.equals(Double.TYPE)) {
+            return Double.class;
+        } else {
+            return klass;
+        }
+    }
+
+    public static Class assignmentUnboxType(Class klass) {
+        // TODO: Var support here?
+
+        if(klass.equals(Boolean.class)) {
+            return Boolean.TYPE;
+        } else if(klass.equals(Character.class)) {
+            return Character.TYPE;
+        } else if(klass.equals(Byte.class)) {
+            return Byte.TYPE;
+        } else if(klass.equals(Short.class)) {
+            return Short.TYPE;
+        } else if(klass.equals(Integer.class)) {
+            return Integer.TYPE;
+        } else if(klass.equals(Long.class)) {
+            return Long.TYPE;
+        } else if(klass.equals(Float.class)) {
+            return Float.TYPE;
+        } else if(klass.equals(Double.class)) {
+            return Double.TYPE;
+        } else {
+            return klass;
+        }
+    }
+
+    public static void autobox(Class target, CompilationContext context, boolean shouldEmit) {
+        Class operandClass = context.currentFrame().operandStack.peek();
+        Compiler.AssignmentOperation op = Compiler.assignmentValidation(target, operandClass);
+
+        if(op == Compiler.AssignmentOperation.BOX) {
+            if(shouldEmit) {
+                Compiler.assignmentBox(operandClass, context);
+            } else {
+                context.currentFrame().operandStack.pop();
+                context.currentFrame().operandStack.push(Compiler.assignmentBoxType(operandClass));
+            }
+        } else if(op == Compiler.AssignmentOperation.UNBOX) {
+            if(shouldEmit) {
+                Compiler.assignmentUnbox(operandClass, context);
+            } else {
+                context.currentFrame().operandStack.pop();
+                context.currentFrame().operandStack.push(Compiler.assignmentBoxType(operandClass));
             }
         }
     }

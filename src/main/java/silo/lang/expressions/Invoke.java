@@ -367,6 +367,26 @@ public class Invoke implements Expression {
         return types;
     }
 
+    public static void compileArguments(Class[] params, Vector<Expression> arguments, CompilationContext context, boolean shouldEmit) {
+        CompilationFrame frame = context.currentFrame();
+
+        if(params.length != arguments.size()) {
+            throw new RuntimeException("Arguments do not match the parameter length. Arity mismatch.");
+        }
+
+        for(int i = 0; i < params.length; i++) {
+            Expression e = arguments.get(i);
+
+            if(shouldEmit) {
+                e.emit(context);
+            } else {
+                frame.operandStack.push(e.type(context));
+            }
+
+            Compiler.autobox(params[i], context, shouldEmit);
+        }
+    }
+
     public static void compileVariableArguments(Class[] params, Vector<Expression> arguments, CompilationContext context, boolean shouldEmit) {
         CompilationFrame frame = context.currentFrame();
         GeneratorAdapter generator = context.currentFrame().generator;
@@ -381,6 +401,8 @@ public class Invoke implements Expression {
             } else {
                 frame.operandStack.push(e.type(context));
             }
+
+            Compiler.autobox(params[i], context, shouldEmit);
         }
 
         //new Array...
@@ -407,9 +429,11 @@ public class Invoke implements Expression {
 
             if(shouldEmit) {
                 e.emit(context);
+                Compiler.autobox(arrayClass.getComponentType(), context, shouldEmit);
                 generator.arrayStore(Type.getType(arrayClass.getComponentType()));
             } else {
                 frame.operandStack.push(e.type(context));
+                Compiler.autobox(e.type(context), context, shouldEmit);
             }
 
             frame.operandStack.pop();
@@ -492,6 +516,7 @@ public class Invoke implements Expression {
         } else if(args.length == params.length - 1) {
             shouldVarArgs = true;
         } else if(args.length == params.length) {
+            // TODO: Should this be Compiler.assignmentValidation?
             shouldVarArgs = params[params.length - 1].equals(args[params.length - 1]);
             shouldVarArgs = !shouldVarArgs;
         } else {
@@ -795,6 +820,40 @@ public class Invoke implements Expression {
             frame.operandStack.pop();
             frame.operandStack.pop();
             frame.operandStack.push(operand.getComponentType());
+        } else if(Function.class.isAssignableFrom(operand)) {
+            Class[] argMask = new Class[arguments.size()];
+            for(int i = 0; i < argMask.length; i++) {
+                argMask[i] = Object.class;
+            }
+
+            Method method = resolveMethod(Function.class, "apply", false, argMask);
+
+            Class[] params = method.getParameterTypes();
+            boolean shouldVarArgs = false;
+
+            if(method.isVarArgs()) {
+                shouldVarArgs = shouldUseVarArgs(params, argMask);
+            }
+
+            if(shouldVarArgs) {
+                compileVariableArguments(params, arguments, context, shouldEmit);
+            } else {
+                compileArguments(params, arguments, context, shouldEmit);
+            }
+
+            if(shouldEmit) {
+                generator.invokeVirtual(Type.getType(operand), org.objectweb.asm.commons.Method.getMethod(method));
+            }
+
+            // Pop the arguments
+            for(int i = 0; i < params.length; i++) {
+                frame.operandStack.pop();
+            }
+
+            // Pop the "receiver"
+            frame.operandStack.pop();
+            // TODO: This should be Var eventually...
+            frame.operandStack.push(Object.class);
         } else {
             // Dynamic function invocation
             // TODO: Remain cases...

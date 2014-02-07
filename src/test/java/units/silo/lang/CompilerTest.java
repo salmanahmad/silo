@@ -673,4 +673,16 @@ public class CompilerTest {
             Assert.assertEquals("line-numbers.silo", e.getStackTrace()[0].getFileName());
         }
     }
+
+    @Test
+    public void testFunctionHandle() {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/examples/function-handle.silo");
+        Vector<Class> classes = runtime.compile(Parser.parse("function-handle.silo", source));
+
+        Object o = runtime.eval("functionReference");
+        Assert.assertTrue(Function.class.isAssignableFrom(o.getClass()));
+        Assert.assertEquals(5, runtime.eval("functionCall"));
+        Assert.assertEquals(11, runtime.eval("functionArgs"));
+    }
 }

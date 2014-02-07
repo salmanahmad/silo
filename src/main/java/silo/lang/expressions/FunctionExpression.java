@@ -21,6 +21,7 @@ import com.github.krukow.clj_lang.IPersistentVector;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.commons.GeneratorAdapter;
+import org.objectweb.asm.commons.Method;
 import org.objectweb.asm.*;
 import org.objectweb.asm.commons.*;
 import org.objectweb.asm.util.*;
@@ -43,9 +44,9 @@ public class FunctionExpression implements Expression, Opcodes {
     }
 
     public Class type(CompilationContext context) {
-        // TODO: Return function objects and method handles.
-        // TODO: I think that I need to do forward declaration to get this to work... right?
-        return Object.class;
+        // TODO: Should I return the actual class so that I can optimize
+        // invoke performance of functors and provide better type safety?
+        return Function.class;
     }
 
     public Object scaffold(CompilationContext context) {
@@ -369,6 +370,9 @@ public class FunctionExpression implements Expression, Opcodes {
         // End the frame...
 
         g.endMethod();
+
+        // TODO: Virtual apply methods from Function.class
+
         cw.visitEnd();
 
         byte[] code = cw.toByteArray();
@@ -401,6 +405,17 @@ public class FunctionExpression implements Expression, Opcodes {
             CompilationContext.SymbolEntry entry = context.symbolTable.get(fullyQualifiedName);
             if(entry != null) {
                 entry.compiled = true;
+            }
+
+            if(context.currentFrameExists()) {
+                context.currentFrame().operandStack.push(Function.class);
+
+                context.currentFrame().generator.newInstance(Type.getType(klass));
+                context.currentFrame().generator.dup();
+                context.currentFrame().generator.invokeConstructor(
+                    Type.getType(klass),
+                    Method.getMethod("void <init> ()")
+                );
             }
         } else {
             CompilationContext.SymbolEntry entry = new CompilationContext.SymbolEntry();

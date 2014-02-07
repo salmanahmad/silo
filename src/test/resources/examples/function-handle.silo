@@ -1,0 +1,36 @@
+
+function(
+    name(functionReference)
+    {
+        f : Function = function({
+            return(5)
+        })
+
+        f
+    }
+)
+
+function(
+    name(functionCall)
+    {
+        f : Function = function({
+            return(5)
+        })
+
+        f()
+    }
+)
+
+function(
+    name(functionArgs)
+    {
+        f : Function = function(
+            inputs(a : int, b : int)
+            outputs(int)
+            {
+                return(a + b)
+            })
+
+        f(5, 6)
+    }
+)

@@ -146,12 +146,26 @@ public class Access implements Expression {
                     path = (Vector<Symbol>)result.get(1);
 
                     if(path.size() == 0) {
-                        // Return class reference
-                        if(shouldEmit) {
-                            generator.visitLdcInsn(Type.getType(scope));
-                        }
+                        if(Function.class.isAssignableFrom(scope)) {
+                            // Function reference
+                            if(shouldEmit) {
+                                generator.newInstance(Type.getType(scope));
+                                generator.dup();
+                                generator.invokeConstructor(
+                                    Type.getType(scope),
+                                    Method.getMethod("void <init> ()")
+                                );
+                            }
 
-                        frame.operandStack.push(Class.class);
+                            frame.operandStack.push(Function.class);
+                        } else {
+                            // Class reference
+                            if(shouldEmit) {
+                                generator.visitLdcInsn(Type.getType(scope));
+                            }
+
+                            frame.operandStack.push(Class.class);
+                        }
                     } else {
                         // Getstatic
                         Symbol symbol = path.remove(0);

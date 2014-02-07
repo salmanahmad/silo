@@ -86,12 +86,14 @@ public class Function {
         return methodHandle;
     }
 
+    /*
     // TODO: Emit a highly efficient version of invoke in FunctionExpression that does not rely
     // on java refliection method handles which are really slow...
 
     // TODO: Invoke should be broken up into a bunch of overloaded invoke methods
     // so that it can be dispatch by airity very efficiently without having to go through the
     // Java reflection API which is slow
+
     public Object invoke(Object[] args, ExecutionContext context) {
         if(args == null) {
             args = new Object[0];
@@ -147,4 +149,74 @@ public class Function {
 
         return this.invoke(resumptionArgs, context);
     }
+    */
+
+    public Object apply(Object... args) {
+        if(args == null) {
+            args = new Object[0];
+        }
+
+        Method method = methodHandle();
+
+        try {
+             return method.invoke(null, args);
+        } catch(Exception e) {
+            throw new RuntimeException("Error occurred calling a method.");
+        }
+    }
+
+    // TODO: Enable these again...
+    /*
+    public Object apply() {
+        return arityException(0);
+    }
+
+    public Object apply(Object o1) {
+        return arityException(1);
+    }
+
+    public Object apply(Object o1, Object o2) {
+        return arityException(2);
+    }
+
+    public Object apply(Object o1, Object o2, Object o3) {
+        return arityException(3);
+    }
+
+    public Object apply(Object o1, Object o2, Object o3, Object o4) {
+        return arityException(4);
+    }
+
+    public Object apply(Object o1, Object o2, Object o3, Object o4, Object o5) {
+        return arityException(5);
+    }
+
+    public Object apply(Object o1, Object o2, Object o3, Object o4, Object o5, Object o6) {
+        return arityException(6);
+    }
+
+    public Object apply(Object o1, Object o2, Object o3, Object o4, Object o5, Object o6, Object o7) {
+        return arityException(7);
+    }
+
+    public Object apply(Object o1, Object o2, Object o3, Object o4, Object o5, Object o6, Object o7, Object o8) {
+        return arityException(8);
+    }
+
+    public Object apply(Object o1, Object o2, Object o3, Object o4, Object o5, Object o6, Object o7, Object o8, Object o9) {
+        return arityException(9);
+    }
+
+    public Object apply(Object o1, Object o2, Object o3, Object o4, Object o5, Object o6, Object o7, Object o8, Object o9, Object o10) {
+        return arityException(10);
+    }
+
+    public Object apply(Object o1, Object o2, Object o3, Object o4, Object o5, Object o6, Object o7, Object o8, Object o9, Object o10, Object... o11) {
+        return arityException(10 + o11.length);
+    }
+
+    public Object arityException(int length) {
+        throw new RuntimeException("Arity exception. Function does not take " + length + " arguments");
+    }
+    */
 }

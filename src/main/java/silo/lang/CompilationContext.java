@@ -75,6 +75,10 @@ public class CompilationContext {
         this.clear();
     }
 
+    public boolean currentFrameExists() {
+        return frames.size() != 0;
+    }
+
     public CompilationFrame currentFrame() {
         return frames.peek();
     }
@@ -121,6 +125,7 @@ public class CompilationContext {
         this.currentNamespace().imports.add("java.util");
         this.currentNamespace().imports.add("java.io");
         this.currentNamespace().imports.add("silo.core");
+        this.currentNamespace().aliases.put("Function", "silo.lang.Function");
         this.currentNamespace().aliases.put("IPersistentVector", "com.github.krukow.clj_lang.IPersistentVector");
         this.currentNamespace().aliases.put("RT", "com.github.krukow.clj_lang.RT");
     }
