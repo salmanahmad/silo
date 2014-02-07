@@ -152,14 +152,8 @@ public class Function {
     */
 
     public Object apply(Object... args) {
-        if(args == null) {
-            args = new Object[0];
-        }
-
-        Method method = methodHandle();
-
         try {
-             return method.invoke(null, args);
+            return Runtime.doEval(this.getClass(), args);
         } catch(Exception e) {
             throw new RuntimeException("Error occurred calling a method.");
         }

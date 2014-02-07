@@ -53,6 +53,10 @@ public class Runtime {
     }
 
     public Object eval(Class klass, Object... args) {
+        return Runtime.doEval(klass, args);
+    }
+
+    public static Object doEval(Class klass, Object... args) {
         try {
             if(Function.isVarArgs(klass)) {
                 args = Function.convertArgsToVarArgs(klass, args);
