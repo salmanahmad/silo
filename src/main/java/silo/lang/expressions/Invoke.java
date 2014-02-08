@@ -602,9 +602,13 @@ public class Invoke implements Expression {
         Label preCallSite = generator.newLabel();
         Label callSite = generator.newLabel();
 
+
+
         // ###
         // ### Skip over the resume point during normal execution
         generator.goTo(preCallSite);
+
+
 
         // ###
         // ### Resume Site - Load the execution context and dummy values for the invocation
@@ -640,7 +644,9 @@ public class Invoke implements Expression {
         }
 
         // Skip over the rest and go to the call site
-        generator.toTo(callSite);
+        generator.goTo(callSite);
+
+
 
         // ###
         // ### Pre Call Site - Load the execution context and the actual parameters for the invocation
@@ -665,9 +671,14 @@ public class Invoke implements Expression {
             Invoke.compileArguments(params, arguments, context, shouldEmit);
         }
 
+
+
         // ###
         // ### Actual Call Site
         generator.mark(callSite);
+
+        Compiler.loadExecutionContext(context);
+        generator.invokeVirtual(Type.getType(ExecutionContext.class), org.objectweb.asm.commons.Method.getMethod("void beginCall()"));
 
         if(shouldEmit) {
             if(staticInvoke) {
@@ -690,14 +701,47 @@ public class Invoke implements Expression {
             frame.operandStack.push(method.getReturnType());
         } else {
             // Pop the reciever then push the return value.
-            // TODO: This should be Var eventually
+            // TODO: This should be Var eventually as specified by the
+            // Function#apply method...
             frame.operandStack.pop();
             frame.operandStack.push(Object.class);
         }
 
+        Compiler.loadExecutionContext(context);
+        generator.invokeVirtual(Type.getType(ExecutionContext.class), org.objectweb.asm.commons.Method.getMethod("int endCall()"));
+
+
+
         // ###
         // ### Post Call Site - Inspect the execution context to see if we need to pause or not
-        
+
+        Label running = generator.newLabel();
+        Label resuming = generator.newLabel();
+        Label capturing = generator.newLabel();
+        Label yielding = generator.newLabel();
+        Label rest = generator.newLabel();
+
+        generator.visitTableSwitchInsn(1, 4, running, new Label[] { running, resuming, capturing, yielding });
+
+        generator.mark(running);
+        generator.goTo(rest);
+
+        generator.mark(resuming);
+        // TODO: Restore Local Variables
+        // TODO: Restore Stack
+        generator.goTo(rest);
+
+        generator.mark(capturing);
+        // TODO: Store Local Variables
+        // TODO: Store Stack
+        Compiler.pushInitializationValue(frame.outputClass, generator);
+        generator.returnValue();
+
+        generator.mark(yielding);
+        Compiler.pushInitializationValue(frame.outputClass, generator);
+        generator.returnValue();
+
+        generator.mark(rest);
     }
 
     public Class type(CompilationContext context) {

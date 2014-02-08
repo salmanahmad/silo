@@ -77,7 +77,11 @@ public class ExecutionContext {
     }
 
     public ExecutionFrame getCurrentFrame() {
-        return frames[currentFrame];
+        if(currentFrame == -1) {
+            return null;
+        } else {
+            return frames[currentFrame];
+        }
     }
 
     private void ensureSize(int size) {
