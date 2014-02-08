@@ -527,6 +527,121 @@ public class Invoke implements Expression {
         return shouldVarArgs;
     }
 
+    public void performInvoke(CompilationContext context, Class klass, Vector<Expression> arguments, boolean staticInvoke, boolean shouldEmit) {
+        CompilationFrame frame = context.currentFrame();
+        GeneratorAdapter generator = frame.generator;
+
+        Method method = null;
+        // TODO: Combine with types below?
+        Class[] argMask = new Class[0];
+
+        if(staticInvoke) {
+            method = Function.methodHandle(klass);
+        } else {
+            // TODO: Clean this up. Perhaps "staticInvoke" should be an enum flag
+            // that accepts things like "Functor", "Static", "Trait", "Type", etc.
+            // since "static" vs "invoke" does not really capture the semantics of
+            // what we are really doing here...
+
+            // TODO: I could also probably remove this for-loop once I implement
+            // autoboxing with resolveMethod
+            argMask = new Class[arguments.size() + 1];
+            for(int i = 0; i < argMask.length; i++) {
+                if(i == 0) {
+                    argMask[i] = ExecutionContext.class;
+                } else {
+                    argMask[i] = Object.class;
+                }
+            }
+
+            method = resolveMethod(klass, "apply", false, argMask);
+        }
+
+        Class[] params = method.getParameterTypes();
+        params = Arrays.copyOfRange(params, 1, params.length);
+        // TODO: Combine with argMask above?
+        Vector<Class> types = argumentTypes(arguments, context);
+
+        boolean isVarArgs = false;
+
+        if(staticInvoke) {
+            isVarArgs = Function.isVarArgs(klass);
+        } else {
+            if(method.isVarArgs()) {
+                isVarArgs = shouldUseVarArgs(params, argMask);
+            }
+        }
+
+        if(isVarArgs) {
+            if(types.size() < (params.length - 1)) {
+                throw new RuntimeException("Arity mismatch.");
+            }
+        } else {
+            if(types.size() != params.length) {
+                throw new RuntimeException("Arity mismatch.");
+            }
+        }
+
+        for(int i = 0; i < params.length; i++) {
+            if(isVarArgs && (i == (params.length - 1))) {
+                continue;
+            }
+
+            Class expectedType = params[i];
+            Class providedType = types.get(i);
+
+            if(Compiler.assignmentValidation(expectedType, providedType) != Compiler.AssignmentOperation.VALID) {
+                throw new RuntimeException("Parameter mismatch in " + klass + ". Expected: " + expectedType + " Provided: " + providedType);
+            }
+        }
+
+        if(shouldEmit) {
+            Compiler.loadExecutionContext(context);
+        } else {
+            frame.operandStack.push(ExecutionContext.class);
+        }
+
+        if(isVarArgs) {
+            // TODO: Perhaps "apply" should follow the same conventions as "invoke" for varargs so that I do not need
+            // to branch out here and use different method calling conventions.
+            // TODO: Making apply and invoke have the same conventions will also mean that the varargs check
+            // earlier in this function can be combined and not need the branches that I take...
+            if(staticInvoke) {
+                Invoke.compileVariableArgumentsForNativeFunction(params, arguments, context, shouldEmit);
+            } else {
+                Invoke.compileVariableArguments(params, arguments, context, shouldEmit);
+            }
+        } else {
+            Invoke.compileArguments(params, arguments, context, shouldEmit);
+        }
+
+        if(shouldEmit) {
+            if(staticInvoke) {
+                generator.invokeStatic(Type.getType(klass), org.objectweb.asm.commons.Method.getMethod(method));
+            } else {
+                generator.invokeVirtual(Type.getType(klass), org.objectweb.asm.commons.Method.getMethod(method));
+            }
+        }
+
+        // Pop the execution context
+        frame.operandStack.pop();
+
+        // Pop the arguments
+        for(int i = 0; i < params.length; i++) {
+            frame.operandStack.pop();
+        }
+
+        if(staticInvoke) {
+            // Push the return value
+            frame.operandStack.push(method.getReturnType());
+        } else {
+            // Pop the reciever then push the return value.
+            // TODO: This should be Var eventually
+            frame.operandStack.pop();
+            frame.operandStack.push(Object.class);
+        }
+    }
+
     public Class type(CompilationContext context) {
         CompilationFrame frame = context.currentFrame();
         int size = frame.operandStack.size();
@@ -656,61 +771,7 @@ public class Invoke implements Expression {
                         // TODO: Should I support type overloading?
                         // TODO: If I do, I should consider doing it how Clojure does it... or implement it as a macro...
 
-                        Method method = Function.methodHandle(klass);
-                        boolean isVarArgs = Function.isVarArgs(klass);
-
-                        Class[] params = method.getParameterTypes();
-                        params = Arrays.copyOfRange(params, 1, params.length);
-                        Vector<Class> types = argumentTypes(arguments, context);
-
-                        if(isVarArgs) {
-                            if(types.size() < (params.length - 1)) {
-                                throw new RuntimeException("Arity mismatch.");
-                            }
-                        } else {
-                            if(types.size() != params.length) {
-                                throw new RuntimeException("Arity mismatch.");
-                            }
-                        }
-
-                        for(int i = 0; i < params.length; i++) {
-                            if(isVarArgs && (i == (params.length - 1))) {
-                                continue;
-                            }
-
-                            Class expectedType = params[i];
-                            Class providedType = types.get(i);
-
-                            if(!Compiler.isValidAssignment(expectedType, providedType)) {
-                                throw new RuntimeException("Parameter mismatch in " + klass + ". Expected: " + expectedType + " Provided: " + providedType);
-                            }
-                        }
-
-                        if(shouldEmit) {
-                            Compiler.loadExecutionContext(context);
-                        } else {
-                            frame.operandStack.push(ExecutionContext.class);
-                        }
-
-                        if(isVarArgs) {
-                            Invoke.compileVariableArgumentsForNativeFunction(params, arguments, context, shouldEmit);
-                        } else {
-                            Invoke.compileArguments(arguments, context, shouldEmit);
-                        }
-
-                        if(shouldEmit) {
-                            generator.invokeStatic(Type.getType(klass), org.objectweb.asm.commons.Method.getMethod(method));
-                        }
-
-                        // Pop the execution context
-                        frame.operandStack.pop();
-
-                        for(int i = 0; i < params.length; i++) {
-                            frame.operandStack.pop();
-                        }
-
-                        frame.operandStack.push(method.getReturnType());
-
+                        performInvoke(context, klass, arguments, true, shouldEmit);
                         return;
                     } else {
                         // TODO: Add another "else if" clause that checks for a "record" or "type"
@@ -833,55 +894,7 @@ public class Invoke implements Expression {
             frame.operandStack.pop();
             frame.operandStack.push(operand.getComponentType());
         } else if(Function.class.isAssignableFrom(operand)) {
-            // TODO: Pass Execution Context
-
-            Class[] argMask = new Class[arguments.size() + 1];
-            for(int i = 0; i < argMask.length; i++) {
-                if(i == 0) {
-                    argMask[i] = ExecutionContext.class;
-                } else {
-                    argMask[i] = Object.class;
-                }
-            }
-
-            Method method = resolveMethod(Function.class, "apply", false, argMask);
-
-            Class[] params = method.getParameterTypes();
-            params = Arrays.copyOfRange(params, 1, params.length);
-            boolean shouldVarArgs = false;
-
-            if(method.isVarArgs()) {
-                shouldVarArgs = shouldUseVarArgs(params, argMask);
-            }
-
-            if(shouldEmit) {
-                Compiler.loadExecutionContext(context);
-            } else {
-                context.currentFrame().operandStack.push(ExecutionContext.class);
-            }
-
-            if(shouldVarArgs) {
-                compileVariableArguments(params, arguments, context, shouldEmit);
-            } else {
-                compileArguments(params, arguments, context, shouldEmit);
-            }
-
-            if(shouldEmit) {
-                generator.invokeVirtual(Type.getType(operand), org.objectweb.asm.commons.Method.getMethod(method));
-            }
-
-            // Pop the execution context
-            frame.operandStack.pop();
-
-            // Pop the arguments
-            for(int i = 0; i < params.length; i++) {
-                frame.operandStack.pop();
-            }
-
-            // Pop the "receiver"
-            frame.operandStack.pop();
-            // TODO: This should be Var eventually...
-            frame.operandStack.push(Object.class);
+            performInvoke(context, Function.class, arguments, false, shouldEmit);
         } else {
             // Dynamic function invocation
             // TODO: Remain cases...

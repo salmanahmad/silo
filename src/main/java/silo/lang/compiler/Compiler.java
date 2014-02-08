@@ -568,16 +568,6 @@ public class Compiler {
         return null;
     }
 
-    public static boolean isValidAssignment(Class target, Class value) {
-        if(!target.isPrimitive() && value.equals(Null.class)) {
-            // TODO: Should null be a valid assignment to a primitive? So there is a
-            // standardized way to make assignments to the default value?
-            return true;
-        } else {
-            return target.isAssignableFrom(value);
-        }
-    }
-
     public static Vector<Symbol> symbolList(Object o) {
         if(o instanceof Symbol) {
             Vector<Symbol> v = new Vector<Symbol>();
@@ -615,6 +605,16 @@ public class Compiler {
         }
     }
 
+    public static boolean isValidAssignment(Class target, Class value) {
+        if(!target.isPrimitive() && value.equals(Null.class)) {
+            // TODO: Should null be a valid assignment to a primitive? So there is a
+            // standardized way to make assignments to the default value?
+            return true;
+        } else {
+            return target.isAssignableFrom(value);
+        }
+    }
+
     public static enum AssignmentOperation {
         INVALID,
         VALID,
@@ -624,6 +624,10 @@ public class Compiler {
 
     public static AssignmentOperation assignmentValidation(Class target, Class source) {
         // TODO: Var support here?
+
+        if(!target.isPrimitive() && source.equals(Null.class)) {
+            return AssignmentOperation.VALID;
+        }
 
         if(target.isAssignableFrom(source)) {
             return AssignmentOperation.VALID;
