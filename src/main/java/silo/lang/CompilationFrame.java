@@ -37,7 +37,7 @@ public class CompilationFrame {
     public final Stack<Label> iterationFrameStartLabels;
     public final Stack<Label> iterationFrameEndLabels;
     public final Stack finallyClauses;
-    public final Stack<Label> callSites;
+    public final Stack<Label> resumePoints;
 
     public CompilationFrame(int access, Method method, GeneratorAdapter generator, Class outputClass) {
         this.access = access;
@@ -53,7 +53,7 @@ public class CompilationFrame {
         this.iterationFrameStartLabels = new Stack<Label>();
         this.iterationFrameEndLabels = new Stack<Label>();
         this.finallyClauses = new Stack();
-        this.callSites = new Stack<Label>();
+        this.resumePoints = new Stack<Label>();
     }
 
     public int newLocal(Symbol name, Class type) {

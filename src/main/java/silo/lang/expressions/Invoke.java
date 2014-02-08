@@ -24,6 +24,7 @@ import java.lang.reflect.Constructor;
 import com.github.krukow.clj_lang.IPersistentVector;
 import com.github.krukow.clj_lang.PersistentVector;
 
+import org.objectweb.asm.Label;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.GeneratorAdapter;
 
@@ -595,11 +596,57 @@ public class Invoke implements Expression {
             }
         }
 
+
+
+        Label resumeSite = generator.newLabel();
+        Label preCallSite = generator.newLabel();
+        Label callSite = generator.newLabel();
+
+        // ###
+        // ### Skip over the resume point during normal execution
+        generator.goTo(preCallSite);
+
+        // ###
+        // ### Resume Site - Load the execution context and dummy values for the invocation
+        generator.mark(resumeSite);
+        int programCounter = frame.resumePoints.size();
+        frame.resumePoints.push(resumeSite);
+
+        if(!staticInvoke) {
+            // If this call site is invocation a function handle, I need to load the "reciever"
+
+            // Note: I am NOT pushing stuff onto frame.operandStack because that will mess up
+            // the type() method in the Invoke class. The reciever is already on the operandStack
+            // before we get to this point in type propogation
+            if(shouldEmit) {
+                Compiler.loadExecutionContext(context);
+                generator.invokeVirtual(Type.getType(ExecutionContext.class), org.objectweb.asm.commons.Method.getMethod("silo.lang.ExecutionFrame getCurrentFrame()"));
+                generator.getField(Type.getType(ExecutionFrame.class), "stack", Type.getType(Object[].class));
+                generator.push(frame.operandStack.size() - 1);
+                generator.arrayLoad(Type.getType(klass));
+                generator.checkCast(Type.getType(klass));
+            }
+        }
+
+        if(shouldEmit) {
+            // Note: I am NOT pushing stuff onto frame.operandStack because that will mess up
+            // the type() method in the Invoke class. Instead, I rely on the code below me
+            // to properly deal with that...
+            Compiler.loadExecutionContext(context);
+
+            for(Class param : params) {
+                Compiler.pushInitializationValue(param, generator);
+            }
+        }
+
+        // ###
+        // ### Pre Call Site - Load the execution context and the actual parameters for the invocation
+        generator.mark(preCallSite);
+
         if(shouldEmit) {
             Compiler.loadExecutionContext(context);
-        } else {
-            frame.operandStack.push(ExecutionContext.class);
         }
+        frame.operandStack.push(ExecutionContext.class);
 
         if(isVarArgs) {
             // TODO: Perhaps "apply" should follow the same conventions as "invoke" for varargs so that I do not need
@@ -614,6 +661,10 @@ public class Invoke implements Expression {
         } else {
             Invoke.compileArguments(params, arguments, context, shouldEmit);
         }
+
+        // ###
+        // ### Actual Call Site
+        generator.mark(callSite);
 
         if(shouldEmit) {
             if(staticInvoke) {
@@ -640,6 +691,10 @@ public class Invoke implements Expression {
             frame.operandStack.pop();
             frame.operandStack.push(Object.class);
         }
+
+        // ###
+        // ### Post Call Site - Inspect the execution context to see if we need to pause or not
+        
     }
 
     public Class type(CompilationContext context) {
@@ -649,6 +704,8 @@ public class Invoke implements Expression {
         emit(context, false);
 
         if(frame.operandStack.size() - size != 1) {
+            System.out.println(frame.operandStack.size());
+            System.out.println(frame.operandStack);
             throw new RuntimeException("Error!");
         }
 
@@ -893,8 +950,10 @@ public class Invoke implements Expression {
             frame.operandStack.pop();
             frame.operandStack.pop();
             frame.operandStack.push(operand.getComponentType());
+            return;
         } else if(Function.class.isAssignableFrom(operand)) {
             performInvoke(context, Function.class, arguments, false, shouldEmit);
+            return;
         } else {
             // Dynamic function invocation
             // TODO: Remain cases...

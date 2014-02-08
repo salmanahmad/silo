@@ -585,7 +585,6 @@ public class Compiler {
 
     public static void loadExecutionContext(CompilationContext context) {
         context.currentFrame().generator.visitVarInsn(Opcodes.ALOAD, 0);
-        context.currentFrame().operandStack.push(ExecutionContext.class);
     }
 
     public static void lineNumber(Node node, CompilationContext context) {
