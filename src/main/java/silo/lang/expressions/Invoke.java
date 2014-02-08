@@ -639,6 +639,9 @@ public class Invoke implements Expression {
             }
         }
 
+        // Skip over the rest and go to the call site
+        generator.toTo(callSite);
+
         // ###
         // ### Pre Call Site - Load the execution context and the actual parameters for the invocation
         generator.mark(preCallSite);
