@@ -12,34 +12,7 @@
 package silo.lang;
 
 public class ExecutionFrame {
-    public String id;
-    public int programCounter;
     public Object[] locals;
     public Object[] stack;
-
-    private Function function;
-
-    // TODO - Make this less clean and allow for direct fields for storing locals and the stack.
-
-    public ExecutionFrame() {
-        
-    }
-
-    public ExecutionFrame(Function function) {
-        this.id = function.getName();
-        this.function = function;
-    }
-
-    public Function getFunction(RuntimeClassLoader loader) {
-        if(this.function == null) {
-            try {
-                Class klass = Class.forName(this.id, true, loader);
-                this.function = (Function)klass.newInstance();
-            } catch(Exception e) {
-                throw new RuntimeException("Could not get function for frame.");
-            }
-        }
-
-        return this.function;
-    }
+    public int programCounter;
 }

@@ -14,6 +14,7 @@ package silo.lang.expressions;
 import silo.lang.*;
 import silo.lang.compiler.Compiler;
 
+import java.util.Arrays;
 import java.util.Vector;
 import java.util.Set;
 import java.lang.reflect.Method;
@@ -649,6 +650,7 @@ public class Invoke implements Expression {
                     // Native function or Constructor
 
                     if(Function.class.isAssignableFrom(klass)) {
+                        // TODO: Pass Execution Context
 
                         // TODO: Should I support arity overloading?
                         // TODO: Should I support type overloading?
@@ -658,6 +660,7 @@ public class Invoke implements Expression {
                         boolean isVarArgs = Function.isVarArgs(klass);
 
                         Class[] params = method.getParameterTypes();
+                        params = Arrays.copyOfRange(params, 1, params.length);
                         Vector<Class> types = argumentTypes(arguments, context);
 
                         if(isVarArgs) {
@@ -683,6 +686,12 @@ public class Invoke implements Expression {
                             }
                         }
 
+                        if(shouldEmit) {
+                            Compiler.loadExecutionContext(context);
+                        } else {
+                            frame.operandStack.push(ExecutionContext.class);
+                        }
+
                         if(isVarArgs) {
                             Invoke.compileVariableArgumentsForNativeFunction(params, arguments, context, shouldEmit);
                         } else {
@@ -692,6 +701,9 @@ public class Invoke implements Expression {
                         if(shouldEmit) {
                             generator.invokeStatic(Type.getType(klass), org.objectweb.asm.commons.Method.getMethod(method));
                         }
+
+                        // Pop the execution context
+                        frame.operandStack.pop();
 
                         for(int i = 0; i < params.length; i++) {
                             frame.operandStack.pop();
@@ -821,18 +833,31 @@ public class Invoke implements Expression {
             frame.operandStack.pop();
             frame.operandStack.push(operand.getComponentType());
         } else if(Function.class.isAssignableFrom(operand)) {
-            Class[] argMask = new Class[arguments.size()];
+            // TODO: Pass Execution Context
+
+            Class[] argMask = new Class[arguments.size() + 1];
             for(int i = 0; i < argMask.length; i++) {
-                argMask[i] = Object.class;
+                if(i == 0) {
+                    argMask[i] = ExecutionContext.class;
+                } else {
+                    argMask[i] = Object.class;
+                }
             }
 
             Method method = resolveMethod(Function.class, "apply", false, argMask);
 
             Class[] params = method.getParameterTypes();
+            params = Arrays.copyOfRange(params, 1, params.length);
             boolean shouldVarArgs = false;
 
             if(method.isVarArgs()) {
                 shouldVarArgs = shouldUseVarArgs(params, argMask);
+            }
+
+            if(shouldEmit) {
+                Compiler.loadExecutionContext(context);
+            } else {
+                context.currentFrame().operandStack.push(ExecutionContext.class);
             }
 
             if(shouldVarArgs) {
@@ -844,6 +869,9 @@ public class Invoke implements Expression {
             if(shouldEmit) {
                 generator.invokeVirtual(Type.getType(operand), org.objectweb.asm.commons.Method.getMethod(method));
             }
+
+            // Pop the execution context
+            frame.operandStack.pop();
 
             // Pop the arguments
             for(int i = 0; i < params.length; i++) {

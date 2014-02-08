@@ -151,9 +151,9 @@ public class Function {
     }
     */
 
-    public Object apply(Object... args) {
+    public Object apply(ExecutionContext context, Object... args) {
         try {
-            return Runtime.doEval(this.getClass(), args);
+            return Runtime.doEval(this.getClass(), context, args);
         } catch(Exception e) {
             throw new RuntimeException("Error occurred calling a method.");
         }

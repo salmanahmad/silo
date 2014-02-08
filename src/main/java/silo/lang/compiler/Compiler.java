@@ -20,6 +20,7 @@ import java.util.Vector;
 import java.util.HashMap;
 import java.lang.reflect.Array;
 
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.GeneratorAdapter;
 
@@ -590,6 +591,11 @@ public class Compiler {
         }
 
         return null;
+    }
+
+    public static void loadExecutionContext(CompilationContext context) {
+        context.currentFrame().generator.visitVarInsn(Opcodes.ALOAD, 0);
+        context.currentFrame().operandStack.push(ExecutionContext.class);
     }
 
     public static void lineNumber(Node node, CompilationContext context) {

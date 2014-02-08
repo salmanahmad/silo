@@ -57,13 +57,21 @@ public class Runtime {
     }
 
     public static Object doEval(Class klass, Object... args) {
+        return doEval(klass, new ExecutionContext(), args);
+    }
+
+    public static Object doEval(Class klass, ExecutionContext context, Object... args) {
         try {
+            Object[] actualArgs = new Object[args.length + 1];
+            System.arraycopy(args, 0, actualArgs, 1, args.length);
+            actualArgs[0] = context;
+            args = actualArgs;
+
             if(Function.isVarArgs(klass)) {
                 args = Function.convertArgsToVarArgs(klass, args);
-                return ((Function)klass.newInstance()).methodHandle().invoke(null, args);
-            } else {
-                return ((Function)klass.newInstance()).methodHandle().invoke(null, args);
             }
+
+            return ((Function)klass.newInstance()).methodHandle().invoke(null, args);
         } catch(java.lang.reflect.InvocationTargetException e) {
             Throwable t = e.getCause();
 

@@ -214,6 +214,11 @@ public class FunctionExpression implements Expression, Opcodes {
         Vector<Type> inputTypes = new Vector<Type>();
         Vector<Class> inputClasses = new Vector<Class>();
         Vector<Symbol> inputNames = new Vector<Symbol>();
+
+        inputTypes.add(Type.getType(ExecutionContext.class));
+        inputClasses.add(ExecutionContext.class);
+        inputNames.add(context.uniqueIdentifier("context:variable"));
+
         for(Object o : inputs) {
             // TODO: Add these inputs to the local variables
 
