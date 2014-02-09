@@ -24,6 +24,7 @@ import java.lang.reflect.Constructor;
 import com.github.krukow.clj_lang.IPersistentVector;
 import com.github.krukow.clj_lang.PersistentVector;
 
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.GeneratorAdapter;
@@ -532,6 +533,13 @@ public class Invoke implements Expression {
         CompilationFrame frame = context.currentFrame();
         GeneratorAdapter generator = frame.generator;
 
+        if(shouldEmit) {
+            generator.push(2);
+            generator.pop();
+            generator.push(2);
+            generator.pop();
+        }
+
         Method method = null;
         // TODO: Combine with types below?
         Class[] argMask = new Class[0];
@@ -598,23 +606,33 @@ public class Invoke implements Expression {
 
 
 
-        Label resumeSite = generator.newLabel();
-        Label preCallSite = generator.newLabel();
-        Label callSite = generator.newLabel();
+        Label resumeSite = null;
+        Label preCallSite = null;
+        Label callSite = null;
+        if(shouldEmit) {
+            resumeSite = generator.newLabel();
+            preCallSite = generator.newLabel();
+            callSite = generator.newLabel();
+        }
 
 
 
         // ###
         // ### Skip over the resume point during normal execution
-        generator.goTo(preCallSite);
+        if(shouldEmit) {
+            generator.goTo(preCallSite);
+        }
 
 
 
         // ###
         // ### Resume Site - Load the execution context and dummy values for the invocation
-        generator.mark(resumeSite);
-        int programCounter = frame.resumePoints.size();
-        frame.resumePoints.push(resumeSite);
+        int programCounter = 0;
+        if(shouldEmit) {
+            generator.mark(resumeSite);
+            programCounter = frame.resumePoints.size();
+            frame.resumePoints.push(resumeSite);
+        }
 
         if(!staticInvoke) {
             // If this call site is invocation a function handle, I need to load the "reciever"
@@ -644,13 +662,17 @@ public class Invoke implements Expression {
         }
 
         // Skip over the rest and go to the call site
-        generator.goTo(callSite);
+        if(shouldEmit) {
+            generator.goTo(callSite);
+        }
 
 
 
         // ###
         // ### Pre Call Site - Load the execution context and the actual parameters for the invocation
-        generator.mark(preCallSite);
+        if(shouldEmit) {
+            generator.mark(preCallSite);
+        }
 
         if(shouldEmit) {
             Compiler.loadExecutionContext(context);
@@ -675,10 +697,18 @@ public class Invoke implements Expression {
 
         // ###
         // ### Actual Call Site
-        generator.mark(callSite);
+        if(shouldEmit) {
+            generator.mark(callSite);
+            generator.push(3);
+            generator.pop();
+            generator.push(3);
+            generator.pop();
+        }
 
-        Compiler.loadExecutionContext(context);
-        generator.invokeVirtual(Type.getType(ExecutionContext.class), org.objectweb.asm.commons.Method.getMethod("void beginCall()"));
+        if(shouldEmit) {
+            Compiler.loadExecutionContext(context);
+            generator.invokeVirtual(Type.getType(ExecutionContext.class), org.objectweb.asm.commons.Method.getMethod("void beginCall()"));
+        }
 
         if(shouldEmit) {
             if(staticInvoke) {
@@ -696,52 +726,157 @@ public class Invoke implements Expression {
             frame.operandStack.pop();
         }
 
+        Class returnClass = null;
         if(staticInvoke) {
             // Push the return value
             frame.operandStack.push(method.getReturnType());
+            returnClass = method.getReturnType();
         } else {
             // Pop the reciever then push the return value.
             // TODO: This should be Var eventually as specified by the
             // Function#apply method...
             frame.operandStack.pop();
             frame.operandStack.push(Object.class);
+            returnClass = Object.class;
         }
 
-        Compiler.loadExecutionContext(context);
-        generator.invokeVirtual(Type.getType(ExecutionContext.class), org.objectweb.asm.commons.Method.getMethod("int endCall()"));
+        if(shouldEmit) {
+            Compiler.loadExecutionContext(context);
+            generator.invokeVirtual(Type.getType(ExecutionContext.class), org.objectweb.asm.commons.Method.getMethod("int endCall()"));
+        }
 
 
+        if(shouldEmit) {
+            generator.push(1);
+            generator.pop();
+            generator.push(1);
+            generator.pop();
+            generator.push(1);
+            generator.pop();
+            generator.push(1);
+            generator.pop();
+        }
+
+
+        if(true) {
+            //return;
+        }
 
         // ###
         // ### Post Call Site - Inspect the execution context to see if we need to pause or not
 
-        Label running = generator.newLabel();
-        Label resuming = generator.newLabel();
-        Label capturing = generator.newLabel();
-        Label yielding = generator.newLabel();
-        Label rest = generator.newLabel();
+        if(shouldEmit) {
+            Label running = generator.newLabel();
+            Label resuming = generator.newLabel();
+            Label capturing = generator.newLabel();
+            Label yielding = generator.newLabel();
+            Label rest = generator.newLabel();
 
-        generator.visitTableSwitchInsn(1, 4, running, new Label[] { running, resuming, capturing, yielding });
+            generator.visitTableSwitchInsn(1, 4, running, new Label[] { running, resuming, capturing, yielding });
 
-        generator.mark(running);
-        generator.goTo(rest);
+            generator.mark(running);
+            generator.goTo(rest);
 
-        generator.mark(resuming);
-        // TODO: Restore Local Variables
-        // TODO: Restore Stack
-        generator.goTo(rest);
+            generator.mark(resuming);
+            // Restore Stack
+            for(int i = frame.operandStack.size() - 2; i >= 0; i--) {
+                Class operandType = frame.operandStack.get(i);
+                generator.swap(Type.getType(operandType), Type.getType(returnClass));
+                Compiler.pop(operandType, generator);
+            }
 
-        generator.mark(capturing);
-        // TODO: Store Local Variables
-        // TODO: Store Stack
-        Compiler.pushInitializationValue(frame.outputClass, generator);
-        generator.returnValue();
+            for(int i = 0; i < frame.operandStack.size() - 1; i++) {
+                Class operandType = frame.operandStack.get(i);
 
-        generator.mark(yielding);
-        Compiler.pushInitializationValue(frame.outputClass, generator);
-        generator.returnValue();
+                // TODO: Is this more or less efficient than doing weird DUP / DUPX2 / Swaps
+                Compiler.loadExecutionFrame(context);
+                generator.getField(Type.getType(ExecutionFrame.class), "stack", Type.getType(Object[].class));
+                generator.push(i);
+                generator.arrayLoad(Type.getType(Object.class));
 
-        generator.mark(rest);
+                generator.unbox(Type.getType(operandType));
+                generator.swap(Type.getType(returnClass), Type.getType(operandType));
+            }
+            // Restore Local Variables
+            for(Symbol variableName : frame.locals.keySet()) {
+                int variableIndex = frame.locals.get(variableName).intValue();
+                Class variableType = frame.localTypes.get(variableName);
+
+                if(variableIndex == 0) {
+                    continue;
+                }
+
+                // TODO: Is this more or less efficient than doing weird DUP / DUPX2 / Swaps
+                Compiler.loadExecutionFrame(context);
+                generator.getField(Type.getType(ExecutionFrame.class), "locals", Type.getType(Object[].class));
+                generator.push(variableIndex);
+                generator.arrayLoad(Type.getType(Object.class));
+
+                generator.unbox(Type.getType(variableType));
+                generator.visitVarInsn(Type.getType(variableType).getOpcode(Opcodes.ISTORE), variableIndex);
+            }
+            generator.goTo(rest);
+
+            generator.mark(capturing);
+            // Pop the return value, we do not care about it
+            Compiler.pop(returnClass, generator);
+            // Create new frame
+            Compiler.loadExecutionContext(context);
+            generator.newInstance(Type.getType(ExecutionFrame.class));
+            generator.dup();
+            generator.dup();
+            generator.dup();
+            generator.dup();
+            generator.invokeConstructor(Type.getType(ExecutionFrame.class), org.objectweb.asm.commons.Method.getMethod("void <init> ()"));
+            generator.push(programCounter);
+            generator.putField(Type.getType(ExecutionFrame.class), "programCounter", Type.getType(int.class));
+            generator.push(frame.operandStack.size() - 1);
+            generator.newArray(Type.getType(Object.class));
+            generator.putField(Type.getType(ExecutionFrame.class), "stack", Type.getType(Object[].class));
+            generator.push(frame.operandStack.size() - 1);
+            generator.newArray(Type.getType(Object.class));
+            generator.putField(Type.getType(ExecutionFrame.class), "locals", Type.getType(Object[].class));
+            generator.invokeVirtual(Type.getType(ExecutionContext.class), org.objectweb.asm.commons.Method.getMethod("void setCurrentFrame(silo.lang.ExecutionFrame)"));
+            // Store Stack
+            for(int i = frame.operandStack.size() - 2; i >= 0; i--) {
+                Class operandType = frame.operandStack.get(i);
+
+                // TODO: Is this more or less efficient than doing weird DUP / DUPX2 / Swaps
+                Compiler.loadExecutionFrame(context);
+                generator.getField(Type.getType(ExecutionFrame.class), "stack", Type.getType(Object[].class));
+
+                generator.swap(Type.getType(operandType), Type.getType(Object[].class));
+                generator.push(i);
+                generator.swap(Type.getType(int.class), Type.getType(Object[].class));
+                generator.box(Type.getType(operandType));
+                generator.arrayStore(Type.getType(Object.class));
+            }
+            // Store Local Variables
+            for(Symbol variableName : frame.locals.keySet()) {
+                int variableIndex = frame.locals.get(variableName).intValue();
+                Class variableType = frame.localTypes.get(variableName);
+
+                if(variableIndex == 0) {
+                    continue;
+                }
+
+                // TODO: Is this more or less efficient than doing weird DUP / DUPX2 / Swaps
+                Compiler.loadExecutionFrame(context);
+                generator.getField(Type.getType(ExecutionFrame.class), "locals", Type.getType(Object[].class));
+                generator.push(variableIndex);
+                generator.visitVarInsn(Type.getType(variableType).getOpcode(Opcodes.ILOAD), variableIndex);
+                generator.box(Type.getType(variableType));
+                generator.arrayStore(Type.getType(Object.class));
+            }
+            Compiler.pushInitializationValue(frame.outputClass, generator);
+            generator.returnValue();
+
+            generator.mark(yielding);
+            Compiler.pushInitializationValue(frame.outputClass, generator);
+            generator.returnValue();
+
+            generator.mark(rest);
+        }
     }
 
     public Class type(CompilationContext context) {

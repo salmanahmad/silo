@@ -62,6 +62,13 @@ public class Runtime {
 
     public static Object doEval(Class klass, ExecutionContext context, Object... args) {
         try {
+            // TODO: I have to do beginCall and endCall, don't I???
+            // In fact, I really need to fundamentally re-think this "eval"
+            // method. Perhaps beginCall and endCall belong in a "resume" method
+            // and "eval" is just a utility method?
+            // If not, then I also need an eval in which the execution context is PART
+            // of the args[] array. Perhaps, "Object evalWithContext(Class, Object...)"
+
             Object[] actualArgs = new Object[args.length + 1];
             System.arraycopy(args, 0, actualArgs, 1, args.length);
             actualArgs[0] = context;

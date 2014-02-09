@@ -150,8 +150,9 @@
                   <arg value="${project.build.outputDirectory}" />
                   <!--<arg line="${files}" />-->
                   <sysproperty key="bootstrap.skip" value="${bootstrap.skip}"/>
+                  <!--<arg value="${basedir}/src/main/silo/test.silo" />-->
                   <arg value="${basedir}/src/main/silo/core.silo" />
-                  <arg value="${basedir}/src/main/silo/cli.silo" />
+                  <!--<arg value="${basedir}/src/main/silo/cli.silo" />-->
                 </java>
               </target>
             </configuration>

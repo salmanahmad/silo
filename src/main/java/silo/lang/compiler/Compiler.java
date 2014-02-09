@@ -587,6 +587,11 @@ public class Compiler {
         context.currentFrame().generator.visitVarInsn(Opcodes.ALOAD, 0);
     }
 
+    public static void loadExecutionFrame(CompilationContext context) {
+        loadExecutionContext(context);
+        context.currentFrame().generator.invokeVirtual(Type.getType(ExecutionContext.class), org.objectweb.asm.commons.Method.getMethod("silo.lang.ExecutionFrame getCurrentFrame()"));
+    }
+
     public static void lineNumber(Node node, CompilationContext context) {
         if(node.getMeta() == null) {
             return;
