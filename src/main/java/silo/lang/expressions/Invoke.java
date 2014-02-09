@@ -625,6 +625,13 @@ public class Invoke implements Expression {
             generator.mark(resumeSite);
         }
 
+        if(shouldEmit) {
+            for(int i = 0; i < frame.operandStack.size(); i++) {
+                Class operandType = frame.operandStack.get(i);
+                Compiler.pushInitializationValue(operandType, generator);
+            }
+        }
+
         if(!staticInvoke) {
             // If this call site is invocation a function handle, I need to load the "reciever"
 
@@ -632,6 +639,10 @@ public class Invoke implements Expression {
             // the type() method in the Invoke class. The reciever is already on the operandStack
             // before we get to this point in type propogation
             if(shouldEmit) {
+                // Pop the dummy value I just inserted onto the stack. It is a function handle so
+                // I do not need to do "Compiler.pop()" and worry about category2 data types.
+                generator.pop();
+
                 Compiler.loadExecutionContext(context);
                 generator.invokeVirtual(Type.getType(ExecutionContext.class), org.objectweb.asm.commons.Method.getMethod("silo.lang.ExecutionFrame getCurrentFrame()"));
                 generator.getField(Type.getType(ExecutionFrame.class), "stack", Type.getType(Object[].class));

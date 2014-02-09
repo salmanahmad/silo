@@ -374,7 +374,14 @@ public class FunctionExpression implements Expression, Opcodes {
             Compiler.pushInitializationValue(klass, frame.generator);
             frame.generator.visitVarInsn(Type.getType(klass).getOpcode(Opcodes.ISTORE), index);
         }
-        frame.generator.goTo(startLabel);
+        Label[] resumeLabels = frame.resumeLabels();
+        if(resumeLabels.length == 0) {
+            frame.generator.goTo(startLabel);
+        } else {
+            Compiler.loadExecutionContext(context);
+            frame.generator.getField(Type.getType(ExecutionContext.class), "programCounter", Type.getType(int.class));
+            frame.generator.visitTableSwitchInsn(0, resumeLabels.length - 1, startLabel, resumeLabels);
+        }
 
         // Local Restoration
         Label invalidProgamCounterLabel = frame.generator.mark();
@@ -460,6 +467,7 @@ public class FunctionExpression implements Expression, Opcodes {
             System.out.println();
         }
         */
+
 
         if(shouldEmit) {
             Class klass = context.runtime.loader.loadClass(code);

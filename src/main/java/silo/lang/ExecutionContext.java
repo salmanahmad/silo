@@ -25,7 +25,7 @@ public class ExecutionContext {
     ExecutionFrame[] frames = new ExecutionFrame[16];
 
     public boolean yielding = false;
-    public int programCounter = 0;
+    public int programCounter = -1;
 
     public void beginCall() {
         // We are beginning a new call so obviously we are not yielding anymore...
@@ -36,11 +36,11 @@ public class ExecutionContext {
             ensureSize(frames.length * 2);
             frames[currentFrame] = null;
 
-            programCounter = 0;
+            programCounter = -1;
         } else {
             ExecutionFrame frame = getCurrentFrame();
             if(frame == null) {
-                programCounter = 0;
+                programCounter = -1;
             } else {
                 programCounter = frame.programCounter;
             }
@@ -53,13 +53,15 @@ public class ExecutionContext {
 
         if(yielding) {
             if(frame == null) {
+                programCounter = -1;
                 return CAPTURING;
             } else {
+                programCounter = -1;
                 return YIELDING;
             }
         } else {
             if(frame == null) {
-                programCounter = 0;
+                programCounter = -1;
                 return RUNNING;
             } else {
                 frames[currentFrame + 1] = null;

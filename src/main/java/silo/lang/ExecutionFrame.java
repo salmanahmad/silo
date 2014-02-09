@@ -14,5 +14,5 @@ package silo.lang;
 public class ExecutionFrame {
     public Object[] locals;
     public Object[] stack;
-    public int programCounter;
+    public int programCounter = -1;
 }
