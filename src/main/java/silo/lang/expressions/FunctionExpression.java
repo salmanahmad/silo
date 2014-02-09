@@ -344,6 +344,7 @@ public class FunctionExpression implements Expression, Opcodes {
         frame.generator.mark(startLabel);
 
         if(shouldEmit) {
+            frame.newLocal(new Symbol("constructor:variable"), Object[].class);
             body.emit(context);
         } else {
             Node newBody = new Node(
@@ -382,24 +383,27 @@ public class FunctionExpression implements Expression, Opcodes {
 
         byte[] code = cw.toByteArray();
 
+
         /*
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        if(shouldEmit) {
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
-        ClassReader classReader = new ClassReader(code);
-        PrintWriter printWriter = new PrintWriter(outputStream);
-        TraceClassVisitor traceClassVisitor = new TraceClassVisitor(printWriter);
-        classReader.accept(traceClassVisitor, ClassReader.SKIP_DEBUG);
+            ClassReader classReader = new ClassReader(code);
+            PrintWriter printWriter = new PrintWriter(outputStream);
+            TraceClassVisitor traceClassVisitor = new TraceClassVisitor(printWriter);
+            classReader.accept(traceClassVisitor, ClassReader.SKIP_DEBUG);
 
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
-        CheckClassAdapter.verify(new ClassReader(code), false, pw);
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            CheckClassAdapter.verify(new ClassReader(code), false, pw);
 
-        System.out.println(sw.toString());
+            System.out.println(sw.toString());
 
-        System.out.println();
-        System.out.println(outputStream.toString());
-        System.out.println();
-        System.out.println();
+            System.out.println();
+            System.out.println(outputStream.toString());
+            System.out.println();
+            System.out.println();
+        }
         */
 
         if(shouldEmit) {

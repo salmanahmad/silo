@@ -533,13 +533,6 @@ public class Invoke implements Expression {
         CompilationFrame frame = context.currentFrame();
         GeneratorAdapter generator = frame.generator;
 
-        if(shouldEmit) {
-            generator.push(2);
-            generator.pop();
-            generator.push(2);
-            generator.pop();
-        }
-
         Method method = null;
         // TODO: Combine with types below?
         Class[] argMask = new Class[0];
@@ -699,10 +692,6 @@ public class Invoke implements Expression {
         // ### Actual Call Site
         if(shouldEmit) {
             generator.mark(callSite);
-            generator.push(3);
-            generator.pop();
-            generator.push(3);
-            generator.pop();
         }
 
         if(shouldEmit) {
@@ -746,21 +735,6 @@ public class Invoke implements Expression {
         }
 
 
-        if(shouldEmit) {
-            generator.push(1);
-            generator.pop();
-            generator.push(1);
-            generator.pop();
-            generator.push(1);
-            generator.pop();
-            generator.push(1);
-            generator.pop();
-        }
-
-
-        if(true) {
-            //return;
-        }
 
         // ###
         // ### Post Call Site - Inspect the execution context to see if we need to pause or not
@@ -784,7 +758,6 @@ public class Invoke implements Expression {
                 generator.swap(Type.getType(operandType), Type.getType(returnClass));
                 Compiler.pop(operandType, generator);
             }
-
             for(int i = 0; i < frame.operandStack.size() - 1; i++) {
                 Class operandType = frame.operandStack.get(i);
 
@@ -1015,13 +988,9 @@ public class Invoke implements Expression {
                     } else {
                         // TODO: Add another "else if" clause that checks for a "record" or "type"
 
-                        if(shouldEmit) {
-                            generator.newInstance(Type.getType(klass));
-                            Compiler.dup(klass, generator);
-                        }
-
-                        frame.operandStack.push(klass);
-                        frame.operandStack.push(klass);
+                        // I no longer need these because I package up all constructor arguments.
+                        //frame.operandStack.push(klass);
+                        //frame.operandStack.push(klass);
 
                         Vector<Class> types = argumentTypes(arguments, context);
 
@@ -1044,15 +1013,47 @@ public class Invoke implements Expression {
                         }
 
                         if(shouldEmit) {
+                            generator.push(params.length);
+                            generator.newArray(Type.getType(Object.class));
+                            generator.visitVarInsn(Type.getType(Object[].class).getOpcode(Opcodes.ISTORE), frame.locals.get(new Symbol("constructor:variable")));
+
+                            for(int i = params.length - 1; i >= 0; i--) {
+                                generator.visitVarInsn(Type.getType(Object[].class).getOpcode(Opcodes.ILOAD), frame.locals.get(new Symbol("constructor:variable")));
+                                generator.swap(Type.getType(params[i]), Type.getType(Object[].class));
+
+                                generator.push(i);
+                                generator.swap(Type.getType(params[i]), Type.getType(int.class));
+
+                                generator.box(Type.getType(params[i]));
+                                generator.arrayStore(Type.getType(Object.class));
+                            }
+
+                            generator.newInstance(Type.getType(klass));
+                            Compiler.dup(klass, generator);
+
+                            for(int i = 0; i < params.length; i++) {
+                                generator.visitVarInsn(Type.getType(Object[].class).getOpcode(Opcodes.ILOAD), frame.locals.get(new Symbol("constructor:variable")));
+                                generator.push(i);
+                                generator.arrayLoad(Type.getType(Object.class));
+
+                                generator.unbox(Type.getType(params[i]));
+                            }
+
+                            generator.push((String)null);
+                            generator.visitVarInsn(Type.getType(Object[].class).getOpcode(Opcodes.ISTORE), frame.locals.get(new Symbol("constructor:variable")));
+
                             generator.invokeConstructor(Type.getType(klass), org.objectweb.asm.commons.Method.getMethod(constructor));
                         }
 
-                        // Remove the class reference that was used to invoke the constructor
-                        frame.operandStack.pop();
+                        // I no longer need this because I package up the args into an array
+                        // Original Comment: Remove the class reference that was used to invoke the constructor
+                        //frame.operandStack.pop();
 
                         for(int i = 0; i < params.length; i++) {
                             frame.operandStack.pop();
                         }
+
+                        frame.operandStack.push(klass);
 
                         return;
                     }
