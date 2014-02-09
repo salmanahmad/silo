@@ -623,8 +623,6 @@ public class Invoke implements Expression {
         int programCounter = 0;
         if(shouldEmit) {
             generator.mark(resumeSite);
-            programCounter = frame.resumePoints.size();
-            frame.resumePoints.push(resumeSite);
         }
 
         if(!staticInvoke) {
@@ -740,11 +738,19 @@ public class Invoke implements Expression {
         // ### Post Call Site - Inspect the execution context to see if we need to pause or not
 
         if(shouldEmit) {
+            Label continuationSite = generator.newLabel();
+
             Label running = generator.newLabel();
             Label resuming = generator.newLabel();
             Label capturing = generator.newLabel();
             Label yielding = generator.newLabel();
             Label rest = generator.newLabel();
+
+            CompilationFrame.CallSite frameCallSite = new CompilationFrame.CallSite();
+            frameCallSite.resumeSite = resumeSite;
+            frameCallSite.continuationSite = continuationSite;
+            frame.callSites.push(frameCallSite);
+            programCounter = frame.callSites.size() - 1;
 
             generator.visitTableSwitchInsn(1, 4, running, new Label[] { running, resuming, capturing, yielding });
 
@@ -752,12 +758,21 @@ public class Invoke implements Expression {
             generator.goTo(rest);
 
             generator.mark(resuming);
-            // Restore Stack
+            // First clear the stack
             for(int i = frame.operandStack.size() - 2; i >= 0; i--) {
                 Class operandType = frame.operandStack.get(i);
                 generator.swap(Type.getType(operandType), Type.getType(returnClass));
                 Compiler.pop(operandType, generator);
             }
+            // Box the return type to avoid any verification issues
+            generator.box(Type.getType(returnClass));
+            generator.checkCast(Type.getType(Object.class));
+            // Restore the local variables
+            generator.goTo(frame.restoreLocalsLabel);
+            // I get transfered back here. Unbox the return type
+            generator.mark(continuationSite);
+            generator.unbox(Type.getType(returnClass));
+            // Restore the stack
             for(int i = 0; i < frame.operandStack.size() - 1; i++) {
                 Class operandType = frame.operandStack.get(i);
 
@@ -770,24 +785,6 @@ public class Invoke implements Expression {
                 generator.unbox(Type.getType(operandType));
                 generator.swap(Type.getType(returnClass), Type.getType(operandType));
             }
-            // Restore Local Variables
-            for(Symbol variableName : frame.locals.keySet()) {
-                int variableIndex = frame.locals.get(variableName).intValue();
-                Class variableType = frame.localTypes.get(variableName);
-
-                if(variableIndex == 0) {
-                    continue;
-                }
-
-                // TODO: Is this more or less efficient than doing weird DUP / DUPX2 / Swaps
-                Compiler.loadExecutionFrame(context);
-                generator.getField(Type.getType(ExecutionFrame.class), "locals", Type.getType(Object[].class));
-                generator.push(variableIndex);
-                generator.arrayLoad(Type.getType(Object.class));
-
-                generator.unbox(Type.getType(variableType));
-                generator.visitVarInsn(Type.getType(variableType).getOpcode(Opcodes.ISTORE), variableIndex);
-            }
             generator.goTo(rest);
 
             generator.mark(capturing);
@@ -799,16 +796,12 @@ public class Invoke implements Expression {
             generator.dup();
             generator.dup();
             generator.dup();
-            generator.dup();
             generator.invokeConstructor(Type.getType(ExecutionFrame.class), org.objectweb.asm.commons.Method.getMethod("void <init> ()"));
             generator.push(programCounter);
             generator.putField(Type.getType(ExecutionFrame.class), "programCounter", Type.getType(int.class));
             generator.push(frame.operandStack.size() - 1);
             generator.newArray(Type.getType(Object.class));
             generator.putField(Type.getType(ExecutionFrame.class), "stack", Type.getType(Object[].class));
-            generator.push(frame.operandStack.size() - 1);
-            generator.newArray(Type.getType(Object.class));
-            generator.putField(Type.getType(ExecutionFrame.class), "locals", Type.getType(Object[].class));
             generator.invokeVirtual(Type.getType(ExecutionContext.class), org.objectweb.asm.commons.Method.getMethod("void setCurrentFrame(silo.lang.ExecutionFrame)"));
             // Store Stack
             for(int i = frame.operandStack.size() - 2; i >= 0; i--) {
@@ -825,24 +818,7 @@ public class Invoke implements Expression {
                 generator.arrayStore(Type.getType(Object.class));
             }
             // Store Local Variables
-            for(Symbol variableName : frame.locals.keySet()) {
-                int variableIndex = frame.locals.get(variableName).intValue();
-                Class variableType = frame.localTypes.get(variableName);
-
-                if(variableIndex == 0) {
-                    continue;
-                }
-
-                // TODO: Is this more or less efficient than doing weird DUP / DUPX2 / Swaps
-                Compiler.loadExecutionFrame(context);
-                generator.getField(Type.getType(ExecutionFrame.class), "locals", Type.getType(Object[].class));
-                generator.push(variableIndex);
-                generator.visitVarInsn(Type.getType(variableType).getOpcode(Opcodes.ILOAD), variableIndex);
-                generator.box(Type.getType(variableType));
-                generator.arrayStore(Type.getType(Object.class));
-            }
-            Compiler.pushInitializationValue(frame.outputClass, generator);
-            generator.returnValue();
+            generator.goTo(frame.captureLocalsLabel);
 
             generator.mark(yielding);
             Compiler.pushInitializationValue(frame.outputClass, generator);

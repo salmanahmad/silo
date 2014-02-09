@@ -11,6 +11,7 @@
 
 package silo.lang;
 
+import java.util.Vector;
 import java.util.Stack;
 import java.util.HashMap;
 
@@ -20,6 +21,11 @@ import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.commons.GeneratorAdapter;
 
 public class CompilationFrame {
+
+    public static class CallSite {
+        public Label resumeSite;
+        public Label continuationSite;
+    }
 
     private int nextLocal = 0;
 
@@ -37,7 +43,10 @@ public class CompilationFrame {
     public final Stack<Label> iterationFrameStartLabels;
     public final Stack<Label> iterationFrameEndLabels;
     public final Stack finallyClauses;
-    public final Stack<Label> resumePoints;
+
+    public final Stack<CallSite> callSites;
+    public Label restoreLocalsLabel;
+    public Label captureLocalsLabel;
 
     public CompilationFrame(int access, Method method, GeneratorAdapter generator, Class outputClass) {
         this.access = access;
@@ -53,7 +62,8 @@ public class CompilationFrame {
         this.iterationFrameStartLabels = new Stack<Label>();
         this.iterationFrameEndLabels = new Stack<Label>();
         this.finallyClauses = new Stack();
-        this.resumePoints = new Stack<Label>();
+
+        this.callSites = new Stack<CallSite>();
     }
 
     public int newLocal(Symbol name, Class type) {
@@ -75,6 +85,10 @@ public class CompilationFrame {
         return local;
     }
 
+    public int nextLocal() {
+        return nextLocal;
+    }
+
     public void pushIterationFrame(Label start, Label end) {
         iterationFrameStartLabels.push(start);
         iterationFrameEndLabels.push(end);
@@ -83,5 +97,25 @@ public class CompilationFrame {
     public void popIterationFrame() {
         iterationFrameStartLabels.pop();
         iterationFrameEndLabels.pop();
+    }
+
+    public Label[] resumeLabels() {
+        Vector<Label> vec = new Vector<Label>();
+        for(CallSite site : callSites) {
+            vec.add(site.resumeSite);
+        }
+
+        return vec.toArray(new Label[0]);
+    }
+
+    public Label[] continuationLabels(Label invalidProgamCounterLabel) {
+        Vector<Label> vec = new Vector<Label>();
+        for(CallSite site : callSites) {
+            vec.add(site.continuationSite);
+        }
+
+        vec.add(invalidProgamCounterLabel);
+
+        return vec.toArray(new Label[0]);
     }
 }

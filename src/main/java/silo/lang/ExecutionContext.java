@@ -63,10 +63,7 @@ public class ExecutionContext {
                 return RUNNING;
             } else {
                 frames[currentFrame + 1] = null;
-
-                // TODO: Is there a reason why I need the programCounter
-                //programCounter = frame.programCounter;
-                programCounter = 0;
+                programCounter = frame.programCounter;
                 return RESUMING;
             }
         }

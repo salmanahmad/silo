@@ -326,6 +326,9 @@ public class FunctionExpression implements Expression, Opcodes {
         CompilationFrame frame = new CompilationFrame(ACC_PUBLIC + ACC_STATIC, m, g, outputClass);
         context.frames.push(frame);
 
+        frame.restoreLocalsLabel = frame.generator.newLabel();
+        frame.captureLocalsLabel = frame.generator.newLabel();
+
         if(inputClasses.size() == inputNames.size()) {
             for(int i = 0; i < inputClasses.size(); i++) {
                 frame.newLocal(inputNames.get(i), inputClasses.get(i));
@@ -357,6 +360,7 @@ public class FunctionExpression implements Expression, Opcodes {
 
         (new Return(null, false)).emit(context);
 
+        // Local Initialization
         frame.generator.mark(initializationLabel);
         for(Symbol local : frame.locals.keySet()) {
             if(inputNames.contains(local)) {
@@ -371,6 +375,57 @@ public class FunctionExpression implements Expression, Opcodes {
             frame.generator.visitVarInsn(Type.getType(klass).getOpcode(Opcodes.ISTORE), index);
         }
         frame.generator.goTo(startLabel);
+
+        // Local Restoration
+        Label invalidProgamCounterLabel = frame.generator.mark();
+        frame.generator.throwException(Type.getType(RuntimeException.class), "Invalid program counter");
+        frame.generator.mark(frame.restoreLocalsLabel);
+        for(Symbol variableName : frame.locals.keySet()) {
+            int variableIndex = frame.locals.get(variableName).intValue();
+            Class variableType = frame.localTypes.get(variableName);
+
+            if(variableIndex == 0) {
+                continue;
+            }
+
+            // TODO: Is this more or less efficient than doing weird DUP / DUPX2 / Swaps
+            Compiler.loadExecutionFrame(context);
+            frame.generator.getField(Type.getType(ExecutionFrame.class), "locals", Type.getType(Object[].class));
+            frame.generator.push(variableIndex);
+            frame.generator.arrayLoad(Type.getType(Object.class));
+
+            frame.generator.unbox(Type.getType(variableType));
+            frame.generator.visitVarInsn(Type.getType(variableType).getOpcode(Opcodes.ISTORE), variableIndex);
+        }
+        Compiler.loadExecutionContext(context);
+        frame.generator.getField(Type.getType(ExecutionContext.class), "programCounter", Type.getType(int.class));
+        Label[] continuationLabels = frame.continuationLabels(invalidProgamCounterLabel);
+        frame.generator.visitTableSwitchInsn(0, continuationLabels.length - 1, continuationLabels[continuationLabels.length - 1], continuationLabels);
+
+        // Local Capture
+        frame.generator.mark(frame.captureLocalsLabel);
+        Compiler.loadExecutionFrame(context);
+        frame.generator.push(frame.nextLocal());
+        frame.generator.newArray(Type.getType(Object.class));
+        frame.generator.putField(Type.getType(ExecutionFrame.class), "locals", Type.getType(Object[].class));
+        for(Symbol variableName : frame.locals.keySet()) {
+            int variableIndex = frame.locals.get(variableName).intValue();
+            Class variableType = frame.localTypes.get(variableName);
+
+            if(variableIndex == 0) {
+                continue;
+            }
+
+            // TODO: Is this more or less efficient than doing weird DUP / DUPX2 / Swaps
+            Compiler.loadExecutionFrame(context);
+            frame.generator.getField(Type.getType(ExecutionFrame.class), "locals", Type.getType(Object[].class));
+            frame.generator.push(variableIndex);
+            frame.generator.visitVarInsn(Type.getType(variableType).getOpcode(Opcodes.ILOAD), variableIndex);
+            frame.generator.box(Type.getType(variableType));
+            frame.generator.arrayStore(Type.getType(Object.class));
+        }
+        Compiler.pushInitializationValue(frame.outputClass, frame.generator);
+        frame.generator.returnValue();
 
         context.frames.pop();
         // End the frame...
