@@ -1,0 +1,21 @@
+
+function(
+    name(a) {
+        b()
+        return("a")
+    }
+)
+
+function(
+    name(b) {
+        c()
+        return("b")
+    }
+)
+
+function(
+    name(c) {
+        yield()
+        return("c")
+    }
+)

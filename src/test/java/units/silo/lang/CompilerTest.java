@@ -713,4 +713,18 @@ public class CompilerTest {
         Assert.assertEquals("the-string-is-null", runtime.eval("testNative"));
         Assert.assertEquals(null, runtime.eval("testInterop"));
     }
+
+    @Test
+    public void testYield() throws Exception {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/examples/yield.silo");
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+
+        ExecutionContext fiber = new ExecutionContext();
+
+        Class a = runtime.loader.loadClass("a");
+
+        Assert.assertEquals(null, runtime.doEval(a, fiber));
+        Assert.assertEquals("a", runtime.doEval(a, fiber));
+    }
 }

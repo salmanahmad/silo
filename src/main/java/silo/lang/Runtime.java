@@ -78,7 +78,11 @@ public class Runtime {
                 args = Function.convertArgsToVarArgs(klass, args);
             }
 
-            return ((Function)klass.newInstance()).methodHandle().invoke(null, args);
+            context.beginCall();
+            Object output = ((Function)klass.newInstance()).methodHandle().invoke(null, args);
+            context.endCall();
+
+            return output;
         } catch(java.lang.reflect.InvocationTargetException e) {
             Throwable t = e.getCause();
 
