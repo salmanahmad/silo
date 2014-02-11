@@ -796,6 +796,9 @@ public class Invoke implements Expression {
                 generator.unbox(Type.getType(operandType));
                 generator.swap(Type.getType(returnClass), Type.getType(operandType));
             }
+            Compiler.loadExecutionContext(context);
+            generator.push((String)null);
+            generator.invokeVirtual(Type.getType(ExecutionContext.class), org.objectweb.asm.commons.Method.getMethod("void setCurrentFrame(silo.lang.ExecutionFrame)"));
             generator.goTo(rest);
 
             generator.mark(capturing);

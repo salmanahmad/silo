@@ -1,0 +1,34 @@
+
+function(
+    name(start) {
+        println("start")
+
+        f : fiber.Fiber = fiber.Fiber(b)
+        fiber.resume(f)
+    }
+)
+
+function(
+    name(finish) {
+        f : fiber.Fiber = fiber.Fiber(b)
+
+        println("finish")
+        fiber.resume(f)
+        fiber.resume(f)
+        println("end of finish")
+    }
+)
+
+function(
+    name(b) {
+        c()
+    }
+)
+
+function(
+    name(c) {
+        println("before yield")
+        fiber.yield()
+        println("after yield")
+    }
+)

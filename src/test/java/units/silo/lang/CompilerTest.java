@@ -727,4 +727,38 @@ public class CompilerTest {
         Assert.assertEquals(null, runtime.doEval(a, fiber));
         Assert.assertEquals("a", runtime.doEval(a, fiber));
     }
+
+    @Test
+    public void testFiber() throws Exception {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/examples/fiber.silo");
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+
+        String start = "start\nbefore yield\n";
+        String finish = "finish\nbefore yield\nafter yield\nend of finish\n";
+
+        PrintStream oldOut = System.out;
+
+        try {
+            ByteArrayOutputStream os = new ByteArrayOutputStream();
+            PrintStream ps = new PrintStream(os);
+            System.setOut(ps);
+
+            runtime.eval("start");
+            Assert.assertEquals(start, os.toString());
+
+
+
+            os = new ByteArrayOutputStream();
+            ps = new PrintStream(os);
+            System.setOut(ps);
+
+            runtime.eval("finish");
+            Assert.assertEquals(finish, os.toString());
+        } finally {
+            System.setOut(oldOut);
+        }
+
+
+    }
 }

@@ -9,7 +9,7 @@
  *
  */
 
-package silo.core;
+package silo.core.fiber;
 
 import silo.lang.ExecutionContext;
 import silo.lang.ExecutionFrame;
@@ -29,6 +29,8 @@ public class yield extends Function {
                 context.yielding = true;
                 break;
             default:
+                context.setCurrentFrame(null);
+                context.yielding = false;
                 break;
         }
 

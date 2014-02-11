@@ -15,7 +15,7 @@ function(
 
 function(
     name(c) {
-        yield()
+        fiber.yield()
         return("c")
     }
 )
