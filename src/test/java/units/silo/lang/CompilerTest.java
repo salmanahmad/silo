@@ -771,4 +771,13 @@ public class CompilerTest {
         Assert.assertEquals("first", vector.get(0));
         Assert.assertEquals("second", vector.get(1));
     }
+
+    @Test
+    public void testTime() throws Exception {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/examples/time.silo");
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+
+        Object o = runtime.eval("test");
+    }
 }

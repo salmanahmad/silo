@@ -315,6 +315,8 @@ public class Compiler {
                 return new CheckCast(node);
             } else if(label.equals(new Symbol("instanceof"))) {
                 return new InstanceOf(node);
+            } else if(label.equals(new Symbol("uniquesymbol"))) {
+                return new UniqueSymbol(node);
             } else if(label.equals(new Symbol("invokevirtual"))) {
                 // TODO: Add macro called "dispatch" to wrap this...
                 return new InvokeVirtual(node);

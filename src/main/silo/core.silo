@@ -341,3 +341,59 @@ function(
         return(value)
     }
 )
+
+function(
+    name(time)
+    macro
+    inputs(o)
+    outputs(silo.lang.Node)
+    {
+        // TODO: Change this to System.nanoTime()
+
+        timerSymbol : silo.lang.Symbol = uniquesymbol()
+
+        start : silo.lang.Node = node(symbol("=")
+            node(symbol(":")
+                timerSymbol
+                symbol("long")
+            )
+            node(node(
+                symbol(".")
+                node(
+                    symbol(".")
+                    node(
+                        symbol(".")
+                        symbol("java")
+                        symbol("lang")
+                    )
+                    symbol("System")
+                )
+                symbol("currentTimeMillis")
+            ))
+        )
+
+        finish : silo.lang.Node = node(symbol("-")
+            node(node(
+                symbol(".")
+                node(
+                    symbol(".")
+                    node(
+                        symbol(".")
+                        symbol("java")
+                        symbol("lang")
+                    )
+                    symbol("System")
+                )
+                symbol("currentTimeMillis")
+            ))
+            timerSymbol
+        )
+
+        node(
+            symbol("do")
+            start
+            o
+            finish
+        )
+    }
+)

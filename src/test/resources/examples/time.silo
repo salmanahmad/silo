@@ -1,0 +1,13 @@
+function(
+    name(test)
+    {
+        i : long = time({
+            c : int = 0;
+            while(c < 1000000 {
+                c = c + 1
+            })
+        })
+
+        i
+    }
+)
