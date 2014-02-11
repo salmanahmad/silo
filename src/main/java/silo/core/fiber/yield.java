@@ -15,25 +15,36 @@ import silo.lang.ExecutionContext;
 import silo.lang.ExecutionFrame;
 import silo.lang.Function;
 
-@Function.Definition
+import com.github.krukow.clj_lang.IPersistentVector;
+import com.github.krukow.clj_lang.PersistentVector;
+
+@Function.Definition(varargs = true)
 public class yield extends Function {
 
     @Function.Body
-    public static Object invoke(ExecutionContext context) {
+    public static Object invoke(ExecutionContext context, IPersistentVector args) {
+        Fiber fiber = context.currentFiber;
+
         switch(context.programCounter) {
             case -1:
+                if(fiber != null) {
+                    fiber.value = args.nth(0, null);
+                }
+
                 ExecutionFrame frame = new ExecutionFrame();
                 frame.programCounter = 0;
 
                 context.setCurrentFrame(frame);
                 context.yielding = true;
-                break;
+                return null;
             default:
                 context.setCurrentFrame(null);
                 context.yielding = false;
-                break;
+                if(fiber != null) {
+                    return fiber.resumedArgument;
+                } else {
+                    return null;
+                }
         }
-
-        return null;
     }
 }

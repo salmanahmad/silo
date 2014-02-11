@@ -17,15 +17,21 @@ import silo.lang.Function;
 
 import java.util.Arrays;
 
-@Function.Definition
+import com.github.krukow.clj_lang.IPersistentVector;
+import com.github.krukow.clj_lang.PersistentVector;
+
+@Function.Definition(varargs = true)
 public class resume extends Function {
 
     @Function.Body
-    public static Object invoke(ExecutionContext context, Fiber fiber) {
+    public static Object invoke(ExecutionContext context, Fiber fiber, IPersistentVector vector) {
         // TODO: Invoke should look at the list of arguments stored in Fiber
         // and dispatch "apply" on that number in a performant manner.
 
-        fiber.function.apply(fiber.context);
-        return null;
+        fiber.resumedArgument = vector.nth(0, null);
+        fiber.function.apply(fiber.context, fiber.arguments);
+
+        // TODO: Make fibers immutable...
+        return fiber;
     }
 }

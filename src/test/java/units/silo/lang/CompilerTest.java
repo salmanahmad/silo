@@ -758,7 +758,17 @@ public class CompilerTest {
         } finally {
             System.setOut(oldOut);
         }
+    }
 
+    @Test
+    public void testGenerator() throws Exception {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/examples/generator.silo");
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
 
+        Object o = runtime.eval("test");
+        Vector vector = (Vector)o;
+        Assert.assertEquals("first", vector.get(0));
+        Assert.assertEquals("second", vector.get(1));
     }
 }

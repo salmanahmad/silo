@@ -20,9 +20,19 @@ public class Fiber {
 
     public ExecutionContext context;
     public Function function;
+    public Object[] arguments;
 
-    public Fiber(Function function) {
+    public Object value;
+    public Object resumedArgument;
+
+    public Fiber(Function function, Object ... arguments) {
         this.context = new ExecutionContext();
+        this.context.currentFiber = this;
+
         this.function = function;
+        this.arguments = arguments;
+
+        this.value = null;
+        this.resumedArgument = null;
     }
 }

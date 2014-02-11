@@ -1,0 +1,24 @@
+
+function(
+    name(test) {
+        v : Vector = Vector()
+
+        f : fiber.Fiber = fiber.Fiber(generator, "first")
+        fiber.resume(f)
+        v#add(f.value)
+
+        fiber.resume(f, "second")
+        v#add(f.value)
+
+        return(v)
+    }
+)
+
+function(
+    name(generator)
+    inputs(s : String)
+    {
+        i : Object = fiber.yield(s)
+        fiber.yield(i)
+    }
+)
