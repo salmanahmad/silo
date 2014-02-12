@@ -33,7 +33,16 @@ public class Function {
     }
 
     Method methodHandle;
-    Object[] resumptionArgs;
+    Boolean isVarArgs;
+    int inputCount;
+
+    //Object[] resumptionArgs;
+
+    public Function() {
+        methodHandle = methodHandle(this.getClass());
+        isVarArgs = isVarArgs(this.getClass());
+        inputCount = methodHandle.getParameterTypes().length;
+    }
 
     public String getName() {
         throw new RuntimeException("Unimplemented");
@@ -64,6 +73,22 @@ public class Function {
         }
 
         varargs[size - 1] = vec;
+        return varargs;
+    }
+
+    public Object[] convertArgsToVarArgs(Object... args) {
+        Object[] varargs = new Object[inputCount];
+        IPersistentVector vec = PersistentVector.emptyVector();
+
+        for(int i = 0; i < args.length; i++) {
+            if(i < (inputCount - 1)) {
+                varargs[i] = args[i];
+            } else {
+                vec = vec.cons(args[i]);
+            }
+        }
+
+        varargs[inputCount - 1] = vec;
         return varargs;
     }
 
@@ -153,9 +178,32 @@ public class Function {
 
     public Object apply(ExecutionContext context, Object... args) {
         try {
-            return Runtime.doEval(this.getClass(), context, args);
+            Object[] actualArgs = new Object[args.length + 1];
+            System.arraycopy(args, 0, actualArgs, 1, args.length);
+            actualArgs[0] = context;
+            args = actualArgs;
+
+            if(isVarArgs) {
+                args = convertArgsToVarArgs(args);
+            }
+
+            context.beginCall();
+            Object output = methodHandle.invoke(null, args);
+            context.endCall();
+
+            return output;
+        } catch(java.lang.reflect.InvocationTargetException e) {
+            Throwable t = e.getCause();
+
+            if(t instanceof RuntimeException) {
+                throw (RuntimeException)t;
+            } else {
+                throw new RuntimeException(t);
+            }
         } catch(Exception e) {
-            throw new RuntimeException("Error occurred calling a method.");
+            // TODO: Better error handling.
+            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 
