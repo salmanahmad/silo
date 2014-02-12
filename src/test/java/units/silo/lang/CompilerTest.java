@@ -123,6 +123,20 @@ public class CompilerTest {
     }
 
     @Test
+    public void testConcatenation() {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/examples/concatenation-test.silo");
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+
+        Assert.assertEquals("HelloWorld", runtime.eval(classes.get(0)));
+        Assert.assertEquals("HelloWorld42", runtime.eval(classes.get(1)));
+        Assert.assertEquals("HelloWorld3.14159", runtime.eval(classes.get(2)));
+        Assert.assertEquals("HelloWorldtrue", runtime.eval(classes.get(3)));
+        Assert.assertEquals("HelloWorldnull", runtime.eval(classes.get(4)));
+        Assert.assertEquals("42HelloWorld42", runtime.eval(classes.get(5)));
+    }
+
+    @Test
     public void testBranch() {
         Runtime runtime = new Runtime();
         String source = Helper.readResource("/examples/branch.silo");

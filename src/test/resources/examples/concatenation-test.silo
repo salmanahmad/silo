@@ -1,0 +1,24 @@
+
+function({
+    "Hello" + "World"
+})
+
+function({
+    "HelloWorld" + 42
+})
+
+function({
+    "HelloWorld" + 3.14159
+})
+
+function({
+    "HelloWorld" + true
+})
+
+function({
+    "HelloWorld" + null
+})
+
+function({
+    42 + "HelloWorld" + 42
+})

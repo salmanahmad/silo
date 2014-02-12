@@ -36,6 +36,18 @@ public class Helper {
         return o1 == null ? o2 == null : o1.equals(o2);
     }
 
+    public static String concatStrings(Object s1, Object s2) {
+        if(s1 == null) {
+            s1 = "" + null;
+        }
+
+        if(s2 == null) {
+            s2 = "" + null;
+        }
+
+        return s1.toString() + s2.toString();
+    }
+
     public static String toQuotedString(Object o) {
         if(o == null) {
             return "null";

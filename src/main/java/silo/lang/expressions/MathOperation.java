@@ -23,13 +23,7 @@ public class MathOperation implements Expression {
 
     Node node;
 
-    // TODO: Figure out a way to remove or clean up these fields...
-    Expression e1;
-    Expression e2;
-    int operation;
-
     static HashMap<Symbol, Integer> opcodes = new HashMap<Symbol, Integer>();
-
     static {
         // TODO: Should I put the follow lines as well?
         //opcodes.put(new Symbol("add"), GeneratorAdapter.ADD);
@@ -50,7 +44,11 @@ public class MathOperation implements Expression {
         return false;
     }
 
-    public void process() {
+    public MathOperation(Node node) {
+        this.node = node;
+    }
+
+    public void validate() {
         if(node.getLabel() instanceof Symbol) {
             Symbol symbol = (Symbol)node.getLabel();
             Integer opcode = opcodes.get(symbol);
@@ -60,18 +58,11 @@ public class MathOperation implements Expression {
                     throw new RuntimeException("Binary operation '" + symbol + "' must have 2 operands.");
                 }
 
-                e1 = Compiler.buildExpression(node.getChildren().get(0));
-                e2 = Compiler.buildExpression(node.getChildren().get(1));
-                operation = opcode.intValue();
                 return;
             }
         }
 
         throw new RuntimeException("Invalid math operation.");
-    }
-
-    public MathOperation(Node node) {
-        this.node = node;
     }
 
     public static Class implicitConversion(Class klass1, Class klass2) {
@@ -99,8 +90,20 @@ public class MathOperation implements Expression {
     }
 
     public Class type(CompilationContext context) {
-        process();
-        return implicitConversion(this.e1.type(context), this.e2.type(context));
+        validate();
+
+        Class e1 = Compiler.buildExpression(node.getChildren().get(0)).type(context);
+        Class e2 = Compiler.buildExpression(node.getChildren().get(1)).type(context);
+
+        Class type = implicitConversion(e1, e2);
+
+        if(type == null) {
+            if(e1.equals(String.class) || e2.equals(String.class)) {
+                return String.class;
+            }
+        }
+
+        return type;
     }
 
     public Object scaffold(CompilationContext context) {
@@ -109,21 +112,43 @@ public class MathOperation implements Expression {
 
     public void emit(CompilationContext context) {
         // TODO: Autoboxing and Var support...
+        validate();
 
-        process();
+        Expression e1 = Compiler.buildExpression(node.getChildren().get(0));
+        Expression e2 = Compiler.buildExpression(node.getChildren().get(1));
+        int operation = opcodes.get((Symbol)node.getLabel()).intValue();
 
         Class outputType = type(context);
         Class operand = null;
 
-        this.e1.emit(context);
-        operand = context.currentFrame().operandStack.peek();
-        context.currentFrame().generator.cast(Type.getType(operand), Type.getType(outputType));
+        if(outputType == null) {
+            throw new RuntimeException("Invalid math operation between types: " + e1.type(context) + " and " + e2.type(context));
+        }
 
-        this.e2.emit(context);
-        operand = context.currentFrame().operandStack.peek();
-        context.currentFrame().generator.cast(Type.getType(operand), Type.getType(outputType));
+        if(outputType.equals(String.class)) {
+            // String Concatentation
 
-        context.currentFrame().generator.math(this.operation, Type.getType(outputType));
+            e1.emit(context);
+            operand = context.currentFrame().operandStack.peek();
+            context.currentFrame().generator.box(Type.getType(operand));
+
+            e2.emit(context);
+            operand = context.currentFrame().operandStack.peek();
+            context.currentFrame().generator.box(Type.getType(operand));
+
+            context.currentFrame().generator.invokeStatic(Type.getType(Helper.class), Method.getMethod("String concatStrings(Object, Object)"));
+        } else {
+            // Normal Math
+            e1.emit(context);
+            operand = context.currentFrame().operandStack.peek();
+            context.currentFrame().generator.cast(Type.getType(operand), Type.getType(outputType));
+
+            e2.emit(context);
+            operand = context.currentFrame().operandStack.peek();
+            context.currentFrame().generator.cast(Type.getType(operand), Type.getType(outputType));
+
+            context.currentFrame().generator.math(operation, Type.getType(outputType));
+        }
 
         context.currentFrame().operandStack.pop();
         context.currentFrame().operandStack.pop();
