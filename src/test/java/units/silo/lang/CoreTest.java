@@ -105,6 +105,15 @@ public class CoreTest {
         Assert.assertEquals("5", runtime.eval("bar0"));
         Assert.assertEquals("6", runtime.eval("bar1"));
     }
+
+    @Test
+    public void testTime() throws Exception {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/core-test/time.silo");
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+
+        Object o = runtime.eval("test");
+    }
 }
 
 
