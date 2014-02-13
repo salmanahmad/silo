@@ -1,0 +1,35 @@
+function({
+    "Hello" == "Hello"
+})
+
+function({
+    "Hello" == "Hi"
+})
+
+function({
+    "Hello" != "Hi"
+})
+
+function({
+    "Hello" != "Hello"
+})
+
+function({
+    null != "Hello"
+})
+
+function({
+    null == null
+})
+
+function({
+    null == "Hello"
+})
+
+function({
+    "Hello" == Integer(4)
+})
+
+function({
+    Integer(4) == Integer(4)
+})

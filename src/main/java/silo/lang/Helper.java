@@ -48,6 +48,22 @@ public class Helper {
         return s1.toString() + s2.toString();
     }
 
+    public static boolean areObjectsEqual(Object o1, Object o2) {
+        if(o1 == null) {
+            if(o2 == null) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        return o1.equals(o2);
+    }
+
+    public static boolean areObjectsNotEqual(Object o1, Object o2) {
+        return !areObjectsEqual(o1, o2);
+    }
+
     public static String toQuotedString(Object o) {
         if(o == null) {
             return "null";
