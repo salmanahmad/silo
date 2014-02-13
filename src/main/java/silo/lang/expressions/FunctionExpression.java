@@ -59,6 +59,10 @@ public class FunctionExpression implements Expression, Opcodes {
         for(Object child : node.getChildren()) {
             if(child instanceof Node) {
                 // TODO: Should this be null instead? Perhaps just node.getLastChild()? See grammar.g's comment about braces... Also see the comment in emit()
+                if(((Node)child).getLabel() == null) {
+                    continue;
+                }
+
                 if(((Node)child).getLabel().equals(new Symbol("do"))) {
                     continue;
                 }
@@ -72,6 +76,9 @@ public class FunctionExpression implements Expression, Opcodes {
         }
 
         Object body = node.getChildNode(new Symbol("do"));
+        if(body == null) {
+            body = node.getChildNode(null);
+        }
         if(body != null) {
             body = Compiler.buildExpression(body).scaffold(context);
             children.add(body);
@@ -147,6 +154,9 @@ public class FunctionExpression implements Expression, Opcodes {
 
         // TODO: Should this be null instead? Perhaps just node.getLastChild()? See grammar.g's comment about braces... Also see the comment in scaffold()
         tempNode = node.getChildNode(new Symbol("do"));
+        if(tempNode == null) {
+            tempNode = node.getChildNode(null);
+        }
         if(tempNode != null) {
             body = new Block(tempNode);
         }

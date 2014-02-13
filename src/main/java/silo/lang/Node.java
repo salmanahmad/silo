@@ -111,8 +111,14 @@ public class Node {
         for(Object child : children) {
             if(child instanceof Node) {
                 Node node = (Node)child;
-                if(node.getLabel().equals(name)) {
-                    return node;
+                if(node.getLabel() == null) {
+                    if(name == null) {
+                        return node;
+                    }
+                } else {
+                    if(node.getLabel().equals(name)) {
+                        return node;
+                    }
                 }
             }
         }
@@ -128,8 +134,14 @@ public class Node {
 
             if(child instanceof Node) {
                 Node node = (Node)child;
-                if(node.getLabel().equals(name)) {
-                    return node;
+                if(node.getLabel() == null) {
+                    if(name == null) {
+                        return node;
+                    }
+                } else {
+                    if(node.getLabel().equals(name)) {
+                        return node;
+                    }
                 }
             }
         }
@@ -207,7 +219,9 @@ public class Node {
         Object label = node.getLabel();
         if(label instanceof Node) {
             label = replaceSymbol((Node)label, target, replacement);
-        } else if(label.equals(target)) {
+        } else if(label == null && target == null) {
+            label = replacement;
+        } else if(label != null && label.equals(target)) {
             label = replacement;
         }
 

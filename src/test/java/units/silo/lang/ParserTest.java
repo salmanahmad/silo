@@ -202,35 +202,35 @@ public class ParserTest {
         Node e = null;
 
         n = Parser.parse("fn(a ... {})");
-        e = new Node(null, new Node(new Symbol("fn"), new Symbol("a"), new Symbol("..."), new Node(new Symbol("do"))));
+        e = new Node(null, new Node(new Symbol("fn"), new Symbol("a"), new Symbol("..."), new Node(null)));
         Assert.assertEquals(e, n);
 
         n = Parser.parse("fn(a ... => int {})");
-        e = new Node(null, new Node(new Symbol("fn"), new Symbol("a"), new Node(new Symbol("=>"), new Symbol("..."), new Symbol("int")), new Node(new Symbol("do"))));
+        e = new Node(null, new Node(new Symbol("fn"), new Symbol("a"), new Node(new Symbol("=>"), new Symbol("..."), new Symbol("int")), new Node(null)));
         Assert.assertEquals(e, n);
 
         n = Parser.parse("fn(a, ... {})");
-        e = new Node(null, new Node(new Symbol("fn"), new Symbol("a"), new Symbol("..."), new Node(new Symbol("do"))));
+        e = new Node(null, new Node(new Symbol("fn"), new Symbol("a"), new Symbol("..."), new Node(null)));
         Assert.assertEquals(e, n);
 
         n = Parser.parse("fn(a, ... => int {})");
-        e = new Node(null, new Node(new Symbol("fn"), new Symbol("a"), new Node(new Symbol("=>"), new Symbol("..."), new Symbol("int")), new Node(new Symbol("do"))));
+        e = new Node(null, new Node(new Symbol("fn"), new Symbol("a"), new Node(new Symbol("=>"), new Symbol("..."), new Symbol("int")), new Node(null)));
         Assert.assertEquals(e, n);
 
         n = Parser.parse("fn(a : int ... {})");
-        e = new Node(null, new Node(new Symbol("fn"), new Node(new Symbol(":"), new Symbol("a"), new Symbol("int")), new Symbol("..."), new Node(new Symbol("do"))));
+        e = new Node(null, new Node(new Symbol("fn"), new Node(new Symbol(":"), new Symbol("a"), new Symbol("int")), new Symbol("..."), new Node(null)));
         Assert.assertEquals(e, n);
 
         n = Parser.parse("fn(a : int ... => int {})");
-        e = new Node(null, new Node(new Symbol("fn"), new Node(new Symbol(":"), new Symbol("a"), new Symbol("int")), new Node(new Symbol("=>"), new Symbol("..."), new Symbol("int")), new Node(new Symbol("do"))));
+        e = new Node(null, new Node(new Symbol("fn"), new Node(new Symbol(":"), new Symbol("a"), new Symbol("int")), new Node(new Symbol("=>"), new Symbol("..."), new Symbol("int")), new Node(null)));
         Assert.assertEquals(e, n);
 
         n = Parser.parse("fn(a : int, ... {})");
-        e = new Node(null, new Node(new Symbol("fn"), new Node(new Symbol(":"), new Symbol("a"), new Symbol("int")), new Symbol("..."), new Node(new Symbol("do"))));
+        e = new Node(null, new Node(new Symbol("fn"), new Node(new Symbol(":"), new Symbol("a"), new Symbol("int")), new Symbol("..."), new Node(null)));
         Assert.assertEquals(e, n);
 
         n = Parser.parse("fn(a : int, ... => int {})");
-        e = new Node(null, new Node(new Symbol("fn"), new Node(new Symbol(":"), new Symbol("a"), new Symbol("int")), new Node(new Symbol("=>"), new Symbol("..."), new Symbol("int")), new Node(new Symbol("do"))));
+        e = new Node(null, new Node(new Symbol("fn"), new Node(new Symbol(":"), new Symbol("a"), new Symbol("int")), new Node(new Symbol("=>"), new Symbol("..."), new Symbol("int")), new Node(null)));
         Assert.assertEquals(e, n);
     }
 
@@ -240,15 +240,15 @@ public class ParserTest {
         Node e = null;
 
         n = Parser.parse("fn(null => String {})");
-        e = new Node(null, new Node(new Symbol("fn"), new Node(new Symbol("=>"), null, new Symbol("String")), new Node(new Symbol("do"))));
+        e = new Node(null, new Node(new Symbol("fn"), new Node(new Symbol("=>"), null, new Symbol("String")), new Node(null)));
         Assert.assertEquals(e, n);
 
         n = Parser.parse("fn(void => String {})");
-        e = new Node(null, new Node(new Symbol("fn"), new Node(new Symbol("=>"), new Symbol("void"), new Symbol("String")), new Node(new Symbol("do"))));
+        e = new Node(null, new Node(new Symbol("fn"), new Node(new Symbol("=>"), new Symbol("void"), new Symbol("String")), new Node(null)));
         Assert.assertEquals(e, n);
 
         n = Parser.parse("fn(=> String {})");
-        e = new Node(null, new Node(new Symbol("fn"), new Symbol("=>"), new Symbol("String"), new Node(new Symbol("do"))));
+        e = new Node(null, new Node(new Symbol("fn"), new Symbol("=>"), new Symbol("String"), new Node(null)));
         Assert.assertEquals(e, n);
     }
 }

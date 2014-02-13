@@ -227,9 +227,9 @@ symbol returns [Symbol value]
 
 blockExpression returns [Node value]
 // TODO: Should this return a node with a null label instead of do?
-  : OPEN_BRACE                         { $value = Node.withMeta(Helper.meta(fileName, $start.getLine(), $start.getCharPositionInLine()), new Symbol("do")); }
+  : OPEN_BRACE                         { $value = Node.withMeta(Helper.meta(fileName, $start.getLine(), $start.getCharPositionInLine()), null); }
     terminator?
-    ( expressions                      { $value = Node.withMeta(Helper.meta(fileName, $start.getLine(), $start.getCharPositionInLine()), new Symbol("do")); $value.addChildren($expressions.value.getChildren()); }
+    ( expressions                      { $value = Node.withMeta(Helper.meta(fileName, $start.getLine(), $start.getCharPositionInLine()), null); $value.addChildren($expressions.value.getChildren()); }
     )?
     terminator?
     CLOSE_BRACE
