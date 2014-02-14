@@ -1,0 +1,12 @@
+
+function({
+    map : HashMap = HashMap()
+    map#clear()
+})
+
+
+function({
+    map : HashMap = HashMap()
+    i : Object = map#clear()
+    return(i)
+})

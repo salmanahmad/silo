@@ -744,4 +744,14 @@ public class CompilerTest {
         Assert.assertEquals("the-string-is-null", runtime.eval("testNative"));
         Assert.assertEquals(null, runtime.eval("testInterop"));
     }
+
+    @Test
+    public void testVoid() {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/examples/void.silo");
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+
+        Assert.assertEquals(null, runtime.eval(classes.get(0)));
+        Assert.assertEquals(null, runtime.eval(classes.get(1)));
+    }
 }
