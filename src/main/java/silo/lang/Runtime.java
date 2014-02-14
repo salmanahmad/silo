@@ -15,6 +15,13 @@ import silo.lang.compiler.Parser;
 import silo.lang.compiler.Compiler;
 
 import java.util.Vector;
+import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
+
 import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
 
@@ -25,8 +32,13 @@ public class Runtime {
     // Runtime.compile(String) should be provided in some manner...
 
     public final RuntimeClassLoader loader;
-
     CompilationContext compilationContext;
+
+    ConcurrentHashMap<String, Actor> actors;
+    HashMap<String, Integer> scheduledActors;
+
+    ExecutorService actorExecutor;
+    ExecutorService backgroundExecutor;
 
     public Runtime() {
         this(new RuntimeClassLoader());
@@ -35,6 +47,29 @@ public class Runtime {
     public Runtime(RuntimeClassLoader loader) {
         this.loader = loader;
         this.compilationContext = new CompilationContext(this);
+
+        this.actors = new ConcurrentHashMap<String, Actor>();
+        this.scheduledActors = new HashMap<String, Integer>();
+
+        int nThreads = java.lang.Runtime.getRuntime().availableProcessors() * 2;
+        this.actorExecutor = Executors.newFixedThreadPool(nThreads);
+        this.backgroundExecutor = Executors.newCachedThreadPool();
+    }
+
+    public Future execute(Actor actor) {
+        return null;
+    }
+
+    public void sendMessage(String address, Object message) {
+        
+    }
+
+    public synchronized void schedule(Actor actor) {
+        
+    }
+
+    public synchronized void unschedule(Actor actor) {
+        
     }
 
     public Object eval(Node node) {
