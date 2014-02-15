@@ -11,6 +11,7 @@
 
 package silo.core.fiber;
 
+import silo.lang.Actor;
 import silo.lang.ExecutionContext;
 import silo.lang.Function;
 
@@ -22,6 +23,8 @@ public class Fiber {
 
     public Object value;
     public Object resumedArgument;
+
+    public Actor actor;
 
     public Fiber(Function function, Object ... arguments) {
         this.context = new ExecutionContext();

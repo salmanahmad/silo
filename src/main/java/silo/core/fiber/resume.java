@@ -11,6 +11,7 @@
 
 package silo.core.fiber;
 
+import silo.lang.Actor;
 import silo.lang.ExecutionContext;
 import silo.lang.ExecutionFrame;
 import silo.lang.Function;
@@ -29,19 +30,28 @@ public class resume extends Function {
         // and dispatch "apply" on that number in a performant manner.
 
         // TODO: Handle exception handling here.
-        Fiber existingFiber = context.currentActor.fiber;
+        Fiber existingFiber = context.fiber;
+        Actor existingActor = fiber.actor;
+
+        Object output = null;
 
         try {
-            context.currentActor.fiber = fiber;
+            existingActor.fiber = fiber;
+            fiber.actor = existingActor;
 
             fiber.resumedArgument = vector.nth(0, null);
-            Object o = fiber.function.apply(fiber.context, fiber.arguments);
-
+            output = fiber.function.apply(fiber.context, fiber.arguments);
+        } finally {
             if(!fiber.context.yielding) {
                 fiber.value = o;
+            } else {
+                // TODO: If the current fiber is yielding, that means that existingFiber should
+                // yield as well. However, I need to figure out how to make sure that I update
+                // this method so that I properly handles resumption. Also, I probably need to
+                // check that "existingFiber != fiber"
             }
-        } finally {
-            context.currentActor.fiber = existingFiber;
+
+            existingActor.fiber = existingFiber;
         }
 
         // TODO: Make fibers immutable...

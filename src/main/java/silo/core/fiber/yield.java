@@ -23,12 +23,15 @@ public class yield extends Function {
 
     @Function.Body
     public static Object invoke(ExecutionContext context, IPersistentVector args) {
-        Fiber fiber = context.currentActor.fiber;
+        Fiber fiber = context.fiber;
 
         switch(context.programCounter) {
             case -1:
+                // TODO: What if I want to yield and let another actor execute rather than return control back completely?
+                // Perhaps that should be in actor.yield() as opposed to fiber.yield()?
+
                 // TODO: Enable this...
-                //actor.acknowledgeAttempts()
+                fiber.actor.acknowledgeAttempts();
 
                 if(fiber != null) {
                     fiber.value = args.nth(0, null);

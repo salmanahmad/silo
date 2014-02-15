@@ -38,7 +38,7 @@ public class Actor implements Runnable {
         this.address = address;
         this.fiber = fiber;
 
-        this.fiber.context.currentActor = this;
+        this.fiber.actor = this;
     }
 
     public synchronized boolean inboxEmpty() {
