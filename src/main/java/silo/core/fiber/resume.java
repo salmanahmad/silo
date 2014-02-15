@@ -30,28 +30,13 @@ public class resume extends Function {
         // and dispatch "apply" on that number in a performant manner.
 
         // TODO: Handle exception handling here.
-        Fiber existingFiber = context.fiber;
-        Actor existingActor = fiber.actor;
+        fiber.actor = context.fiber.actor;
 
-        Object output = null;
+        fiber.resumedArgument = vector.nth(0, null);
+        Object output = fiber.function.apply(fiber.context, fiber.arguments);
 
-        try {
-            existingActor.fiber = fiber;
-            fiber.actor = existingActor;
-
-            fiber.resumedArgument = vector.nth(0, null);
-            output = fiber.function.apply(fiber.context, fiber.arguments);
-        } finally {
-            if(!fiber.context.yielding) {
-                fiber.value = o;
-            } else {
-                // TODO: If the current fiber is yielding, that means that existingFiber should
-                // yield as well. However, I need to figure out how to make sure that I update
-                // this method so that I properly handles resumption. Also, I probably need to
-                // check that "existingFiber != fiber"
-            }
-
-            existingActor.fiber = existingFiber;
+        if(!fiber.context.yielding) {
+            fiber.value = output;
         }
 
         // TODO: Make fibers immutable...

@@ -13,6 +13,9 @@
 import org.junit.*;
 import java.util.*;
 
+import silo.core.fiber.Fiber;
+import silo.core.fiber.resume;
+
 import silo.lang.Runtime;
 import silo.lang.*;
 import silo.lang.compiler.*;
@@ -24,6 +27,8 @@ import org.objectweb.asm.Type;
 import java.io.PrintStream;
 import java.io.ByteArrayOutputStream;
 
+import com.github.krukow.clj_lang.PersistentVector;
+
 public class FiberTest {
 
     @Test
@@ -32,12 +37,13 @@ public class FiberTest {
         String source = Helper.readResource("/fiber-test/yield.silo");
         Vector<Class> classes = runtime.compile(Parser.parse(source));
 
-        ExecutionContext fiber = new ExecutionContext();
+        Fiber fiber = new Fiber((Function)runtime.loader.loadClass("a").newInstance());
 
-        Class a = runtime.loader.loadClass("a");
+        resume.invoke(fiber.context, fiber, PersistentVector.emptyVector());
+        Assert.assertEquals(null, fiber.value);
 
-        Assert.assertEquals(null, runtime.doEval(a, fiber));
-        Assert.assertEquals("a", runtime.doEval(a, fiber));
+        resume.invoke(fiber.context, fiber, PersistentVector.emptyVector());
+        Assert.assertEquals("a", fiber.value);
     }
 
     @Test
@@ -51,12 +57,15 @@ public class FiberTest {
 
         PrintStream oldOut = System.out;
 
+        Fiber fiber = null;
+
         try {
             ByteArrayOutputStream os = new ByteArrayOutputStream();
             PrintStream ps = new PrintStream(os);
             System.setOut(ps);
 
-            runtime.eval("start");
+            fiber = new Fiber((Function)runtime.loader.loadClass("start").newInstance());
+            resume.invoke(fiber.context, fiber, PersistentVector.emptyVector());
             Assert.assertEquals(start, os.toString());
 
 
@@ -65,7 +74,8 @@ public class FiberTest {
             ps = new PrintStream(os);
             System.setOut(ps);
 
-            runtime.eval("finish");
+            fiber = new Fiber((Function)runtime.loader.loadClass("finish").newInstance());
+            resume.invoke(fiber.context, fiber, PersistentVector.emptyVector());
             Assert.assertEquals(finish, os.toString());
         } finally {
             System.setOut(oldOut);
@@ -78,8 +88,10 @@ public class FiberTest {
         String source = Helper.readResource("/fiber-test/generator.silo");
         Vector<Class> classes = runtime.compile(Parser.parse(source));
 
-        Object o = runtime.eval("test");
-        Vector vector = (Vector)o;
+        Fiber fiber = new Fiber((Function)runtime.loader.loadClass("test").newInstance());
+        resume.invoke(fiber.context, fiber, PersistentVector.emptyVector());
+
+        Vector vector = (Vector)fiber.value;
         Assert.assertEquals("first", vector.get(0));
         Assert.assertEquals("second", vector.get(1));
     }

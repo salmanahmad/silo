@@ -30,8 +30,12 @@ public class yield extends Function {
                 // TODO: What if I want to yield and let another actor execute rather than return control back completely?
                 // Perhaps that should be in actor.yield() as opposed to fiber.yield()?
 
-                // TODO: Enable this...
-                fiber.actor.acknowledgeAttempts();
+                if(fiber.actor != null && fiber.actor.fiber == fiber) {
+                    // Only acknowledgeAttempts and yield if the fiber is the actor's main fiber
+                    // otherwise when I fiber yields it will not yield back control to the calling
+                    // fiber but pause all execution, which is not what we want.
+                    fiber.actor.acknowledgeAttempts();
+                }
 
                 if(fiber != null) {
                     fiber.value = args.nth(0, null);

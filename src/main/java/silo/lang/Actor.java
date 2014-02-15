@@ -29,6 +29,7 @@ public class Actor implements Runnable {
 
     boolean done = false;
     boolean running = false;
+    boolean yielding = false;
 
     int scheduleAttempts = 0;
     int acknowledgedAttempt = 0;
@@ -95,6 +96,10 @@ public class Actor implements Runnable {
         acknowledgedAttempt = scheduleAttempts;
     }
 
+    public synchronized void yield() {
+        this.yielding = true;
+    }
+
     public synchronized void schedule() {
         if(done) {
             return;
@@ -104,6 +109,7 @@ public class Actor implements Runnable {
             scheduleAttempts++;
         } else {
             this.running = true;
+            this.yielding = false;
             this.runtime.actorExecutor.submit(this);
         }
     }
@@ -138,6 +144,12 @@ public class Actor implements Runnable {
                     runtime.actors.remove(address);
                     this.notifyAll();
                 }
+            }
+        }
+
+        synchronized(this) {
+            if(this.yielding) {
+                schedule();
             }
         }
     }

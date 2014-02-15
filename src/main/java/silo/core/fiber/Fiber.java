@@ -28,6 +28,7 @@ public class Fiber {
 
     public Fiber(Function function, Object ... arguments) {
         this.context = new ExecutionContext();
+        this.context.fiber = this;
 
         this.function = function;
         this.arguments = arguments;
