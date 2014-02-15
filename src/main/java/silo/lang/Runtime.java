@@ -14,6 +14,7 @@ package silo.lang;
 import silo.lang.compiler.Parser;
 import silo.lang.compiler.Compiler;
 
+import java.util.UUID;
 import java.util.Vector;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
@@ -25,6 +26,9 @@ import java.util.concurrent.FutureTask;
 import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
 
+// TODO: move Fiber into silo.lang
+import silo.core.fiber.Fiber;
+
 public class Runtime {
 
     // TODO: Should this handle and manage which files have been required to avoid redefining and compiling stuff?
@@ -34,11 +38,9 @@ public class Runtime {
     public final RuntimeClassLoader loader;
     CompilationContext compilationContext;
 
-    ConcurrentHashMap<String, Actor> actors;
-    HashMap<String, Integer> scheduledActors;
-
-    ExecutorService actorExecutor;
-    ExecutorService backgroundExecutor;
+    public ConcurrentHashMap<String, Actor> actors;
+    public ExecutorService actorExecutor;
+    public ExecutorService backgroundExecutor;
 
     public Runtime() {
         this(new RuntimeClassLoader());
@@ -48,28 +50,22 @@ public class Runtime {
         this.loader = loader;
         this.compilationContext = new CompilationContext(this);
 
-        this.actors = new ConcurrentHashMap<String, Actor>();
-        this.scheduledActors = new HashMap<String, Integer>();
-
         int nThreads = java.lang.Runtime.getRuntime().availableProcessors() * 2;
+        this.actors = new ConcurrentHashMap<String, Actor>();
         this.actorExecutor = Executors.newFixedThreadPool(nThreads);
         this.backgroundExecutor = Executors.newCachedThreadPool();
     }
 
-    public Future execute(Actor actor) {
-        return null;
+    public Actor spawn(Function function, Object ... arguments) {
+        return spawn(UUID.randomUUID().toString(), function, arguments);
     }
 
-    public void sendMessage(String address, Object message) {
-        
-    }
+    public Actor spawn(String address, Function function, Object ... arguments) {
+        Actor actor = new Actor(this, address, new Fiber(function, arguments));
+        this.actors.put(address, actor);
+        actor.schedule();
 
-    public synchronized void schedule(Actor actor) {
-        
-    }
-
-    public synchronized void unschedule(Actor actor) {
-        
+        return actor;
     }
 
     public Object eval(Node node) {

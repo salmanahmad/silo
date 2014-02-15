@@ -28,8 +28,21 @@ public class resume extends Function {
         // TODO: Invoke should look at the list of arguments stored in Fiber
         // and dispatch "apply" on that number in a performant manner.
 
-        fiber.resumedArgument = vector.nth(0, null);
-        fiber.function.apply(fiber.context, fiber.arguments);
+        // TODO: Handle exception handling here.
+        Fiber existingFiber = context.currentActor.fiber;
+
+        try {
+            context.currentActor.fiber = fiber;
+
+            fiber.resumedArgument = vector.nth(0, null);
+            Object o = fiber.function.apply(fiber.context, fiber.arguments);
+
+            if(!fiber.context.yielding) {
+                fiber.value = o;
+            }
+        } finally {
+            context.currentActor.fiber = existingFiber;
+        }
 
         // TODO: Make fibers immutable...
         return fiber;

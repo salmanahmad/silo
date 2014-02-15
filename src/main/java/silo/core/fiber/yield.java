@@ -23,10 +23,13 @@ public class yield extends Function {
 
     @Function.Body
     public static Object invoke(ExecutionContext context, IPersistentVector args) {
-        Fiber fiber = context.currentFiber;
+        Fiber fiber = context.currentActor.fiber;
 
         switch(context.programCounter) {
             case -1:
+                // TODO: Enable this...
+                //actor.acknowledgeAttempts()
+
                 if(fiber != null) {
                     fiber.value = args.nth(0, null);
                 }
@@ -40,6 +43,7 @@ public class yield extends Function {
             default:
                 context.setCurrentFrame(null);
                 context.yielding = false;
+
                 if(fiber != null) {
                     return fiber.resumedArgument;
                 } else {

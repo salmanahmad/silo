@@ -16,8 +16,6 @@ import silo.lang.Function;
 
 public class Fiber {
 
-    // TODO: Fiber should accept a list of arguments that can stored
-
     public ExecutionContext context;
     public Function function;
     public Object[] arguments;
@@ -27,7 +25,6 @@ public class Fiber {
 
     public Fiber(Function function, Object ... arguments) {
         this.context = new ExecutionContext();
-        this.context.currentFiber = this;
 
         this.function = function;
         this.arguments = arguments;

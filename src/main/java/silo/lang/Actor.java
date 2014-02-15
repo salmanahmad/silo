@@ -13,20 +13,32 @@ package silo.lang;
 
 import java.util.ArrayDeque;
 
-public class Actor {
-    String address;
-    ExecutionContext context;
+// TODO: move Fiber into silo.lang
+import silo.core.fiber.Fiber;
+
+import com.github.krukow.clj_lang.IPersistentVector;
+import com.github.krukow.clj_lang.PersistentVector;
+
+public class Actor implements Runnable {
+    public Runtime runtime;
+    public String address;
+    public Fiber fiber;
 
     ArrayDeque inbox = new ArrayDeque();
     ArrayDeque drain = new ArrayDeque();
 
-    public Actor(String address, ExecutionContext context) {
-        this.address = address;
-        this.context = context;
-    }
+    boolean done = false;
+    boolean running = false;
 
-    public String address() {
-        return address;
+    int scheduleAttempts = 0;
+    int acknowledgedAttempt = 0;
+
+    public Actor(Runtime runtime, String address, Fiber fiber) {
+        this.runtime = runtime;
+        this.address = address;
+        this.fiber = fiber;
+
+        this.fiber.context.currentActor = this;
     }
 
     public synchronized boolean inboxEmpty() {
@@ -35,6 +47,7 @@ public class Actor {
 
     public synchronized Object inboxPeek() {
         if(inbox.size() == 0) {
+            acknowledgeAttempts();
             // TODO: Block the execution context and go to sleep
             return null;
         } else {
@@ -44,6 +57,7 @@ public class Actor {
 
     public synchronized Object inboxSkip() {
         if(inbox.size() == 0) {
+            acknowledgeAttempts();
             // TODO: Block the execution context and go to sleep
             return null;
         } else {
@@ -56,6 +70,7 @@ public class Actor {
 
     public synchronized Object inboxGet() {
         if(inbox.size() == 0) {
+            acknowledgeAttempts();
             // TODO: Block the execution context and go to sleep
             return null;
         } else {
@@ -72,6 +87,72 @@ public class Actor {
 
     public synchronized Object inboxPut(Object value) {
         inbox.addFirst(value);
+        schedule();
         return value;
+    }
+
+    public synchronized void acknowledgeAttempts() {
+        acknowledgedAttempt = scheduleAttempts;
+    }
+
+    public synchronized void schedule() {
+        if(done) {
+            return;
+        }
+
+        if(running) {
+            scheduleAttempts++;
+        } else {
+            this.running = true;
+            this.runtime.actorExecutor.submit(this);
+        }
+    }
+
+    public synchronized boolean shouldRun() {
+        if(done) {
+            return false;
+        }
+
+        if(acknowledgedAttempt == scheduleAttempts) {
+            running = false;
+            acknowledgedAttempt = 0;
+            scheduleAttempts = 0;
+
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    public void run() {
+        boolean firstTime = true;
+
+        while(firstTime || shouldRun()) {
+            firstTime = false;
+
+            silo.core.fiber.resume.invoke(fiber.context, fiber, PersistentVector.emptyVector());
+
+            if(!fiber.context.yielding) {
+                synchronized(this) {
+                    done = true;
+                    runtime.actors.remove(address);
+                    this.notifyAll();
+                }
+            }
+        }
+    }
+
+    public Object await() {
+        synchronized(this) {
+            while(!done) {
+                try {
+                    this.wait();
+                } catch(InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+
+        return fiber.value;
     }
 }

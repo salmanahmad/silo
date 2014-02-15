@@ -14,8 +14,6 @@ package silo.lang;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 
-import silo.core.fiber.Fiber;
-
 public class ExecutionContext {
 
     public final int RUNNING = 1;
@@ -29,7 +27,7 @@ public class ExecutionContext {
     public boolean yielding = false;
     public int programCounter = -1;
 
-    public Fiber currentFiber;
+    public Actor currentActor;
 
     public void beginCall() {
         // We are beginning a new call so obviously we are not yielding anymore...
