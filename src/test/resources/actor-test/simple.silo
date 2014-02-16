@@ -1,0 +1,18 @@
+
+func(foo() {
+    sender : String = checkcast(String, actor.read())
+    message : String = checkcast(String, actor.read())
+    message = String.format("You said: %s", message)
+
+    actor.send(sender, message)
+})
+
+func(bar() {
+    myPid : String = actor.self()
+    pid : String = actor.spawn(foo)
+
+    actor.send(pid, myPid)
+    actor.send(pid, "Hello!")
+
+    actor.read()
+})

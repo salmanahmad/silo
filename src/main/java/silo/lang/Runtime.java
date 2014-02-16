@@ -56,6 +56,20 @@ public class Runtime {
         this.backgroundExecutor = Executors.newCachedThreadPool();
     }
 
+    public Actor spawn(String fullyQualifiedFunctionName, Object ... arguments) {
+        try {
+            // TODO: What if klass is a type and not a function?
+            Class klass = loader.loadClass(fullyQualifiedFunctionName);
+            return spawn(UUID.randomUUID().toString(), (Function)(klass.newInstance()), arguments);
+        } catch(ClassNotFoundException e) {
+            throw new RuntimeException("Could not load function: " + fullyQualifiedFunctionName);
+        } catch(Exception e) {
+            // TODO: Better error handling.
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+    }
+
     public Actor spawn(Function function, Object ... arguments) {
         return spawn(UUID.randomUUID().toString(), function, arguments);
     }

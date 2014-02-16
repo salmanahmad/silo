@@ -46,20 +46,28 @@ public class Actor implements Runnable {
         return inbox.size() == 0;
     }
 
-    public synchronized Object inboxPeek() {
+    private void block(ExecutionContext context) {
+        ExecutionFrame frame = new ExecutionFrame();
+        frame.programCounter = 0;
+
+        context.setCurrentFrame(frame);
+        context.yielding = true;
+    }
+
+    public synchronized Object inboxPeek(ExecutionContext context) {
         if(inbox.size() == 0) {
             acknowledgeAttempts();
-            // TODO: Block the execution context and go to sleep
+            block(context);
             return null;
         } else {
             return inbox.getLast();
         }
     }
 
-    public synchronized Object inboxSkip() {
+    public synchronized Object inboxSkip(ExecutionContext context) {
         if(inbox.size() == 0) {
             acknowledgeAttempts();
-            // TODO: Block the execution context and go to sleep
+            block(context);
             return null;
         } else {
             Object o = inbox.removeLast();
@@ -69,10 +77,10 @@ public class Actor implements Runnable {
         }
     }
 
-    public synchronized Object inboxGet() {
+    public synchronized Object inboxGet(ExecutionContext context) {
         if(inbox.size() == 0) {
             acknowledgeAttempts();
-            // TODO: Block the execution context and go to sleep
+            block(context);
             return null;
         } else {
             Object o = inbox.removeLast();
@@ -116,6 +124,11 @@ public class Actor implements Runnable {
 
     public synchronized boolean shouldRun() {
         if(done) {
+            return false;
+        }
+
+        // TODO: Is this correct?
+        if(yielding) {
             return false;
         }
 
