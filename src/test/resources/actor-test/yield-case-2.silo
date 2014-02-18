@@ -1,0 +1,22 @@
+
+func(foo() {
+    i : int = 0
+    while(i < 4 {
+        println("foo")
+        i = i + 1
+
+        actor.yield()
+    })
+})
+
+func(main() {
+    actor.spawn(foo)
+
+    i : int = 0
+    while(i < 4 {
+        println("main")
+        i = i + 1
+
+        actor.yield()
+    })
+})

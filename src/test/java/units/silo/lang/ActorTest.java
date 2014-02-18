@@ -53,6 +53,43 @@ public class ActorTest {
         Actor bar = runtime.spawn("main");
         Assert.assertEquals(110, bar.await());
     }
+
+    @Test
+    public void testYield() throws Exception {
+        Runtime runtime = null;
+        String source = null;
+
+        ByteArrayOutputStream os = null;
+        PrintStream ps = null;
+
+        PrintStream oldOut = System.out;
+
+        try {
+            os = new ByteArrayOutputStream();
+            ps = new PrintStream(os);
+            System.setOut(ps);
+
+            runtime = new Runtime(new RuntimeClassLoader(), 1);
+            source = Helper.readResource("/actor-test/yield-case-1.silo");
+            runtime.compile(Parser.parse(source));
+            runtime.spawn("main").await();
+            Assert.assertEquals("main\nmain\nmain\nmain\nfoo\nfoo\nfoo\nfoo\n", os.toString());
+
+
+
+            os = new ByteArrayOutputStream();
+            ps = new PrintStream(os);
+            System.setOut(ps);
+
+            runtime = new Runtime(new RuntimeClassLoader(), 1);
+            source = Helper.readResource("/actor-test/yield-case-2.silo");
+            runtime.compile(Parser.parse(source));
+            runtime.spawn("main").await();
+            Assert.assertEquals("main\nfoo\nmain\nfoo\nmain\nfoo\nmain\nfoo\n", os.toString());
+        } finally {
+            System.setOut(oldOut);
+        }
+    }
 }
 
 

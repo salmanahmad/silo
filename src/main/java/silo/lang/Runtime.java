@@ -43,14 +43,13 @@ public class Runtime {
     public ExecutorService backgroundExecutor;
 
     public Runtime() {
-        this(new RuntimeClassLoader());
+        this(new RuntimeClassLoader(), java.lang.Runtime.getRuntime().availableProcessors() * 2);
     }
 
-    public Runtime(RuntimeClassLoader loader) {
+    public Runtime(RuntimeClassLoader loader, int nThreads) {
         this.loader = loader;
         this.compilationContext = new CompilationContext(this);
 
-        int nThreads = java.lang.Runtime.getRuntime().availableProcessors() * 2;
         this.actors = new ConcurrentHashMap<String, Actor>();
         this.actorExecutor = Executors.newFixedThreadPool(nThreads);
         this.backgroundExecutor = Executors.newCachedThreadPool();

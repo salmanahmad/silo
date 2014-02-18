@@ -105,6 +105,7 @@ public class Actor implements Runnable {
     }
 
     public synchronized void yield() {
+        this.running = false;
         this.yielding = true;
     }
 
@@ -127,7 +128,6 @@ public class Actor implements Runnable {
             return false;
         }
 
-        // TODO: Is this correct?
         if(yielding) {
             return false;
         }
