@@ -1,0 +1,10 @@
+
+func(foo(pid : String, message : String) {
+    message = "You said: " + message
+    actor.send(pid, message)
+})
+
+func(main() {
+    actor.spawn(foo, actor.self(), "Hello, World!")
+    actor.read()
+})

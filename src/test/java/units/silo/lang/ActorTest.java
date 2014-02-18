@@ -90,6 +90,15 @@ public class ActorTest {
             System.setOut(oldOut);
         }
     }
+
+    @Test
+    public void testArgs() throws Exception {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/actor-test/args.silo");
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+
+        Assert.assertEquals("You said: Hello, World!", runtime.spawn("main").await());
+    }
 }
 
 
