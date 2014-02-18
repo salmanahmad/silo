@@ -1,0 +1,47 @@
+
+
+func(pong {
+    mainPid : String = checkcast(String, actor.read())
+    pingPid : String = checkcast(String, actor.read())
+
+    while(true {
+        message : Integer = checkcast(Integer, actor.read())
+        i : int = message#intValue()
+        i = i * 2
+
+        actor.send(pingPid, Integer(i))
+    })
+})
+
+func(ping {
+    mainPid : String = checkcast(String, actor.read())
+    pongPid : String = checkcast(String, actor.read())
+
+    i : int = 10
+    result : int = 0
+
+    while(i != 0 {
+        actor.send(pongPid, Integer(i))
+        message : Integer = checkcast(Integer, actor.read())
+
+        result = result + message#intValue()
+
+        i = i - 1
+    })
+
+    actor.send(mainPid, Integer(result))
+})
+
+func(main {
+    mainPid : String = actor.self()
+    pongPid : String = actor.spawn(pong)
+    pingPid : String = actor.spawn(ping)
+
+    actor.send(pongPid, mainPid)
+    actor.send(pingPid, mainPid)
+
+    actor.send(pongPid, pingPid)
+    actor.send(pingPid, pongPid)
+
+    actor.read()
+})

@@ -43,6 +43,16 @@ public class ActorTest {
         // Check that await does not block again...
         Assert.assertEquals("You said: Hello!", bar.await());
     }
+
+    @Test
+    public void testPingPong() throws Exception {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/actor-test/pingpong.silo");
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+
+        Actor bar = runtime.spawn("main");
+        Assert.assertEquals(110, bar.await());
+    }
 }
 
 
