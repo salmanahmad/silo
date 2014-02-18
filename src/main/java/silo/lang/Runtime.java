@@ -56,6 +56,11 @@ public class Runtime {
         this.backgroundExecutor = Executors.newCachedThreadPool();
     }
 
+    public void shutdown() {
+        actorExecutor.shutdown();
+        backgroundExecutor.shutdown();
+    }
+
     public Actor spawn(String fullyQualifiedFunctionName, Object ... arguments) {
         try {
             // TODO: What if klass is a type and not a function?

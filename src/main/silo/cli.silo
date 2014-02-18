@@ -43,8 +43,14 @@ func(run(file_ : Object) {
 
     runtime : Runtime = Runtime();
     classes : Vector = runtime#compile(code)
+
     c : Class = checkcast(java.lang.Class, classes#get(classes#size() - 1))
-    runtime#eval(c)
+    f : Function = checkcast(Function, c#newInstance())
+
+    a : silo.lang.Actor = runtime#spawn(f)
+    a#await()
+
+    runtime#shutdown()
 })
 
 func(compile(file_ : Object) {
