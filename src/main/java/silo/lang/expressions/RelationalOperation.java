@@ -109,7 +109,7 @@ public class RelationalOperation implements Expression {
                 // Illegal Case
                 throw new RuntimeException("Invalid relational operation between " + operand1 + " and " + operand2);
             } else {
-                // Object Comparison
+                // Object Equality Comparison
                 e1.emit(context);
                 e2.emit(context);
 
@@ -118,7 +118,23 @@ public class RelationalOperation implements Expression {
                 } else if(operation == GeneratorAdapter.NE) {
                     context.currentFrame().generator.invokeStatic(Type.getType(Helper.class), Method.getMethod("boolean areObjectsNotEqual(Object, Object)"));
                 } else {
-                    throw new RuntimeException("Invalid relational operation between " + operand1 + " and " + operand2);
+                    // Object Relational Comparison
+
+                    if(operand1.equals(operand2) && (Comparable.class.isAssignableFrom(operand1))) {
+                        if(operation == GeneratorAdapter.LT) {
+                            context.currentFrame().generator.invokeStatic(Type.getType(Helper.class), Method.getMethod("boolean compareToLessThan(Object, Object)"));
+                        } else if(operation == GeneratorAdapter.LE) {
+                            context.currentFrame().generator.invokeStatic(Type.getType(Helper.class), Method.getMethod("boolean compareToLessThanEqual(Object, Object)"));
+                        } else if(operation == GeneratorAdapter.GT) {
+                            context.currentFrame().generator.invokeStatic(Type.getType(Helper.class), Method.getMethod("boolean compareToGreaterThan(Object, Object)"));
+                        } else if(operation == GeneratorAdapter.GE) {
+                            context.currentFrame().generator.invokeStatic(Type.getType(Helper.class), Method.getMethod("boolean compareToGreaterThanEqual(Object, Object)"));
+                        } else {
+                            throw new RuntimeException("Invalid relational operation between " + operand1 + " and " + operand2);
+                        }
+                    } else {
+                        throw new RuntimeException("Invalid relational operation between " + operand1 + " and " + operand2);
+                    }
                 }
             }
         } else {

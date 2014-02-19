@@ -64,6 +64,22 @@ public class Helper {
         return !areObjectsEqual(o1, o2);
     }
 
+    public static boolean compareToLessThan(Object o1, Object o2) {
+        return ((Comparable)o1).compareTo(o2) < 0;
+    }
+
+    public static boolean compareToLessThanEqual(Object o1, Object o2) {
+        return ((Comparable)o1).compareTo(o2) <= 0;
+    }
+
+    public static boolean compareToGreaterThan(Object o1, Object o2) {
+        return ((Comparable)o1).compareTo(o2) > 0;
+    }
+
+    public static boolean compareToGreaterThanEqual(Object o1, Object o2) {
+        return ((Comparable)o1).compareTo(o2) >= 0;
+    }
+
     public static String toQuotedString(Object o) {
         if(o == null) {
             return "null";

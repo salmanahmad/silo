@@ -1,0 +1,32 @@
+
+function({
+    "a" < "b"
+})
+
+function({
+    "a" <= "b"
+})
+
+function({
+    "a" > "b"
+})
+
+function({
+    "a" >= "b"
+})
+
+function({
+    Integer(1) < Integer(2)
+})
+
+function({
+    Integer(1) <= Integer(2)
+})
+
+function({
+    Integer(1) > Integer(2)
+})
+
+function({
+    Integer(1) >= Integer(2)
+})
