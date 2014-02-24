@@ -19,6 +19,10 @@ public class PersistentMap {
 
     public final IPersistentMap map;
 
+    public PersistentMap() {
+        this.map = PersistentHashMap.emptyMap();
+    }
+
     public PersistentMap(IPersistentMap map) {
         this.map = map;
     }
@@ -37,6 +41,10 @@ public class PersistentMap {
 
     public Object get(Object key, Object notFound) {
         return map.valAt(key, notFound);
+    }
+
+    public PersistentMap set(Object key, Object value) {
+        return new PersistentMap(map.assoc(key, value));
     }
 
     public String toString() {

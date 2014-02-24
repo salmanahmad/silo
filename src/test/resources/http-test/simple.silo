@@ -1,0 +1,42 @@
+
+// silo.net.https for HTTP over TLS/SSL. Same API.
+import(silo.net.http)
+
+func(handler(c : Connection) {
+    // version
+    // headers
+    // method
+    // url (I may need to use urlParse to parse out the different components - http://nodejs.org/api/http.html#http_message_url)
+    // request / body (stream or buffer)
+    // Event: close
+
+    // status
+    // headers
+    // write / send / send_chunked
+    // end
+    // Event: close
+    // Event: finish
+
+    // What if I spawn this?
+    // message : String = connection.read(conn)
+})
+
+//options : PersistentMap = map(
+//    "port" : 8080
+//    "readTimeout" : null
+//    "writeTimeout" : null
+//    "headerCount" : null
+//    // "key" : null
+//    // "cert" : null
+//)
+
+server : Server = createServer(handler, options)
+
+// Start the server on port 8080
+start(server)
+
+// Block the actor from returning until we send it a message
+actor.read()
+
+// Stop the server
+stop(server)
