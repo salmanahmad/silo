@@ -274,7 +274,7 @@ public class Assign implements Expression {
                 }
 
                 Class klass = Compiler.resolveType(structure, context);
-                if(klass == null) {
+                if(klass != null) {
                     performStaticPutField((Symbol)field, klass, valueClass, typeClass, context);
                     return;
                 }

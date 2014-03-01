@@ -127,6 +127,7 @@ public class CompilationContext {
         this.currentNamespace().imports.add("silo.core");
         this.currentNamespace().aliases.put("Function", "silo.lang.Function");
         this.currentNamespace().aliases.put("IPersistentVector", "com.github.krukow.clj_lang.IPersistentVector");
+        this.currentNamespace().aliases.put("PersistentMap", "com.github.krukow.clj_lang.IPersistentMap");
         this.currentNamespace().aliases.put("RT", "com.github.krukow.clj_lang.RT");
     }
 }

@@ -152,7 +152,7 @@ public class HttpServerHandler extends SimpleChannelInboundHandler {
                 message = HttpContentMessage.normalContentMessage(connection.connectionId, content);
             }
 
-            //this.actor.inboxPut(message);
+            this.actor.inboxPut(message);
 
             // TODO: How do I know when to close the connection?
             //if(!writeResponse(trailer, ctx)) {
