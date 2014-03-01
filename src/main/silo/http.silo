@@ -16,12 +16,46 @@ package(silo.net.http.connection {
         throw("Unimplemented Close")
     })
 
-    func(read(c : Connection) {
-        throw("Unimplemented Read")
+    func(read(c : Connection => HttpContentMessage) {
+        if(c.doneReading {
+            return(null)
+        })
+
+        while(true {
+            o : Object = actor.peek()
+
+            if(instanceof(HttpContentMessage, o) {
+                message : HttpContentMessage = checkcast(HttpContentMessage, o)
+                if(message.connectionId == c.connectionId {
+                    actor.read()
+
+                    if(message.lastHttpMessage {
+                        c.doneReading = true
+                    })
+
+                    return(message);
+                })
+            })
+
+            actor.skip()
+        })
+
+        return(null);
     })
 
-    func(readAll(c : Connection) {
-        throw("Unimplemented ReadAll")
+    func(readAll(c : Connection => String) {
+        buffer : StringBuilder = StringBuilder()
+
+        while(true {
+            message : HttpContentMessage = read(c)
+            buffer#append(message.content#toString())
+
+            if(message.lastHttpMessage {
+                break
+            })
+        })
+
+        buffer#toString()
     })
 
     func(writeHead(c : Connection, status : int, headers : PersistentMap) {
