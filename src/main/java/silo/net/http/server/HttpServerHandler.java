@@ -32,17 +32,22 @@ import io.netty.handler.codec.DecoderResult;
 import io.netty.handler.codec.http.Cookie;
 import io.netty.handler.codec.http.CookieDecoder;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.DefaultHttpResponse;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpContent;
+import io.netty.handler.codec.http.DefaultHttpContent;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpObject;
 import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.HttpResponse;
+import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.codec.http.ServerCookieEncoder;
 import io.netty.util.CharsetUtil;
 
 import static io.netty.handler.codec.http.HttpHeaders.Names.*;
+//import static io.netty.handler.codec.http.HttpHeaders.Values.*;
 import static io.netty.handler.codec.http.HttpHeaders.*;
 import static io.netty.handler.codec.http.HttpResponseStatus.*;
 import static io.netty.handler.codec.http.HttpVersion.*;
@@ -76,6 +81,8 @@ public class HttpServerHandler extends SimpleChannelInboundHandler {
     protected void messageReceived(ChannelHandlerContext ctx, Object msg) {
         if (msg instanceof HttpRequest) {
             HttpRequest request = (HttpRequest)msg;
+
+            System.out.println(request);
 
             PersistentMap headersMap = new PersistentMap();
             HttpHeaders headers = request.headers();
@@ -126,11 +133,18 @@ public class HttpServerHandler extends SimpleChannelInboundHandler {
 
                 message = HttpContentMessage.lastContentMessage(connection.connectionId, content, headersMap);
 
-                FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, Unpooled.copiedBuffer("Hello, World", CharsetUtil.UTF_8));
-                response.headers().set(CONTENT_LENGTH, response.content().readableBytes());
+                //DefaultFullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, Unpooled.copiedBuffer("Hello", CharsetUtil.UTF_8));
+                DefaultHttpResponse response = new DefaultHttpResponse(HTTP_1_1, OK);
+                //response.headers().set(TRANSFER_ENCODING, HttpHeaders.Values.CHUNKED);
+                //response.headers().set(CONTENT_LENGTH, response.content().readableBytes());
+                response.headers().set(CONTENT_LENGTH, 10);
                 response.headers().set(CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
-
                 ctx.write(response);
+
+                ctx.write(new DefaultHttpContent(Unpooled.copiedBuffer("Hello", CharsetUtil.UTF_8)));
+                ctx.write(new DefaultHttpContent(Unpooled.copiedBuffer("World", CharsetUtil.UTF_8)));
+                ctx.write(LastHttpContent.EMPTY_LAST_CONTENT);
+
                 ctx.flush();
             } else {
                 message = HttpContentMessage.normalContentMessage(connection.connectionId, content);
@@ -140,8 +154,9 @@ public class HttpServerHandler extends SimpleChannelInboundHandler {
 
             // TODO: How do I know when to close the connection?
             //if(!writeResponse(trailer, ctx)) {
-            //    ctx.flush();
-            //    ctx.close();
+            //    //ctx.flush();
+            //    //ctx.close();
+            //    //ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
             //}
         }
     }
