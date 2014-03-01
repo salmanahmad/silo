@@ -10,19 +10,22 @@
  */
 
 
+import silo.lang.*;
+import silo.lang.Runtime;
+import silo.lang.compiler.Parser;
+
 import org.junit.*;
 import java.util.*;
 
 public class HttpTest {
 
     @Test
-    public void testServer() throws Exception {
-        silo.lang.PersistentMap options = new silo.lang.PersistentMap();
-        options = options.set("port", new Integer(8080));
+    public void testServerSimple() throws Exception {
+        Runtime runtime = new Runtime(new RuntimeClassLoader(), 1);
+        String source = Helper.readResource("/http-test/simple.silo");
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
 
-        silo.net.http.HttpServer server = new silo.net.http.HttpServer();
-        server.options = options;
-
-        server.run();
+        //Actor server = runtime.spawn("simpleServer");
+        //server.await();
     }
 }

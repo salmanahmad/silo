@@ -1,42 +1,71 @@
 
 // silo.net.https for HTTP over TLS/SSL. Same API.
-import(silo.net.http)
+//import(silo.net.http)
 
-func(handler(c : Connection) {
-    // version
-    // headers
+//func(handler(c : Connection) {
+    // Request properties:
+    // httpVersion
     // method
-    // url (I may need to use urlParse to parse out the different components - http://nodejs.org/api/http.html#http_message_url)
+    // uri
+    // headers
+    // trailers
+    // -------------
+    // read()
+    // readAll() --- How do I implement readAll()?
+    // -------------
     // request / body (stream or buffer)
     // Event: close
 
-    // status
-    // headers
-    // write / send / send_chunked
-    // end
+    // writeContinue
+    // writeHead(status, headers)
+    // writeTrailers
+    // writeContent
+    // writeEnd
+    // --------------
     // Event: close
     // Event: finish
 
     // What if I spawn this?
     // message : String = connection.read(conn)
-})
+//})
 
 //options : PersistentMap = map(
 //    "port" : 8080
 //    "readTimeout" : null
 //    "writeTimeout" : null
 //    "headerCount" : null
+//    "socketKeepAlive" : true
+//    "socketTimeout" : null
 //    // "key" : null
 //    // "cert" : null
 //)
 
-server : Server = createServer(handler, options)
-
+//server : Server = createServer(handler, options)
 // Start the server on port 8080
-start(server)
-
+//start(server)
 // Block the actor from returning until we send it a message
-actor.read()
-
+//actor.read()
 // Stop the server
-stop(server)
+//stop(server)
+
+
+import(silo.net.http)
+
+func(handler(connection : connection.Connection) {
+    println(connection.headers)
+})
+
+func(simpleServer() {
+    options : silo.lang.PersistentMap = silo.lang.PersistentMap();
+    options = options#set("port", Integer(8000));
+
+    s : server.Server = server.build(handler, options)
+
+    server.start(s)
+    actor.read()
+    server.stop(s)
+
+    //silo.net.http.HttpServer server = new silo.net.http.server.HttpServer();
+    //server.options = options;
+    //server.run();
+})

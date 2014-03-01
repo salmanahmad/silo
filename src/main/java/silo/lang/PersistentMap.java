@@ -19,6 +19,12 @@ public class PersistentMap {
 
     public final IPersistentMap map;
 
+    // TODO: Change this back to IPersistentMap as following:
+    //public static IPersistentMap set(IPersistentMap map, Object key, Object value) {
+    public static PersistentMap set(PersistentMap map, Object key, Object value) {
+        return map.set(key, value);
+    }
+
     public PersistentMap() {
         this.map = PersistentHashMap.emptyMap();
     }

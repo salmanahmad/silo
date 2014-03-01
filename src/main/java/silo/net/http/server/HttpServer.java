@@ -9,7 +9,7 @@
  *
  */
 
-package silo.net.http;
+package silo.net.http.server;
 
 import silo.lang.Runtime;
 import silo.lang.Function;

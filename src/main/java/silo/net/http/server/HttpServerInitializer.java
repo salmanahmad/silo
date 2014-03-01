@@ -9,7 +9,7 @@
  *
  */
 
-package silo.net.http;
+package silo.net.http.server;
 
 import silo.lang.Runtime;
 import silo.lang.Function;
@@ -45,6 +45,6 @@ public class HttpServerInitializer extends ChannelInitializer<SocketChannel> {
         //p.addLast("aggregator", new HttpObjectAggregator(1048576));
         p.addLast("encoder", new HttpResponseEncoder());
         //p.addLast("deflater", new HttpContentCompressor());
-        p.addLast("handler", new HttpServerHandler());
+        p.addLast("handler", new HttpServerHandler(runtime, handler, options));
     }
 }
