@@ -98,7 +98,7 @@ package(silo.net.http.connection {
         })
 
         if(trailers == null {
-            c.context#write(LastHttpContent.EMPTY_LAST_CONTENT)
+            c.context#writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
         } else {
             throw("Trailers Unimplemented")
         })
@@ -117,8 +117,12 @@ package(silo.net.http.connection {
             message = Unpooled.copiedBuffer(message#toString(), CharsetUtil.UTF_8)
         })
 
-        response : DefaultFullHttpResponse = DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.valueOf(status), checkcast(ByteBuf, message))
-        c.context#write(response)
+        data : ByteBuf = checkcast(ByteBuf, message)
+        response : DefaultFullHttpResponse = DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.valueOf(status), data)
+        invokevirtual(response#headers(), set(checkcast(CharSequence, "Content-Length"), Integer(data#readableBytes())))
+        invokevirtual(response#headers(), set(checkcast(CharSequence, "Connection"), "keep-alive"))
+
+        c.context#writeAndFlush(response)
 
         null
     })

@@ -51,8 +51,9 @@
 
 import(silo.net.http)
 
-func(handler(connection : connection.Connection) {
-    println(connection.headers)
+func(handler(c : connection.Connection) {
+    connection.readAll(c)
+    connection.writeAll(c, 200, null, "Hello, World!");
 })
 
 func(simpleServer() {

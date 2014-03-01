@@ -82,8 +82,6 @@ public class HttpServerHandler extends SimpleChannelInboundHandler {
         if (msg instanceof HttpRequest) {
             HttpRequest request = (HttpRequest)msg;
 
-            System.out.println(request);
-
             PersistentMap headersMap = new PersistentMap();
             HttpHeaders headers = request.headers();
             for (Map.Entry<String, String> h : headers) {
@@ -134,20 +132,20 @@ public class HttpServerHandler extends SimpleChannelInboundHandler {
                 message = HttpContentMessage.lastContentMessage(connection.connectionId, content, headersMap);
 
                 //DefaultFullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, Unpooled.copiedBuffer("Hello", CharsetUtil.UTF_8));
-                DefaultHttpResponse response = new DefaultHttpResponse(HTTP_1_1, OK);
+                //DefaultHttpResponse response = new DefaultHttpResponse(HTTP_1_1, OK);
                 //response.headers().set(TRANSFER_ENCODING, HttpHeaders.Values.CHUNKED);
                 //response.headers().set(CONTENT_LENGTH, response.content().readableBytes());
                 //response.headers().set(CONTENT_LENGTH, 10);
                 //response.headers().set(CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
                 //response.headers().set(CONNECTION, HttpHeaders.Values.CLOSE);
-                ctx.write(response);
+                //ctx.write(response);
 
-                ctx.write(new DefaultHttpContent(Unpooled.copiedBuffer("Hello", CharsetUtil.UTF_8)));
-                ctx.write(new DefaultHttpContent(Unpooled.copiedBuffer("World", CharsetUtil.UTF_8)));
-                ctx.write(LastHttpContent.EMPTY_LAST_CONTENT);
+                //ctx.write(new DefaultHttpContent(Unpooled.copiedBuffer("Hello", CharsetUtil.UTF_8)));
+                //ctx.write(new DefaultHttpContent(Unpooled.copiedBuffer("World", CharsetUtil.UTF_8)));
+                //ctx.write(LastHttpContent.EMPTY_LAST_CONTENT);
 
-                ctx.flush();
-                ctx.close();
+                //ctx.flush();
+                //ctx.close();
             } else {
                 message = HttpContentMessage.normalContentMessage(connection.connectionId, content);
             }
