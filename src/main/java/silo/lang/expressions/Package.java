@@ -73,6 +73,7 @@ public class Package implements Expression {
             context.currentNamespace().packageName = packageName(node);
 
             Compiler.buildExpression(node.getSecondChild()).emit(context);
+            frame.operandStack.pop();
 
             context.currentNamespace().packageName = name;
         } else {

@@ -1,0 +1,30 @@
+
+package(silo.net.http.connection {
+    func(close(c : Connection) {
+        println("Close")
+    })
+
+    func(read(c : Connection) {
+        println("Read")
+    })
+
+    func(readAll(c : Connection) {
+        println("ReadAll")
+    })
+
+    func(writeHead(c : Connection) {
+        println("WriteHead")
+    })
+
+    func(write(c : Connection) {
+        println("Write")
+    })
+
+    func(writeEnd(c : Connection) {
+        println("WriteEnd")
+    })
+
+    func(writeAll(c : Connection) {
+        println("WriteAll")
+    })
+})
