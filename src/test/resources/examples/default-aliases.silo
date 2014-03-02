@@ -1,7 +1,10 @@
+
+alias(PVector, com.github.krukow.clj_lang.PersistentVector)
+
 function(
-    outputs(IPersistentVector)
+    outputs(Vector)
     {
-        v : IPersistentVector = vector()
+        v : Vector = PVector.emptyVector()
         return(v)
     }
 )

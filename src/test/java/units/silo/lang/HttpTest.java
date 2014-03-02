@@ -25,7 +25,9 @@ public class HttpTest {
         String source = Helper.readResource("/http-test/simple.silo");
         Vector<Class> classes = runtime.compile(Parser.parse(source));
 
-        //Actor server = runtime.spawn("simpleServer");
-        //server.await();
+        Actor server = runtime.spawn("simpleServer");
+        Thread.sleep(1000);
+        server.inboxPut("Stop");
+        server.await();
     }
 }

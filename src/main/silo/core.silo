@@ -1,18 +1,20 @@
 
 package(silo.core)
 
+alias(RT, com.github.krukow.clj_lang.RT)
+
 function(
     name(while)
     macro
     inputs(condition, body)
     outputs(silo.lang.Node)
     {
-        b : Vector = Vector()
+        b : java.util.Vector = java.util.Vector()
         b#add(condition)
         b#add(body)
         b#add(silo.lang.Node(silo.lang.Symbol("break")))
 
-        l : Vector = Vector()
+        l : java.util.Vector = java.util.Vector()
         l#add(silo.lang.Node(silo.lang.Symbol("branch"), b))
 
         silo.lang.Node(silo.lang.Symbol("loop"), l)
@@ -27,7 +29,7 @@ function(
     {
         // I cannot use "vector()" here because the if-macro is called by the func-macro and the
         // vector function is not compiled yet at that point.
-        vec : IPersistentVector = com.github.krukow.clj_lang.PersistentVector.emptyVector()
+        vec : Vector = com.github.krukow.clj_lang.PersistentVector.emptyVector()
 
         i : int = 0
         while(i < args#length() {
@@ -87,9 +89,9 @@ function(
 )
 
 function(
-    name(vector)
+    name(vectorNew)
     varargs(args)
-    outputs(IPersistentVector)
+    outputs(Vector)
     {
         args
     }
@@ -128,11 +130,11 @@ function(
             body_
         )
 
-        children : Vector = id#getChildren();
+        children : java.util.Vector = id#getChildren();
 
-        inputs : IPersistentVector = vector(symbol("inputs"))
-        outputs : IPersistentVector = vector(symbol("outputs"))
-        varargs : IPersistentVector = vector(symbol("varargs"))
+        inputs : Vector = vectorNew(symbol("inputs"))
+        outputs : Vector = vectorNew(symbol("outputs"))
+        varargs : Vector = vectorNew(symbol("varargs"))
 
         useInputs : boolean = true
         isVarArgs : boolean = false
@@ -199,7 +201,7 @@ function(
             obj : Object = inputs#nth(inputs#length() - 1)
 
             varargs = varargs#cons(obj)
-            inputs = checkcast(IPersistentVector, RT.pop(inputs))
+            inputs = checkcast(Vector, RT.pop(inputs))
 
             node(
                 symbol("function")
@@ -227,9 +229,9 @@ function(
     varargs(args)
     outputs(silo.lang.Node)
     {
-        inputs : IPersistentVector = vector(symbol("inputs"))
-        outputs : IPersistentVector = vector(symbol("outputs"))
-        varargs : IPersistentVector = vector(symbol("varargs"))
+        inputs : Vector = vectorNew(symbol("inputs"))
+        outputs : Vector = vectorNew(symbol("outputs"))
+        varargs : Vector = vectorNew(symbol("varargs"))
 
         useInputs : boolean = true
         isVarArgs : boolean = false
@@ -295,7 +297,7 @@ function(
             obj : Object = inputs#nth(inputs#length() - 1)
 
             varargs = varargs#cons(obj)
-            inputs = checkcast(IPersistentVector, RT.pop(inputs))
+            inputs = checkcast(Vector, RT.pop(inputs))
 
             node(
                 symbol("function")

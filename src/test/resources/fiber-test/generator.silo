@@ -1,7 +1,7 @@
 
 function(
     name(test) {
-        v : Vector = Vector()
+        v : java.util.Vector = java.util.Vector()
 
         f : fiber.Fiber = fiber.Fiber(generator, "first")
         fiber.resume(f)

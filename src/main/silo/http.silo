@@ -58,7 +58,7 @@ package(silo.net.http.connection {
         buffer#toString()
     })
 
-    func(writeHead(c : Connection, status : int, headers : PersistentMap) {
+    func(writeHead(c : Connection, status : int, headers : Map) {
         if(c.doneWriting {
             return(null)
         })
@@ -90,7 +90,7 @@ package(silo.net.http.connection {
         null
     })
 
-    func(writeEnd(c : Connection, trailers : PersistentMap) {
+    func(writeEnd(c : Connection, trailers : Map) {
         if(c.doneWriting {
             return(null)
         } else {
@@ -106,7 +106,7 @@ package(silo.net.http.connection {
         null
     })
 
-    func(writeAll(c : Connection, status : int, headers : PersistentMap, message : Object) {
+    func(writeAll(c : Connection, status : int, headers : Map, message : Object) {
         if(c.doneWriting {
             return(null)
         } else {

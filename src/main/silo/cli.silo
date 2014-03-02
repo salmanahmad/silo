@@ -7,7 +7,7 @@ alias(CompilationContext, silo.lang.CompilationContext)
 alias(FileUtils, org.apache.commons.io.FileUtils)
 alias(FilenameUtils, org.apache.commons.io.FilenameUtils)
 
-func(main(args : IPersistentVector) {
+func(main(args : Vector) {
     if(args#length() == 0 {
         // TODO: Perhaps enter a REPL?
         println(help(null))
@@ -42,7 +42,7 @@ func(run(file_ : Object) {
     code : silo.lang.Node = silo.lang.compiler.Parser.parse(file, source)
 
     runtime : Runtime = Runtime();
-    classes : Vector = runtime#compile(code)
+    classes : java.util.Vector = runtime#compile(code)
 
     c : Class = checkcast(java.lang.Class, classes#get(classes#size() - 1))
     f : Function = checkcast(Function, c#newInstance())
