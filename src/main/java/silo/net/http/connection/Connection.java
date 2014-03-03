@@ -19,6 +19,7 @@ public class Connection {
     public ChannelHandlerContext context;
     public boolean doneReading = false;
     public boolean doneWriting = false;
+    public boolean closed = false;
 
     // The id of the message. Note that chunks are ONLY delivered to
     // the actor that the server spawns. If you want other actors to

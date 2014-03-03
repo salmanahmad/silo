@@ -12,8 +12,24 @@ package(silo.net.http.connection {
     alias(CharsetUtil, io.netty.util.CharsetUtil)
     alias(Unpooled, io.netty.buffer.Unpooled)
 
+    func(handle(f : Function, c : Connection) {
+        f(c)
+
+        if(!checkcast(map.get(c.headers, "Connection", "Close"), String)#equalsIgnoreCase("Keep-Alive") {
+            close(c)
+        })
+    })
+
     func(close(c : Connection) {
-        throw("Unimplemented Close")
+        if(c.closed {
+            return(null)
+        })
+
+        c.doneReading = true
+        c.doneWriting = true
+        c.closed = true
+
+        c.context#close()
     })
 
     func(read(c : Connection => HttpContentMessage) {
@@ -126,7 +142,12 @@ package(silo.net.http.connection {
         data : ByteBuf = checkcast(message, ByteBuf)
         response : DefaultFullHttpResponse = DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.valueOf(status), data)
         invokevirtual(response#headers(), set(checkcast("Content-Length", CharSequence), Integer(data#readableBytes())))
-        invokevirtual(response#headers(), set(checkcast("Connection", CharSequence), "keep-alive"))
+
+        if(checkcast(map.get(c.headers, "Connection", "Close"), String)#equalsIgnoreCase("Keep-Alive") {
+            invokevirtual(response#headers(), set(checkcast("Connection", CharSequence), "Keep-Alive"))
+        } else {
+            invokevirtual(response#headers(), set(checkcast("Connection", CharSequence), "Close"))
+        })
 
         c.context#writeAndFlush(response)
 

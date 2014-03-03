@@ -61,14 +61,19 @@ public class Runtime {
     }
 
     public Actor spawn(String fullyQualifiedFunctionName, Object ... arguments) {
+        return spawn(UUID.randomUUID().toString(), fullyQualifiedFunctionName, arguments);
+    }
+
+    public Actor spawn(String address, String fullyQualifiedFunctionName, Object ... arguments) {
         try {
             // TODO: What if klass is a type and not a function?
             Class klass = loader.loadClass(fullyQualifiedFunctionName);
-            return spawn(UUID.randomUUID().toString(), (Function)(klass.newInstance()), arguments);
+            return spawn(address, (Function)(klass.newInstance()), arguments);
         } catch(ClassNotFoundException e) {
             throw new RuntimeException("Could not load function: " + fullyQualifiedFunctionName);
         } catch(Exception e) {
             // TODO: Better error handling.
+            // TODO: This is potentially bad.
             e.printStackTrace();
             throw new RuntimeException(e);
         }
