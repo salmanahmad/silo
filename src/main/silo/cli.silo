@@ -44,8 +44,8 @@ func(run(file_ : Object) {
     runtime : Runtime = Runtime();
     classes : java.util.Vector = runtime#compile(code)
 
-    c : Class = checkcast(java.lang.Class, classes#get(classes#size() - 1))
-    f : Function = checkcast(Function, c#newInstance())
+    c : Class = checkcast(classes#get(classes#size() - 1), java.lang.Class)
+    f : Function = checkcast(c#newInstance(), Function)
 
     a : silo.lang.Actor = runtime#spawn(f)
     a#await()
@@ -68,7 +68,7 @@ func(compile(file_ : Object) {
 
     i : int = 0
     while(i < invokevirtual(context.bytecode, size()) {
-        bytecode : array(byte) = checkcast(array(byte), invokevirtual(context.bytecode, get(i)))
+        bytecode : array(byte) = checkcast(invokevirtual(context.bytecode, get(i)), array(byte))
         silo.lang.Compile.writeBytecodeToDirectory(bytecode, FilenameUtils.removeExtension(file))
 
         i = i + 1

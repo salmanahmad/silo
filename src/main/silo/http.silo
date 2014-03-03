@@ -24,8 +24,8 @@ package(silo.net.http.connection {
         while(true {
             o : Object = actor.peek()
 
-            if(instanceof(HttpContentMessage, o) {
-                message : HttpContentMessage = checkcast(HttpContentMessage, o)
+            if(instanceof(o, HttpContentMessage) {
+                message : HttpContentMessage = checkcast(o, HttpContentMessage)
                 if(message.connectionId == c.connectionId {
                     actor.read()
 
@@ -79,8 +79,8 @@ package(silo.net.http.connection {
 
         content = null
 
-        if(instanceof(ByteBuf, message) {
-            content = DefaultHttpContent(checkcast(ByteBuf, message))
+        if(instanceof(message, ByteBuf) {
+            content = DefaultHttpContent(checkcast(message, ByteBuf))
         } else {
             content = DefaultHttpContent(Unpooled.copiedBuffer(message#toString(), CharsetUtil.UTF_8))
         })
@@ -113,14 +113,14 @@ package(silo.net.http.connection {
             c.doneWriting = true
         })
 
-        if((!instanceof(ByteBuf, message)) {
+        if((!instanceof(message, ByteBuf)) {
             message = Unpooled.copiedBuffer(message#toString(), CharsetUtil.UTF_8)
         })
 
-        data : ByteBuf = checkcast(ByteBuf, message)
+        data : ByteBuf = checkcast(message, ByteBuf)
         response : DefaultFullHttpResponse = DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.valueOf(status), data)
-        invokevirtual(response#headers(), set(checkcast(CharSequence, "Content-Length"), Integer(data#readableBytes())))
-        invokevirtual(response#headers(), set(checkcast(CharSequence, "Connection"), "keep-alive"))
+        invokevirtual(response#headers(), set(checkcast("Content-Length", CharSequence), Integer(data#readableBytes())))
+        invokevirtual(response#headers(), set(checkcast("Connection", CharSequence), "keep-alive"))
 
         c.context#writeAndFlush(response)
 

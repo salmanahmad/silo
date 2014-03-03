@@ -37,14 +37,14 @@ public class InstanceOf implements Expression {
         GeneratorAdapter generator = context.currentFrame().generator;
         CompilationFrame frame = context.currentFrame();
 
-        Object o = node.getFirstChild();
+        Object o = node.getSecondChild();
         Class type = Compiler.resolveType(o, context);
 
         if(type == null) {
             throw new RuntimeException("Could not resolve type: " + o);
         }
 
-        Expression e = Compiler.buildExpression(node.getSecondChild());
+        Expression e = Compiler.buildExpression(node.getFirstChild());
         e.emit(context);
 
         generator.instanceOf(Type.getType(type));

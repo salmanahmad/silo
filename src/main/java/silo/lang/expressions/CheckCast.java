@@ -26,7 +26,7 @@ public class CheckCast implements Expression {
     }
 
     public Class type(CompilationContext context) {
-        Object o = node.getFirstChild();
+        Object o = node.getSecondChild();
         Class klass = Compiler.resolveType(o, context);
 
         if(klass == null) {
@@ -46,7 +46,7 @@ public class CheckCast implements Expression {
 
         Class type = type(context);
 
-        Expression e = Compiler.buildExpression(node.getSecondChild());
+        Expression e = Compiler.buildExpression(node.getFirstChild());
         e.emit(context);
 
         generator.checkCast(Type.getType(type));

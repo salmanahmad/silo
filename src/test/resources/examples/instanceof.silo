@@ -1,6 +1,6 @@
 function(
     inputs(arg)
     outputs(boolean) {
-        instanceof(Integer, arg)
+        instanceof(arg, Integer)
     }
 )

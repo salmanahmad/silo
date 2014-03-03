@@ -1,7 +1,7 @@
 
 func(foo() {
-    sender : String = checkcast(String, actor.read())
-    message : String = checkcast(String, actor.read())
+    sender : String = checkcast(actor.read(), String)
+    message : String = checkcast(actor.read(), String)
     message = String.format("You said: %s", message)
 
     actor.send(sender, message)

@@ -39,9 +39,9 @@ function(
                 branch(i == 0 {
                     vec = vec#cons(o)
                 } {
-                    branch(instanceof(silo.lang.Node, o) {
+                    branch(instanceof(o, silo.lang.Node) {
                         n : silo.lang.Node = null
-                        n = checkcast(silo.lang.Node, o)
+                        n = checkcast(o, silo.lang.Node)
 
                         vec = vec#cons(silo.lang.Node(
                             silo.lang.Symbol("do")
@@ -114,9 +114,9 @@ function(
     {
         id : silo.lang.Node = null
 
-        if(instanceof(silo.lang.Node, id_) {
-            id = checkcast(silo.lang.Node, id_)
-        } else(instanceof(silo.lang.Symbol, id_)) {
+        if(instanceof(id_, silo.lang.Node) {
+            id = checkcast(id_, silo.lang.Node)
+        } else(instanceof(id_, silo.lang.Symbol)) {
             id = silo.lang.Node(id_)
         } else {
             // TODO: Support and then throw an exception. I probably
@@ -149,13 +149,13 @@ function(
             isArrow : boolean = false
             isDots : boolean = false
 
-            branch(instanceof(silo.lang.Node, o) {
-                n = checkcast(silo.lang.Node, o)
+            branch(instanceof(o, silo.lang.Node) {
+                n = checkcast(o, silo.lang.Node)
                 isArrow = invokevirtual(invokevirtual(n getLabel()) equals(symbol("=>")))
             })
 
-            branch(instanceof(silo.lang.Symbol, o) {
-                s = checkcast(silo.lang.Symbol, o)
+            branch(instanceof(o, silo.lang.Symbol) {
+                s = checkcast(o, silo.lang.Symbol)
                 isDots = s#equals(symbol("..."))
                 isArrow = s#equals(symbol("=>"))
             })
@@ -163,11 +163,11 @@ function(
             branch(isArrow {
                 useInputs = false
 
-                branch(instanceof(silo.lang.Node, o) {
-                    n = checkcast(silo.lang.Node, o)
+                branch(instanceof(o, silo.lang.Node) {
+                    n = checkcast(o, silo.lang.Node)
 
-                    branch(instanceof(silo.lang.Symbol, n#getFirstChild()) {
-                        s = checkcast(silo.lang.Symbol, n#getFirstChild())
+                    branch(instanceof(n#getFirstChild(), silo.lang.Symbol) {
+                        s = checkcast(n#getFirstChild(), silo.lang.Symbol)
                         branch(s#equals(symbol("...")) {
                             isVarArgs = true
                         } {
@@ -201,7 +201,7 @@ function(
             obj : Object = inputs#nth(inputs#length() - 1)
 
             varargs = varargs#cons(obj)
-            inputs = checkcast(Vector, RT.pop(inputs))
+            inputs = checkcast(RT.pop(inputs), Vector)
 
             node(
                 symbol("function")
@@ -246,13 +246,13 @@ function(
         while(i < (args#length() - 1) {
             o : Object = args#nth(i)
 
-            branch(instanceof(silo.lang.Node, o) {
-                n = checkcast(silo.lang.Node, o)
+            branch(instanceof(o, silo.lang.Node) {
+                n = checkcast(o, silo.lang.Node)
                 isArrow = invokevirtual(invokevirtual(n getLabel()) equals(symbol("=>")))
             })
 
-            branch(instanceof(silo.lang.Symbol, o) {
-                s = checkcast(silo.lang.Symbol, o)
+            branch(instanceof(o, silo.lang.Symbol) {
+                s = checkcast(o, silo.lang.Symbol)
                 isDots = s#equals(symbol("..."))
                 isArrow = s#equals(symbol("=>"))
             })
@@ -260,11 +260,11 @@ function(
             branch(isArrow {
                 useInputs = false
 
-                branch(instanceof(silo.lang.Node, o) {
-                    n = checkcast(silo.lang.Node, o)
+                branch(instanceof(o, silo.lang.Node) {
+                    n = checkcast(o, silo.lang.Node)
 
-                    branch(instanceof(silo.lang.Symbol, n#getFirstChild()) {
-                        s = checkcast(silo.lang.Symbol, n#getFirstChild())
+                    branch(instanceof(n#getFirstChild(), silo.lang.Symbol) {
+                        s = checkcast(n#getFirstChild(), silo.lang.Symbol)
                         branch(s#equals(symbol("...")) {
                             isVarArgs = true
                         } {
@@ -297,7 +297,7 @@ function(
             obj : Object = inputs#nth(inputs#length() - 1)
 
             varargs = varargs#cons(obj)
-            inputs = checkcast(Vector, RT.pop(inputs))
+            inputs = checkcast(RT.pop(inputs), Vector)
 
             node(
                 symbol("function")

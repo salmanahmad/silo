@@ -1,11 +1,11 @@
 
 
 func(pong {
-    mainPid : String = checkcast(String, actor.read())
-    pingPid : String = checkcast(String, actor.read())
+    mainPid : String = checkcast(actor.read(), String)
+    pingPid : String = checkcast(actor.read(), String)
 
     while(true {
-        message : Integer = checkcast(Integer, actor.read())
+        message : Integer = checkcast(actor.read(), Integer)
         i : int = message#intValue()
         i = i * 2
 
@@ -14,15 +14,15 @@ func(pong {
 })
 
 func(ping {
-    mainPid : String = checkcast(String, actor.read())
-    pongPid : String = checkcast(String, actor.read())
+    mainPid : String = checkcast(actor.read(), String)
+    pongPid : String = checkcast(actor.read(), String)
 
     i : int = 10
     result : int = 0
 
     while(i != 0 {
         actor.send(pongPid, Integer(i))
-        message : Integer = checkcast(Integer, actor.read())
+        message : Integer = checkcast(actor.read(), Integer)
 
         result = result + message#intValue()
 
