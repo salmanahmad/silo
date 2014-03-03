@@ -43,19 +43,25 @@ package(silo.net.http.connection {
         return(null);
     })
 
-    func(readAll(c : Connection => String) {
-        buffer : StringBuilder = StringBuilder()
+    func(readAll(c : Connection => HttpContentMessage) {
+        buffer : ByteBuf = null
 
         while(true {
             message : HttpContentMessage = read(c)
-            buffer#append(message.content#toString())
+
+            if(buffer == null {
+                buffer = message.content
+            } else {
+                buffer = Unpooled.wrappedBuffer(buffer, message.content)
+            })
 
             if(message.lastHttpMessage {
-                break
+                message.content = buffer
+                return(message)
             })
         })
 
-        buffer#toString()
+        null
     })
 
     func(writeHead(c : Connection, status : int, headers : Map) {
