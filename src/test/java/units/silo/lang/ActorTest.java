@@ -126,6 +126,38 @@ public class ActorTest {
             System.setErr(oldErr);
         }
     }
+
+    @Test
+    public void testDeliveryDelayedRead() throws Exception {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/actor-test/delivery-delayed-read.silo");
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+
+        Actor a = runtime.spawn("main");
+
+        for(int i = 0; i < 100; i++) {
+            a.inboxPut("Message: " + i);
+        }
+
+        Assert.assertEquals("Message: 99", a.await());
+    }
+
+    @Test
+    public void testDeliveryDelayedSend() throws Exception {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/actor-test/delivery-delayed-send.silo");
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+
+        Actor a = runtime.spawn("main");
+
+        Thread.sleep(5000);
+
+        for(int i = 0; i < 100; i++) {
+            a.inboxPut("Message: " + i);
+        }
+
+        Assert.assertEquals("Message: 99", a.await());
+    }
 }
 
 

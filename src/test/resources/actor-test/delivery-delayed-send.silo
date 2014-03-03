@@ -1,0 +1,12 @@
+
+func(main {
+    i : int = 0
+    o : Object = ""
+
+    while(i < 100 {
+        o = actor.read()
+        i = i + 1;
+    })
+
+    return(o)
+})
