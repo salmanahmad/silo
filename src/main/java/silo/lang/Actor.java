@@ -149,14 +149,17 @@ public class Actor implements Runnable {
         while(firstTime || shouldRun()) {
             firstTime = false;
 
-            silo.core.fiber.resume.invoke(fiber.context, fiber, PersistentVector.emptyVector());
+            try {
+                silo.core.fiber.resume.invoke(fiber.context, fiber, PersistentVector.emptyVector());
+            } catch(Exception e) {
+                System.err.println("Error: actor (" + this.address + ") encountered an uncaught exception.");
+                e.printStackTrace(System.err);
+                awake();
+                return;
+            }
 
             if(!fiber.context.yielding) {
-                synchronized(this) {
-                    done = true;
-                    runtime.actors.remove(address);
-                    this.notifyAll();
-                }
+                awake();
             }
         }
 
@@ -165,6 +168,12 @@ public class Actor implements Runnable {
                 schedule();
             }
         }
+    }
+
+    private synchronized void awake() {
+        done = true;
+        runtime.actors.remove(address);
+        this.notifyAll();
     }
 
     public Object await() {

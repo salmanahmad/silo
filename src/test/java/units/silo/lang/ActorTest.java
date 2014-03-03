@@ -27,6 +27,8 @@ import org.objectweb.asm.Type;
 import java.io.PrintStream;
 import java.io.ByteArrayOutputStream;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.github.krukow.clj_lang.PersistentVector;
 
 public class ActorTest {
@@ -98,6 +100,31 @@ public class ActorTest {
         Vector<Class> classes = runtime.compile(Parser.parse(source));
 
         Assert.assertEquals("You said: Hello, World!", runtime.spawn("main").await());
+    }
+
+    @Test
+    public void testActorExceptions() throws Exception {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/actor-test/exceptions.silo");
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+
+        ByteArrayOutputStream os = null;
+        PrintStream ps = null;
+
+        PrintStream oldErr = System.err;
+
+        try {
+            os = new ByteArrayOutputStream();
+            ps = new PrintStream(os);
+            System.setErr(ps);
+
+            runtime.spawn("main").await();
+            Assert.assertTrue(os.toString().length() != 0);
+            Assert.assertTrue(StringUtils.startsWith(os.toString(), "Error: actor"));
+            Assert.assertEquals(StringUtils.split(os.toString(), "\n")[1], "java.lang.RuntimeException: FooBar");
+        } finally {
+            System.setErr(oldErr);
+        }
     }
 }
 
