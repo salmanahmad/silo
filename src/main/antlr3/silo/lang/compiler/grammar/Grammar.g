@@ -364,7 +364,7 @@ fragment FRAGMENT_DOT:                '.';
 fragment FRAGMENT_COLON:              ':';
 fragment FRAGMENT_HASH:               '#';
 
-IDENTIFIER:             ((LETTER | UNDERSCORE) SYMBOL_CHAR*);
+IDENTIFIER:             ((LETTER | UNDERSCORE | DOLLAR) SYMBOL_CHAR*);
 
 SEMICOLON:          ';';
 COMMA:              ',';
@@ -390,8 +390,9 @@ fragment ESC
 
 fragment LETTER:      LOWER | UPPER;
 fragment NUMBER:      INTEGER | FLOAT | DOUBLE;
-fragment SYMBOL_CHAR: LETTER | UNDERSCORE | DIGIT;
+fragment SYMBOL_CHAR: LETTER | UNDERSCORE | DOLLAR | DIGIT;
 fragment UNDERSCORE:  '_';
+fragment DOLLAR:       '$';
 fragment LOWER:       'a'..'z';
 fragment UPPER:       'A'..'Z';
 fragment DIGIT:       '0'..'9';

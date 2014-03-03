@@ -770,4 +770,30 @@ public class CompilerTest {
         Assert.assertEquals(false, runtime.eval(classes.get(6)));
         Assert.assertEquals(false, runtime.eval(classes.get(7)));
     }
+
+    @Function.Definition
+    public static class __voidNativeFunctionTest__ extends silo.lang.Function {
+        @Function.Body
+        public static void invoke(ExecutionContext context, int arg) {
+            System.out.println("__voidNativeFunctionTest__ called: " + arg);
+        }
+    }
+
+    @Test
+    public void testVoidNativeFunction() {
+        Runtime runtime = new Runtime();
+        Vector<Class> classes = runtime.compile(Parser.parse("CompilerTest$__voidNativeFunctionTest__(1)"));
+
+        PrintStream oldOut = System.out;
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        PrintStream ps = new PrintStream(os);
+        System.setOut(ps);
+
+        try {
+            Assert.assertEquals(null, runtime.eval(classes.get(0)));
+            Assert.assertEquals("__voidNativeFunctionTest__ called: 1\n", os.toString());
+        } finally {
+            System.setOut(oldOut);
+        }
+    }
 }
