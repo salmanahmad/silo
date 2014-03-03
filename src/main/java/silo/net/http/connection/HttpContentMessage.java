@@ -11,8 +11,7 @@
 
 package silo.net.http.connection;
 
-import silo.lang.PersistentMap;
-
+import com.github.krukow.clj_lang.IPersistentMap;
 import io.netty.buffer.ByteBuf;
 
 public class HttpContentMessage {
@@ -21,7 +20,7 @@ public class HttpContentMessage {
     public ByteBuf content;
 
     public boolean lastHttpMessage;
-    public PersistentMap trailers;
+    public IPersistentMap trailers;
 
     public static HttpContentMessage normalContentMessage(String connectionId, ByteBuf content) {
         HttpContentMessage message = new HttpContentMessage();
@@ -31,7 +30,7 @@ public class HttpContentMessage {
         return message;
     }
 
-    public static HttpContentMessage lastContentMessage(String connectionId, ByteBuf content, PersistentMap headersMap) {
+    public static HttpContentMessage lastContentMessage(String connectionId, ByteBuf content, IPersistentMap headersMap) {
         HttpContentMessage message = new HttpContentMessage();
         message.connectionId = connectionId;
         message.content = content;

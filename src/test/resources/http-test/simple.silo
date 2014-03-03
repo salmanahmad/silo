@@ -57,8 +57,8 @@ func(handler(c : connection.Connection) {
 })
 
 func(simpleServer() {
-    options : silo.lang.PersistentMap = silo.lang.PersistentMap();
-    options = options#set("port", Integer(8000));
+    options : Map = map.create();
+    options = map.set(options, "port", Integer(8000));
 
     s : server.Server = server.build(handler, options)
 

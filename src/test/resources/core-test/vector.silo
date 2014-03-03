@@ -1,0 +1,7 @@
+function(
+    name(test)
+    {
+        v : Vector = vector.create(Integer(1) Integer(2) Integer(3) Integer(4) Integer(5))
+        vector.get(v, 1)
+    }
+)

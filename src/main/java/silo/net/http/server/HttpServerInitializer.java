@@ -13,7 +13,8 @@ package silo.net.http.server;
 
 import silo.lang.Runtime;
 import silo.lang.Function;
-import silo.lang.PersistentMap;
+
+import com.github.krukow.clj_lang.IPersistentMap;
 
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
@@ -25,7 +26,7 @@ public class HttpServerInitializer extends ChannelInitializer<SocketChannel> {
 
     public Runtime runtime;
     public Function handler;
-    public PersistentMap options;
+    public IPersistentMap options;
 
     @Override
     public void initChannel(SocketChannel ch) throws Exception {

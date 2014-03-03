@@ -11,16 +11,18 @@
 
 package silo.net.http.server;
 
-import silo.lang.PersistentMap;
 import silo.lang.Function;
 import silo.lang.ExecutionContext;
 import silo.lang.Runtime;
+
+import com.github.krukow.clj_lang.IPersistentVector;
+import com.github.krukow.clj_lang.IPersistentMap;
 
 @Function.Definition
 public class build extends Function {
 
     @Function.Body
-    public static Server invoke(ExecutionContext context, Function handler, PersistentMap options) {
+    public static Server invoke(ExecutionContext context, Function handler, IPersistentMap options) {
         Runtime runtime = context.fiber.actor.runtime;
 
         HttpServer httpServer = new HttpServer();

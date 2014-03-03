@@ -13,7 +13,7 @@ package silo.net.http.server;
 
 import silo.lang.Runtime;
 import silo.lang.Function;
-import silo.lang.PersistentMap;
+import silo.lang.PersistentMapHelper;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
@@ -22,17 +22,19 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 
+import com.github.krukow.clj_lang.IPersistentMap;
+
 public class HttpServer implements Runnable {
 
     public Runtime runtime;
     public Function handler;
-    public PersistentMap options;
+    public IPersistentMap options;
 
     public void run() {
         EventLoopGroup bossGroup = new NioEventLoopGroup();
         EventLoopGroup workerGroup = new NioEventLoopGroup();
 
-        Integer port = (Integer)options.get("port");
+        Integer port = (Integer)PersistentMapHelper.get(options, "port");
 
         try {
             HttpServerInitializer initializer = new HttpServerInitializer();

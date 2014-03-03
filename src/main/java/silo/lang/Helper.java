@@ -16,6 +16,9 @@ import java.io.*;
 import java.net.URL;
 import org.apache.commons.lang3.StringEscapeUtils;
 
+import com.github.krukow.clj_lang.IPersistentVector;
+import com.github.krukow.clj_lang.IPersistentMap;
+
 public class Helper {
 
     public static int hashCode(Object object) {
@@ -92,8 +95,8 @@ public class Helper {
         return o.toString();
     }
 
-    public static PersistentMap meta(String fileName, int line, int pos) {
-        return new PersistentMap("file", fileName, "line", line, "position", pos);
+    public static IPersistentMap meta(String fileName, int line, int pos) {
+        return PersistentMapHelper.create("file", fileName, "line", line, "position", pos);
     }
 
     public static String[] getResourceListing(Class klass, String path) {

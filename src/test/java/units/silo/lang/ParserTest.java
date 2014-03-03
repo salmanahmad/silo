@@ -90,29 +90,29 @@ public class ParserTest {
 
         Node math = (Node)p.getChild(1);
 
-        Assert.assertEquals("line-numbers.silo", p.getMeta().get("file"));
-        Assert.assertEquals(1, a.getMeta().get("line"));
-        Assert.assertEquals(0, a.getMeta().get("position"));
+        Assert.assertEquals("line-numbers.silo", p.getMeta().valAt("file"));
+        Assert.assertEquals(1, a.getMeta().valAt("line"));
+        Assert.assertEquals(0, a.getMeta().valAt("position"));
 
-        Assert.assertEquals(2, b.getMeta().get("line"));
-        Assert.assertEquals(4, b.getMeta().get("position"));
+        Assert.assertEquals(2, b.getMeta().valAt("line"));
+        Assert.assertEquals(4, b.getMeta().valAt("position"));
 
-        Assert.assertEquals(3, c.getMeta().get("line"));
-        Assert.assertEquals(8, c.getMeta().get("position"));
+        Assert.assertEquals(3, c.getMeta().valAt("line"));
+        Assert.assertEquals(8, c.getMeta().valAt("position"));
 
-        Assert.assertEquals(3, d.getMeta().get("line"));
-        Assert.assertEquals(10, d.getMeta().get("position"));
+        Assert.assertEquals(3, d.getMeta().valAt("line"));
+        Assert.assertEquals(10, d.getMeta().valAt("position"));
 
-        Assert.assertEquals(3, e.getMeta().get("line"));
-        Assert.assertEquals(15, e.getMeta().get("position"));
+        Assert.assertEquals(3, e.getMeta().valAt("line"));
+        Assert.assertEquals(15, e.getMeta().valAt("position"));
 
-        Assert.assertEquals(3, f.getMeta().get("line"));
-        Assert.assertEquals(20, f.getMeta().get("position"));
+        Assert.assertEquals(3, f.getMeta().valAt("line"));
+        Assert.assertEquals(20, f.getMeta().valAt("position"));
 
-        Assert.assertEquals(7, math.getMeta().get("line"));
+        Assert.assertEquals(7, math.getMeta().valAt("line"));
 
         Node program = (Node)Parser.parse(source);
-        Assert.assertEquals(null, program.getMeta().get("file"));
+        Assert.assertEquals(null, program.getMeta().valAt("file"));
     }
 
     @Test

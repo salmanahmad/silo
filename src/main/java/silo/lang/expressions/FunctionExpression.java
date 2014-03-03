@@ -301,10 +301,10 @@ public class FunctionExpression implements Expression, Opcodes {
 
         // The function class definition
         ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
-        if(node.getMeta().get("file") == null) {
+        if(PersistentMapHelper.get(node.getMeta(), "file") == null) {
             cw.visitSource("UNKNOWN_FILE", null);
         } else {
-            cw.visitSource(node.getMeta().get("file").toString(), null);
+            cw.visitSource(PersistentMapHelper.get(node.getMeta(), "file").toString(), null);
         }
 
         cw.visit(V1_6, ACC_PUBLIC + ACC_SUPER, fullyQualifiedName.replace(".", "/"), null, Type.getType(Function.class).getInternalName(), null);

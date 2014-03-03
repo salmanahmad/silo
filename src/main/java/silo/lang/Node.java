@@ -12,7 +12,7 @@
 package silo.lang;
 
 import com.github.krukow.clj_lang.IPersistentVector;
-import com.github.krukow.clj_lang.PersistentVector;
+import com.github.krukow.clj_lang.IPersistentMap;
 
 import java.util.Vector;
 import java.util.Arrays;
@@ -23,7 +23,7 @@ import org.apache.commons.lang3.StringUtils;
 
 public class Node {
     // TODO: Rename label to head?
-    public PersistentMap meta;
+    public IPersistentMap meta;
     Object label;
     Vector children;
 
@@ -39,26 +39,26 @@ public class Node {
         return new Node(label, children);
     }
 
-    public static Node withMeta(PersistentMap meta, Object label, Object ... children) {
+    public static Node withMeta(IPersistentMap meta, Object label, Object ... children) {
         Node node = new Node(label, children);
         node.meta = meta;
         return node;
     }
 
     public Node(Object label) {
-        this.meta = new PersistentMap();
+        this.meta = PersistentMapHelper.create();
         this.label = label;
         this.children = new Vector();
     }
 
     public Node(Object label, Vector<Object> children) {
-        this.meta = new PersistentMap();
+        this.meta = PersistentMapHelper.create();
         this.label = label;
         this.children = children;
     }
     
     public Node(Object label, Object... children) {
-        this.meta = new PersistentMap();
+        this.meta = PersistentMapHelper.create();
         this.label = label;
         this.children = new Vector(Arrays.asList(children));
     }
@@ -77,7 +77,7 @@ public class Node {
         return Helper.hashCombine(Helper.hashCode(this.label.hashCode()), this.children.hashCode());
     }
 
-    public PersistentMap getMeta() {
+    public IPersistentMap getMeta() {
         return meta;
     }
 

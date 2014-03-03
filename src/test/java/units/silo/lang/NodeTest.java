@@ -101,11 +101,11 @@ public class NodeTest {
     @Test
     public void testMetaData() {
         // Get first child is needed because parse wraps everything in a node by default.
-        Node node = Node.withMeta(new PersistentMap("line", 1), new Symbol("baz"), 1, 2, 3);
+        Node node = Node.withMeta(PersistentMapHelper.create("line", 1), new Symbol("baz"), 1, 2, 3);
 
         Node expected = (Node)Parser.parse("baz(1, 2, 3)").getFirstChild();
         Assert.assertEquals(expected, node);
-        Assert.assertEquals(1, node.getMeta().map.valAt("line"));
+        Assert.assertEquals(1, node.getMeta().valAt("line"));
     }
 }
 

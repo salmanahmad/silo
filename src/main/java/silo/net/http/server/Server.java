@@ -11,7 +11,6 @@
 
 package silo.net.http.server;
 
-import silo.lang.PersistentMap;
 import silo.lang.Function;
 import silo.lang.ExecutionContext;
 import silo.lang.Runtime;

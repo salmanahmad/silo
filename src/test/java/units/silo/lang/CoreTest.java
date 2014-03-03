@@ -114,6 +114,24 @@ public class CoreTest {
 
         Object o = runtime.eval("test");
     }
+
+    @Test
+    public void testVector() throws Exception {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/core-test/vector.silo");
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+
+        Assert.assertEquals(2, runtime.eval("test"));
+    }
+
+    @Test
+    public void testMap() throws Exception {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/core-test/map.silo");
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+
+        Assert.assertEquals("bar", runtime.eval("test"));
+    }
 }
 
 

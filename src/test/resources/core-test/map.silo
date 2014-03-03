@@ -1,0 +1,7 @@
+function(
+    name(test)
+    {
+        m : Map = map.create("foo" "bar")
+        map.get(m, "foo")
+    }
+)

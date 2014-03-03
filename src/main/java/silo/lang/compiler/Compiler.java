@@ -599,7 +599,7 @@ public class Compiler {
             return;
         }
 
-        Object line = node.getMeta().get("line");
+        Object line = PersistentMapHelper.get(node.getMeta(), "line");
 
         if(line != null) {
             if(line instanceof Integer) {

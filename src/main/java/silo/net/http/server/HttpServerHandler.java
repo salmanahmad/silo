@@ -13,16 +13,19 @@ package silo.net.http.server;
 
 import silo.net.http.connection.Connection;
 import silo.net.http.connection.HttpContentMessage;
+
 import silo.lang.Actor;
 import silo.lang.Runtime;
 import silo.lang.Function;
-import silo.lang.PersistentMap;
+import silo.lang.PersistentMapHelper;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
+
+import com.github.krukow.clj_lang.IPersistentMap;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -56,7 +59,7 @@ public class HttpServerHandler extends SimpleChannelInboundHandler {
 
     public Runtime runtime;
     public Function handler;
-    public PersistentMap options;
+    public IPersistentMap options;
 
     private Connection connection;
     private Actor actor;
@@ -64,7 +67,7 @@ public class HttpServerHandler extends SimpleChannelInboundHandler {
     private HttpRequest request;
     private final StringBuilder buf = new StringBuilder();
 
-    public HttpServerHandler(Runtime runtime, Function handler, PersistentMap options) {
+    public HttpServerHandler(Runtime runtime, Function handler, IPersistentMap options) {
         this.runtime = runtime;
         this.handler = handler;
         this.options = options;
@@ -82,13 +85,13 @@ public class HttpServerHandler extends SimpleChannelInboundHandler {
         if (msg instanceof HttpRequest) {
             HttpRequest request = (HttpRequest)msg;
 
-            PersistentMap headersMap = new PersistentMap();
+            IPersistentMap headersMap = PersistentMapHelper.create();
             HttpHeaders headers = request.headers();
             for (Map.Entry<String, String> h : headers) {
                 // TODO: Support multiple duplicate headers
                 String key = h.getKey();
                 String value = h.getValue();
-                headersMap = PersistentMap.set(headersMap, key, value);
+                headersMap = PersistentMapHelper.set(headersMap, key, value);
             }
 
             this.connection = new Connection();
@@ -116,16 +119,16 @@ public class HttpServerHandler extends SimpleChannelInboundHandler {
             if (msg instanceof LastHttpContent) {
                 LastHttpContent trailer = (LastHttpContent)msg;
 
-                PersistentMap headersMap = null;
+                IPersistentMap headersMap = null;
                 HttpHeaders headers = trailer.trailingHeaders();
                 if(!headers.isEmpty()) {
-                    headersMap = new PersistentMap();
+                    headersMap = PersistentMapHelper.create();
 
                     for (Map.Entry<String, String> h : headers) {
                         // TODO: Support multiple duplicate headers
                         String key = h.getKey();
                         String value = h.getValue();
-                        headersMap = PersistentMap.set(headersMap, key, value);
+                        headersMap = PersistentMapHelper.set(headersMap, key, value);
                     }
                 }
 

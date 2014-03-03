@@ -11,8 +11,7 @@
 
 package silo.net.http.connection;
 
-import silo.lang.PersistentMap;
-
+import com.github.krukow.clj_lang.IPersistentMap;
 import io.netty.channel.ChannelHandlerContext;
 
 public class Connection {
@@ -43,7 +42,7 @@ public class Connection {
     public String httpVersion;
     public String method;
     public String uri;
-    public PersistentMap headers;
+    public IPersistentMap headers;
 
     // TODO: Support trailing headers
     //public PersistentMap trailers;
