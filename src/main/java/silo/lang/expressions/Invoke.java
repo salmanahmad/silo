@@ -714,6 +714,10 @@ public class Invoke implements Expression {
             } else {
                 generator.invokeVirtual(Type.getType(klass), org.objectweb.asm.commons.Method.getMethod(method));
             }
+
+            if(method.getReturnType().equals(Void.TYPE)) {
+                generator.push((String)null);
+            }
         }
 
         // Pop the execution context
@@ -727,8 +731,13 @@ public class Invoke implements Expression {
         Class returnClass = null;
         if(staticInvoke) {
             // Push the return value
-            frame.operandStack.push(method.getReturnType());
-            returnClass = method.getReturnType();
+            if(method.getReturnType().equals(Void.TYPE)) {
+                frame.operandStack.push(Object.class);
+                returnClass = Object.class;
+            } else {
+                frame.operandStack.push(method.getReturnType());
+                returnClass = method.getReturnType();
+            }
         } else {
             // Pop the reciever then push the return value.
             // TODO: This should be Var eventually as specified by the
