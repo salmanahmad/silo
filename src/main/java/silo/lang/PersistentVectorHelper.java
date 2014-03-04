@@ -39,4 +39,8 @@ public class PersistentVectorHelper {
     public static IPersistentVector set(IPersistentVector vector, int index, Object value) {
         return vector.assocN(index, value);
     }
+
+    public static IPersistentVector push(IPersistentVector vector, Object value) {
+        return vector.cons(value);
+    }
 }

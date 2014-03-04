@@ -178,10 +178,15 @@ public class Function {
 
     public Object apply(ExecutionContext context, Object... args) {
         try {
-            Object[] actualArgs = new Object[args.length + 1];
-            System.arraycopy(args, 0, actualArgs, 1, args.length);
-            actualArgs[0] = context;
-            args = actualArgs;
+            if(args == null) {
+                args = new Object[inputCount];
+                args[0] = context;
+            } else {
+                Object[] actualArgs = new Object[args.length + 1];
+                System.arraycopy(args, 0, actualArgs, 1, args.length);
+                actualArgs[0] = context;
+                args = actualArgs;
+            }
 
             if(isVarArgs) {
                 args = convertArgsToVarArgs(args);

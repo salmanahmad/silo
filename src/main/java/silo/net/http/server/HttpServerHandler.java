@@ -113,12 +113,7 @@ public class HttpServerHandler extends SimpleChannelInboundHandler {
             this.connection.uri = request.getUri();
             this.connection.headers = headersMap;
 
-            this.actor = runtime.spawn(connection.actorId, handler, connection);
-
-            // TODO: When I enable this and allow the handle to call the handler dynamically, it messes up
-            // an apache ab test with -n 1000 -c 100. My guess is that it has something to do with calling
-            // a function pointer.
-            //this.actor = runtime.spawn(connection.actorId, handle, handler, connection);
+            this.actor = runtime.spawn(connection.actorId, handle, handler, connection);
 
             // TODO: Do I need to check this?
             //appendDecoderResult(buf, request);

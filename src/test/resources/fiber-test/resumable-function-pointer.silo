@@ -1,0 +1,22 @@
+
+func(foo() {
+    f : Function = fn(s : String {
+        fiber.yield("Hello")
+        return(s)
+    })
+    f("World")
+})
+
+func(main() {
+    args : Vector = vector.create()
+
+    f : fiber.Fiber = fiber.Fiber(foo)
+
+    fiber.resume(f)
+    args = vector.push(args, f.value)
+
+    fiber.resume(f)
+    args = vector.push(args, f.value)
+
+    return(args)
+})

@@ -27,6 +27,7 @@ import org.objectweb.asm.Type;
 import java.io.PrintStream;
 import java.io.ByteArrayOutputStream;
 
+import com.github.krukow.clj_lang.IPersistentVector;
 import com.github.krukow.clj_lang.PersistentVector;
 
 public class FiberTest {
@@ -94,6 +95,16 @@ public class FiberTest {
         Vector vector = (Vector)fiber.value;
         Assert.assertEquals("first", vector.get(0));
         Assert.assertEquals("second", vector.get(1));
+    }
+
+    @Test
+    public void testResumableFunctionPointer() {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/fiber-test/resumable-function-pointer.silo");
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+
+        IPersistentVector vector = PersistentVectorHelper.create("Hello", "World");
+        Assert.assertEquals(vector, runtime.spawn("main").await());
     }
 }
 

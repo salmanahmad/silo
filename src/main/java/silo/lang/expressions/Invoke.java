@@ -649,6 +649,9 @@ public class Invoke implements Expression {
                 generator.push(frame.operandStack.size() - 1);
                 generator.arrayLoad(Type.getType(klass));
                 generator.checkCast(Type.getType(klass));
+
+                // Duplicate the reciever
+                generator.dup();
             }
         }
 
@@ -677,7 +680,14 @@ public class Invoke implements Expression {
         }
 
         if(shouldEmit) {
+            if(!staticInvoke) {
+                // Duplicate the receiever. It will be popped off below during RUNNING
+                generator.dup();
+            }
             Compiler.loadExecutionContext(context);
+        }
+        if(!staticInvoke) {
+            frame.operandStack.push(frame.operandStack.peek());
         }
         frame.operandStack.push(ExecutionContext.class);
 
@@ -740,9 +750,14 @@ public class Invoke implements Expression {
             }
         } else {
             // Pop the reciever then push the return value.
+            frame.operandStack.pop();
+
+            // Pop the duplicate of the reciever
+            frame.operandStack.pop();
+
+            // Push the return value
             // TODO: This should be Var eventually as specified by the
             // Function#apply method...
-            frame.operandStack.pop();
             frame.operandStack.push(Object.class);
             returnClass = Object.class;
         }
@@ -775,10 +790,21 @@ public class Invoke implements Expression {
             generator.visitTableSwitchInsn(1, 4, running, new Label[] { running, resuming, capturing, yielding });
 
             generator.mark(running);
+            if(!staticInvoke) {
+                // Pop the duplicate reciever
+                generator.swap(Type.getType(Function.class), Type.getType(returnClass));
+                generator.pop();
+            }
             generator.goTo(rest);
 
             generator.mark(resuming);
-            // First clear the stack
+            // First, pop the duplicate reciever
+            if(!staticInvoke) {
+                // Pop the duplicate reciever
+                generator.swap(Type.getType(Function.class), Type.getType(returnClass));
+                generator.pop();
+            }
+            // Second, clear the stack
             for(int i = frame.operandStack.size() - 2; i >= 0; i--) {
                 Class operandType = frame.operandStack.get(i);
                 generator.swap(Type.getType(operandType), Type.getType(returnClass));
@@ -819,14 +845,33 @@ public class Invoke implements Expression {
             generator.dup();
             generator.dup();
             generator.dup();
+            // Call the frame constructor
             generator.invokeConstructor(Type.getType(ExecutionFrame.class), org.objectweb.asm.commons.Method.getMethod("void <init> ()"));
+            // Set the program counter
             generator.push(programCounter);
             generator.putField(Type.getType(ExecutionFrame.class), "programCounter", Type.getType(int.class));
-            generator.push(frame.operandStack.size() - 1);
+            // Set the operand stack - the size is the size of the operand stack - 1 because we ignore the return value
+            if(staticInvoke) {
+                generator.push(frame.operandStack.size() - 1);
+            } else {
+                // Extra room for the duplicated reciever
+                generator.push(frame.operandStack.size() - 1 + 1);
+            }
             generator.newArray(Type.getType(Object.class));
             generator.putField(Type.getType(ExecutionFrame.class), "stack", Type.getType(Object[].class));
+            // Set the current frame
             generator.invokeVirtual(Type.getType(ExecutionContext.class), org.objectweb.asm.commons.Method.getMethod("void setCurrentFrame(silo.lang.ExecutionFrame)"));
-            // Store Stack
+            // Store the duplicated reciever
+            if(!staticInvoke) {
+                Compiler.loadExecutionFrame(context);
+                generator.getField(Type.getType(ExecutionFrame.class), "stack", Type.getType(Object[].class));
+
+                generator.swap(Type.getType(Function.class), Type.getType(Object[].class));
+                generator.push(frame.operandStack.size() - 2 + 1);
+                generator.swap(Type.getType(int.class), Type.getType(Object[].class));
+                generator.arrayStore(Type.getType(Function.class));
+            }
+            // Store Stack - Skip the return value which is on the top
             for(int i = frame.operandStack.size() - 2; i >= 0; i--) {
                 Class operandType = frame.operandStack.get(i);
 
@@ -844,6 +889,7 @@ public class Invoke implements Expression {
             generator.goTo(frame.captureLocalsLabel);
 
             generator.mark(yielding);
+            // TODO: This should cause an error if I ignore this case, right? I should pop the return value...shouldn't I?
             Compiler.pushInitializationValue(frame.outputClass, generator);
             generator.returnValue();
 
