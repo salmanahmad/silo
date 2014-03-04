@@ -44,6 +44,7 @@ public class Connection {
     public String method;
     public String uri;
     public IPersistentMap headers;
+    public boolean is100ContinueExpected;
 
     // TODO: Support trailing headers
     //public PersistentMap trailers;

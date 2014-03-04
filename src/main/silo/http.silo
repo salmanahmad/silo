@@ -80,6 +80,13 @@ package(silo.net.http.connection {
         null
     })
 
+    func(writeContinue(c : Connection) {
+        response : DefaultFullHttpResponse = DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.CONTINUE)
+        c.context#writeAndFlush(response)
+
+        null
+    })
+
     func(writeHead(c : Connection, status : int, headers : Map) {
         if(c.doneWriting {
             return(null)

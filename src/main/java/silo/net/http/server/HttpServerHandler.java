@@ -113,6 +113,16 @@ public class HttpServerHandler extends SimpleChannelInboundHandler {
             this.connection.uri = request.getUri();
             this.connection.headers = headersMap;
 
+            if (HttpHeaders.is100ContinueExpected(request)) {
+                this.connection.is100ContinueExpected = true;
+
+                if(Boolean.TRUE.equals(PersistentMapHelper.get(this.options, "send-100-continue", Boolean.TRUE))) {
+                    send100Continue(ctx);
+                }
+            } else {
+                this.connection.is100ContinueExpected = false;
+            }
+
             this.actor = runtime.spawn(connection.actorId, handle, handler, connection);
 
             // TODO: Do I need to check this?
