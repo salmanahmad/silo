@@ -131,7 +131,13 @@ public class HttpServerHandler extends SimpleChannelInboundHandler {
 
         if (msg instanceof HttpContent) {
             HttpContent httpContent = (HttpContent)msg;
-            ByteBuf content = httpContent.content();
+
+            ByteBuf content;
+            if(httpContent.content().isReadable()) {
+                content = httpContent.content().copy();
+            } else {
+                content = Unpooled.buffer(0);
+            }
 
             HttpContentMessage message = null;
 
