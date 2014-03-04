@@ -889,7 +889,18 @@ public class Invoke implements Expression {
             generator.goTo(frame.captureLocalsLabel);
 
             generator.mark(yielding);
-            // TODO: This should cause an error if I ignore this case, right? I should pop the return value...shouldn't I?
+            // It turns out that I do not need to clear the stack before returning from a method.
+            // Hence, I do not clear the returnValue nor (in the case of a function handle) the
+            // receiver. The fact that I do not need to clear the stack is confirmed from tests
+            // that I have run which inserts a bunch of "generator.push((String)null)" in this
+            // code region as well as the JVM's online documentation where it seems to insinuate
+            // that the stack is cleared:
+            // http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-6.html#jvms-6.5.areturn
+
+            // Compiler.pop(returnClass, generator);
+            // if(!staticInvoke) {
+            //     Compiler.pop(Function.class, generator);
+            // }
             Compiler.pushInitializationValue(frame.outputClass, generator);
             generator.returnValue();
 

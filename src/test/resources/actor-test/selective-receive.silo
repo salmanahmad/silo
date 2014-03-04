@@ -1,0 +1,19 @@
+
+func(foo {
+    while(true {
+        o : Object = actor.peek()
+
+        if(instanceof(o, String) {
+            actor.read()
+            return("Value: " + o)
+        })
+
+        actor.skip()
+    })
+})
+
+
+func(main {
+    f : Function = foo
+    f()
+})

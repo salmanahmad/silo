@@ -3,7 +3,7 @@ func(main {
     i : int = 0
     o : Object = ""
 
-    Thread.sleep(Integer(5000)#longValue())
+    Thread.sleep(Integer(1000)#longValue())
 
     while(i < 100 {
         o = actor.read()

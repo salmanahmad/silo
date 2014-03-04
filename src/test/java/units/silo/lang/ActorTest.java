@@ -150,13 +150,33 @@ public class ActorTest {
 
         Actor a = runtime.spawn("main");
 
-        Thread.sleep(5000);
+        Thread.sleep(1000);
 
         for(int i = 0; i < 100; i++) {
             a.inboxPut("Message: " + i);
         }
 
         Assert.assertEquals("Message: 99", a.await());
+    }
+
+    @Test
+    public void testSelectiveRecieve() throws Exception {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/actor-test/selective-receive.silo");
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+
+        Actor a = runtime.spawn("main");
+
+        Thread.sleep(500);
+        a.inboxPut(new Integer(0));
+        Thread.sleep(500);
+        a.inboxPut(new Integer(0));
+        Thread.sleep(500);
+        a.inboxPut(new Integer(0));
+        Thread.sleep(500);
+        a.inboxPut("FooBar");
+
+        Assert.assertEquals("Value: FooBar", a.await());
     }
 }
 
