@@ -796,4 +796,20 @@ public class CompilerTest {
             System.setOut(oldOut);
         }
     }
+
+    @Test
+    public void testCastingPrimitives() {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/examples/casting-primitives.silo");
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+
+        Assert.assertEquals(new Double((double)5), runtime.eval("testDouble"));
+        Assert.assertEquals(new Float((float)5), runtime.eval("testFloat"));
+        Assert.assertEquals(new Long((long)5), runtime.eval("testLong"));
+        Assert.assertEquals(new Short((short)5), runtime.eval("testShort"));
+        Assert.assertEquals(new Byte((byte)5), runtime.eval("testByte"));
+        Assert.assertEquals(new Byte((byte)5), runtime.eval("testFloat2Byte"));
+        Assert.assertEquals(new Integer((int)5), runtime.eval("testFloat2Integer"));
+        Assert.assertEquals(new Long((long)5), runtime.eval("testFloat2Long"));
+    }
 }

@@ -183,9 +183,10 @@ literalExpression returns [Object value]
   | TRUE                               { $value = Boolean.TRUE; }
   | FALSE                              { $value = Boolean.FALSE; }
   | STRING                             { $value = $text; }
-  | INTEGER                            { $value = Integer.parseInt($text); }
-  | FLOAT                              { $value = Float.parseFloat($text); }
+  | FLOAT                              { $value = Float.parseFloat($text.substring(0, $text.length() - 1)); }
+  | LONG                               { $value = Long.parseLong($text.substring(0, $text.length() - 1)); }
   | DOUBLE                             { $value = Double.parseDouble($text); }
+  | INTEGER                            { $value = Integer.parseInt($text); }
   | symbol                             { $value = new Symbol($symbol.text); }
   | blockExpression                    { $value = $blockExpression.value; }
   ;
@@ -295,9 +296,10 @@ STRING
     '\''                               {setText(buf.toString());}
   ;
 
-INTEGER:            '-'? DIGIT+;
+FLOAT:              '-'? DIGIT+ ('.' DIGIT+)? ('f' | 'F');
+LONG:               '-'? DIGIT+ ('l' | 'L');
 DOUBLE:             '-'? DIGIT+ ('.' DIGIT+);
-FLOAT:              '-'? DIGIT+ ('.' DIGIT+) 'f';
+INTEGER:            '-'? DIGIT+;
 
 TRUE:               'true';
 FALSE:              'false';
@@ -389,7 +391,7 @@ fragment ESC
   ;
 
 fragment LETTER:      LOWER | UPPER;
-fragment NUMBER:      INTEGER | FLOAT | DOUBLE;
+fragment NUMBER:      FLOAT | LONG | DOUBLE | INTEGER;
 fragment SYMBOL_CHAR: LETTER | UNDERSCORE | DOLLAR | DIGIT;
 fragment UNDERSCORE:  '_';
 fragment DOLLAR:       '$';

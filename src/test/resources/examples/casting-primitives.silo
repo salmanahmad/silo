@@ -1,0 +1,57 @@
+
+function(
+    name(testDouble)
+    outputs(double) {
+        return(checkcast(5, double))
+    }
+)
+
+function(
+    name(testFloat)
+    outputs(float) {
+        return(checkcast(5, float))
+    }
+)
+
+function(
+    name(testLong)
+    outputs(long) {
+        return(checkcast(5, long))
+    }
+)
+
+function(
+    name(testShort)
+    outputs(short) {
+        return(checkcast(5, short))
+    }
+)
+
+
+function(
+    name(testByte)
+    outputs(byte) {
+        return(checkcast(5, byte))
+    }
+)
+
+function(
+    name(testFloat2Byte)
+    outputs(byte) {
+        return(checkcast(5.0f, byte))
+    }
+)
+
+function(
+    name(testFloat2Integer)
+    outputs(int) {
+        return(checkcast(5.0f, int))
+    }
+)
+
+function(
+    name(testFloat2Long)
+    outputs(long) {
+        return(checkcast(5.0f, long))
+    }
+)

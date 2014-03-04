@@ -251,4 +251,16 @@ public class ParserTest {
         e = new Node(null, new Node(new Symbol("fn"), new Symbol("=>"), new Symbol("String"), new Node(null)));
         Assert.assertEquals(e, n);
     }
+
+    @Test
+    public void testPrimitives() {
+        Assert.assertEquals(new Long(5), Parser.parse("5L").getFirstChild());
+        Assert.assertEquals(new Long(5), Parser.parse("5l").getFirstChild());
+        Assert.assertEquals(new Integer(5), Parser.parse("5").getFirstChild());
+        Assert.assertEquals(new Float(5), Parser.parse("5.0F").getFirstChild());
+        Assert.assertEquals(new Float(5), Parser.parse("5.0f").getFirstChild());
+        Assert.assertEquals(new Float(5), Parser.parse("5F").getFirstChild());
+        Assert.assertEquals(new Float(5), Parser.parse("5f").getFirstChild());
+        Assert.assertEquals(new Double(5), Parser.parse("5.0").getFirstChild());
+    }
 }

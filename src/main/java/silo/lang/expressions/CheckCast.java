@@ -49,7 +49,12 @@ public class CheckCast implements Expression {
         Expression e = Compiler.buildExpression(node.getFirstChild());
         e.emit(context);
 
-        generator.checkCast(Type.getType(type));
+        // TODO: Abstract this logic out when we support Vars and autoboxing
+        if(type.isPrimitive()) {
+            generator.cast(Type.getType(e.type(context)), Type.getType(type));
+        } else {
+            generator.checkCast(Type.getType(type));
+        }
         frame.operandStack.pop();
         frame.operandStack.push(type);
     }
