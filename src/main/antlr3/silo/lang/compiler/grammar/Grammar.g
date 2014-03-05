@@ -136,8 +136,8 @@ unaryExpresion returns [Object value]
 chainExpression returns [Object value]
   : n1=primaryExpression               { $value = $n1.value; }
     ( op=chainOperator
-      n2=chainExpression               { $value = Node.withMeta(Helper.meta(fileName, $start.getLine(), $start.getCharPositionInLine()), new Symbol($op.text), $n1.value, $n2.value); }
-    )?
+      n2=primaryExpression             { $value = Node.withMeta(Helper.meta(fileName, $start.getLine(), $start.getCharPositionInLine()), new Symbol($op.text), $value, $n2.value); }
+    )*
   ;
 
 // These rules are left associative, unlike the rest of the grammar

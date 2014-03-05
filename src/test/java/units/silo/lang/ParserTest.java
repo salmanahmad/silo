@@ -263,4 +263,57 @@ public class ParserTest {
         Assert.assertEquals(new Float(5), Parser.parse("5f").getFirstChild());
         Assert.assertEquals(new Double(5), Parser.parse("5.0").getFirstChild());
     }
+
+    @Test
+    public void testLeftAssociativityOfHashAndPipe() {
+        Node expected = null;
+
+        expected = new Node(null,
+            new Node(new Symbol("|"),
+                new Node(new Symbol("|"),
+                    new Node(new Symbol("|"),
+                        new Symbol("a"),
+                        new Symbol("b")
+                    ),
+                    new Symbol("c")
+                ),
+                new Symbol("d")
+            )
+        );
+
+        Assert.assertEquals(expected, Parser.parse("a | b | c | d"));
+        Assert.assertEquals(expected, Parser.parse("a|b|c|d"));
+
+        expected = new Node(null,
+            new Node(new Symbol("#"),
+                new Node(new Symbol("#"),
+                    new Node(new Symbol("#"),
+                        new Symbol("a"),
+                        new Symbol("b")
+                    ),
+                    new Symbol("c")
+                ),
+                new Symbol("d")
+            )
+        );
+
+        Assert.assertEquals(expected, Parser.parse("a # b # c # d"));
+        Assert.assertEquals(expected, Parser.parse("a#b#c#d"));
+
+        expected = new Node(null,
+            new Node(new Symbol("#"),
+                new Node(new Symbol("#"),
+                    new Node(new Symbol("#"),
+                        new Symbol("o"),
+                        new Node(new Symbol("a"))
+                    ),
+                    new Node(new Symbol("b"))
+                ),
+                new Node(new Symbol("c"))
+            )
+        );
+
+        Assert.assertEquals(expected, Parser.parse("o#a()#b()#c()"));
+
+    }
 }
