@@ -1,0 +1,5 @@
+
+
+message : String = "   123foobar456   "
+message = message#trim()#toUpperCase()#substring(3, 9)
+

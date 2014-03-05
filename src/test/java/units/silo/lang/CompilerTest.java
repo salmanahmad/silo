@@ -812,4 +812,13 @@ public class CompilerTest {
         Assert.assertEquals(new Integer((int)5), runtime.eval("testFloat2Integer"));
         Assert.assertEquals(new Long((long)5), runtime.eval("testFloat2Long"));
     }
+
+    @Test
+    public void testMethodChaining() {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/examples/method-chaining.silo");
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+
+        Assert.assertEquals("FOOBAR", runtime.eval(classes.get(0)));
+    }
 }
