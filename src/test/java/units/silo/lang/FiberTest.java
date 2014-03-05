@@ -106,6 +106,16 @@ public class FiberTest {
         IPersistentVector vector = PersistentVectorHelper.create("Hello", "World");
         Assert.assertEquals(vector, runtime.spawn("main").await());
     }
+
+    @Test
+    public void testDeadFiber() {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/fiber-test/dead-fiber.silo");
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+
+        IPersistentVector vector = PersistentVectorHelper.create("a", "b", "b");
+        Assert.assertEquals(vector, runtime.spawn("main").await());
+    }
 }
 
 

@@ -23,6 +23,7 @@ public class Fiber {
 
     public Object value;
     public Object resumedArgument;
+    public boolean dead;
 
     public Actor actor;
 
@@ -35,5 +36,7 @@ public class Fiber {
 
         this.value = null;
         this.resumedArgument = null;
+
+        this.dead = false;
     }
 }

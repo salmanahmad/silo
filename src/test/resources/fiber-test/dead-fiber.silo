@@ -1,0 +1,21 @@
+
+func(foo {
+    fiber.yield("a")
+    return("b")
+})
+
+func(main {
+    v : Vector = vector.create()
+    f : fiber.Fiber = fiber.Fiber(foo)
+
+    fiber.resume(f)
+    v = vector.push(v, f.value)
+
+    fiber.resume(f)
+    v = vector.push(v, f.value)
+
+    fiber.resume(f)
+    v = vector.push(v, f.value)
+
+    return(v)
+})

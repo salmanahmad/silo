@@ -26,6 +26,11 @@ public class resume extends Function {
 
     @Function.Body
     public static Object invoke(ExecutionContext context, Fiber fiber, IPersistentVector vector) {
+        if(fiber.dead) {
+            // TODO: Should this throw an exception instead?
+            return fiber;
+        }
+
         // TODO: Invoke should look at the list of arguments stored in Fiber
         // and dispatch "apply" on that number in a performant manner.
 
@@ -37,6 +42,7 @@ public class resume extends Function {
 
         if(!fiber.context.yielding) {
             fiber.value = output;
+            fiber.dead = true;
         }
 
         // TODO: Make fibers immutable...
