@@ -1,0 +1,37 @@
+
+function({
+    s : String = ""
+
+    try({
+        foo()
+        s = "bar-try"
+    } catch(e : NullPointerException) {
+        s = "bar-catch"
+    } finally {
+        s = "bar-finally"
+    })
+
+    return(s)
+})
+
+function({
+    s : String = ""
+
+    try({
+        s = "foo-try"
+    } catch(e : NullPointerException) {
+        foo()
+    } finally {
+        foo()
+        s = "foo-finally"
+    })
+
+    return(s)
+})
+
+function(
+    name(foo)
+    {
+        return("Hi")
+    }
+)

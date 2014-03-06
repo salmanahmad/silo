@@ -670,6 +670,16 @@ public class CompilerTest {
     }
 
     @Test
+    public void testTryCatchFinally() {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/examples/try-catch-finally.silo");
+
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+        Assert.assertEquals("bar-finally", runtime.eval(classes.get(0)));
+        Assert.assertEquals("foo-finally", runtime.eval(classes.get(1)));
+    }
+
+    @Test
     public void testLineNumbers() {
         Runtime runtime = new Runtime();
         String source = Helper.readResource("/examples/line-numbers.silo");

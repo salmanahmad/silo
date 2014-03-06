@@ -185,11 +185,13 @@ public class Try implements Expression {
             generator.visitTryCatchBlock(tryStartLabel, tryEndLabel, finallyLabel, null);
             generator.mark(finallyLabel);
             generator.visitFrame(Opcodes.F_NEW, 0, null, 1, new Object[] {Type.getType(Throwable.class).getInternalName()});
+            context.currentFrame().operandStack.push(Throwable.class);
             Compiler.buildExpression(finallyBlock).emit(context);
             generator.pop();
             context.currentFrame().operandStack.pop();
 
             generator.throwException();
+            context.currentFrame().operandStack.pop();
         }
 
         generator.mark(doneLabel);
