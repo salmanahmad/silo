@@ -151,9 +151,9 @@ package(silo.net.http.connection {
         invokevirtual(response#headers(), set(checkcast("Content-Length", CharSequence), Integer(data#readableBytes())))
 
         if(checkcast(map.get(c.headers, "Connection", "Close"), String)#equalsIgnoreCase("Keep-Alive") {
-            invokevirtual(response#headers(), set(checkcast("Connection", CharSequence), "Keep-Alive"))
+            response#headers()#set("Connection", "Keep-Alive")
         } else {
-            invokevirtual(response#headers(), set(checkcast("Connection", CharSequence), "Close"))
+            response#headers()#set("Connection", "Close")
         })
 
         c.context#writeAndFlush(response)
