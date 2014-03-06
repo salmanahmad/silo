@@ -1,0 +1,12 @@
+
+a : String = CompilerTest$__testMethodResolutionExample__.aaa("foo", "bar")
+b : String = CompilerTest$__testMethodResolutionExample__.aaa(checkcast("foo", CharSequence), "bar")
+
+c : String = CompilerTest$__testMethodResolutionExample__.bbb("foo", "bar")
+d : String = CompilerTest$__testMethodResolutionExample__.bbb(checkcast("foo", CharSequence), "bar")
+
+e : String = CompilerTest$__testMethodResolutionExample__()#ccc("foo", "bar")
+f : String = CompilerTest$__testMethodResolutionExample__()#ccc(checkcast("foo", CharSequence), "bar")
+
+vector.create(a, b, c, d, e, f)
+

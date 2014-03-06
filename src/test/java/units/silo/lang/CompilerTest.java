@@ -821,4 +821,40 @@ public class CompilerTest {
 
         Assert.assertEquals("FOOBAR", runtime.eval(classes.get(0)));
     }
+
+    public static class __testMethodResolutionExample__ {
+        public static String aaa(String a, String b) {
+            return a.toString() + b.toString();
+        }
+
+        public static String aaa(CharSequence a, CharSequence b) {
+            return b.toString() + a.toString();
+        }
+
+        public static String bbb(String a, Object b) {
+            return a.toString() + b.toString();
+        }
+
+        public static String bbb(CharSequence a, Object b) {
+            return b.toString() + a.toString();
+        }
+
+        public String ccc(String a, Object b) {
+            return a.toString() + b.toString();
+        }
+
+        public String ccc(CharSequence a, Object b) {
+            return b.toString() + a.toString();
+        }
+    }
+
+    @Test
+    public void testMethodResolution() {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/examples/function-resolution.silo");
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+
+        IPersistentVector vector = PersistentVectorHelper.create("foobar", "barfoo", "foobar", "barfoo", "foobar", "barfoo");
+        Assert.assertEquals(vector, runtime.eval(classes.get(0)));
+    }
 }

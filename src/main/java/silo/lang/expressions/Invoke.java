@@ -39,36 +39,56 @@ public class Invoke implements Expression {
 
     public static int mostSpecificClass(Class c1, Class c2) {
         if(c1.equals(c2)) {
-            return -1;
-        }
-
-        if(c1.isAssignableFrom(c2)) {
-            return 1;
-        }
-
-        if(c2.isAssignableFrom(c1)) {
+            // If they are equal then neither is more specific than the other
             return 0;
         }
 
+        if(c1.isAssignableFrom(c2)) {
+            // If c1 can be assigned from c2 that means that c1 "isa" c2.
+            // Since they are not equal (we checked for that already) it must
+            // be the case the c2 is more "specific"
+            return 2;
+        }
+
+        if(c2.isAssignableFrom(c1)) {
+            // Logic follows here...
+            return 1;
+        }
+
+        // They are incompatible types.
         return -1;
     }
 
     public static int mostSpecificParametersFixedArgs(Class[] p1, Class[] p2) {
-        int index = -1;
+        // Start off assuming that the args are equivalent
+        int index = 0;
 
         if(p1.length == p2.length) {
             for(int i = 0; i < p1.length; i++) {
                 Class class1 = p1[i];
                 Class class2 = p2[i];
 
-                if(index == -1) {
-                    index = mostSpecificClass(class1, class2);
-                } else {
-                    if(index != mostSpecificClass(class1, class2)) {
+                int temp = mostSpecificClass(class1, class2);
+
+                if(temp == -1) {
+                    // If the classes are incompatible return -1
+                    return -1;
+                } else if(temp != 0){
+                    // If the classes are equal (temp == 0) then ignore it
+
+                    if(index == 0) {
+                        // If neither p1 or p2 is more specific then lets pick "temp" for now
+                        index = temp;
+                    } else if(index != temp) {
+                        // The more specific argument is from the other argument list
+                        // Hence they are not compatible
                         return -1;
                     }
                 }
             }
+        } else {
+            // If the arguments are of different lengths then obviously they are not compatible
+            return -1;
         }
 
         return index;
@@ -77,41 +97,41 @@ public class Invoke implements Expression {
     public static int mostSpecificParametersVarArgs(Class[] p1, Class[] p2) {
         if(p1.length == p2.length) {
             return mostSpecificParametersFixedArgs(p1, p2);
-        }
+        } else {
+            int max = Math.max(p1.length, p2.length);
+            Class[] newP1 = new Class[max];
+            Class[] newP2 = new Class[max];
 
-        int index = -1;
+            for(int i = 0; i < max; i++) {
+                Class class1 = null;
+                Class class2 = null;
 
-        for(int i = 0; i < Math.max(p1.length, p2.length); i++) {
-            Class class1 = null;
-            Class class2 = null;
-
-            if(i >= p1.length - 1) {
-                class1 = p1[p1.length - 1].getComponentType();
-            } else {
-                class1 = p1[i];
-            }
-
-            if(i >= p2.length - 1) {
-                class2 = p2[p2.length - 1].getComponentType();
-            } else {
-                class2 = p2[i];
-            }
-
-            if(index == -1) {
-                index = mostSpecificClass(class1, class2);
-            } else {
-                if(index != mostSpecificClass(class1, class2)) {
-                    return -1;
+                if(i >= p1.length - 1) {
+                    class1 = p1[p1.length - 1].getComponentType();
+                } else {
+                    class1 = p1[i];
                 }
-            }
-        }
 
-        return index;
+                if(i >= p2.length - 1) {
+                    class2 = p2[p2.length - 1].getComponentType();
+                } else {
+                    class2 = p2[i];
+                }
+
+                newP1[i] = class1;
+                newP2[i] = class2;
+            }
+
+            return mostSpecificParametersFixedArgs(newP1, newP2);
+        }
     }
 
+    // TODO: This method is very similiar to resolveFunctionByVarArgs.
+    // Consider refactoring and consolidating them together.
     public static int resolveFunctionByArguments(Class[][] parameters, Class[] args) {
         Vector<Integer> options = new Vector<Integer>();
 
+        // First filter out the parameters that are not valid for the args
         int i = 0;
         for(Class[] expected : parameters) {
             boolean match = true;
@@ -138,29 +158,28 @@ public class Invoke implements Expression {
             i++;
         }
 
-
-
+        // Second, we have to find the most specific arguments
         int index = -1;
         for(i = 0; i < options.size(); i++) {
             if(i == 0) {
                 index = 0;
             } else {
+
                 int result = mostSpecificParametersFixedArgs(
                     parameters[options.get(index)],
                     parameters[options.get(i)]
                 );
 
                 if(result == 0) {
+                    // If they are equal we are going to pick the first method, hence we do not change index
                     index = index;
                 } else if(result == 1) {
+                    index = index;
+                } else if(result == 2) {
                     index = i;
                 } else {
-                    if(java.util.Arrays.equals(parameters[options.get(index)], parameters[options.get(i)])) {
-                        index = index;
-                    } else {
-                        index = -1;
-                        break;
-                    }
+                    index = -1;
+                    break;
                 }
             }
         }
@@ -226,8 +245,11 @@ public class Invoke implements Expression {
                 );
 
                 if(result == 0) {
+                    // If they are equal we are going to pick the first method, hence we do not change index
                     index = index;
                 } else if(result == 1) {
+                    index = index;
+                } else if(result == 2) {
                     index = i;
                 } else {
                     index = -1;
