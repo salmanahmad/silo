@@ -127,6 +127,8 @@ public class CompilationContext {
         this.currentNamespace().imports.add("silo.core");
         this.currentNamespace().aliases.put("Function", "silo.lang.Function");
 
+        this.currentNamespace().aliases.put("fs", "java.nio.file.Files");
+
         this.currentNamespace().aliases.put("Vector", "com.github.krukow.clj_lang.IPersistentVector");
         this.currentNamespace().aliases.put("Map", "com.github.krukow.clj_lang.IPersistentMap");
 

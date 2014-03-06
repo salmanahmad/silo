@@ -43,4 +43,8 @@ public class PersistentVectorHelper {
     public static IPersistentVector push(IPersistentVector vector, Object value) {
         return vector.cons(value);
     }
+
+    public static int length(IPersistentVector vector) {
+        return vector.length();
+    }
 }

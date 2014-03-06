@@ -1,0 +1,31 @@
+
+package(silo.io.file {
+    func(path(first : String, rest ... => java.nio.file.Path) {
+        length : int  = vector.length(rest)
+        elements : array(String) = arraynew(String, length)
+
+        i : int = 0;
+        while(i < length {
+            elements(i) = vector.get(rest, i)#toString()
+            i = i + 1
+        })
+
+        return(java.nio.file.Paths.get(first, elements))
+    })
+
+    func(read(file : String, length : int, position : int => String) {
+        
+    })
+
+    func(readAll(file : String => String) {
+        
+    })
+
+    func(write(file : String, content : String, position : int => int) {
+        return(0)
+    })
+
+    func(writeAll(file : String, content : String => int) {
+        return(0)
+    })
+})
