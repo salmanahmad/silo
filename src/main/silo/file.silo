@@ -13,13 +13,7 @@ package(silo.io.file {
         return(java.nio.file.Paths.get(first, elements))
     })
 
-    func(read(file : String, length : int, position : int => String) {
-        
-    })
-
-    func(readAll(file : String => String) {
-        id : String = readAllOperation(file)
-
+    func(awaitReadOperation(id : String => String) {
         while(true {
             o : Object = actor.peek()
 
@@ -43,13 +37,7 @@ package(silo.io.file {
         return(null)
     })
 
-    func(write(file : String, content : String, position : int => int) {
-        0
-    })
-
-    func(writeAll(file : String, content : String => int) {
-        id : String = writeAllOperation(file, content)
-
+    func(awaitWriteOperation(id : String => int) {
         while(true {
             o : Object = actor.peek()
 
@@ -69,5 +57,25 @@ package(silo.io.file {
         })
 
         return(-1)
+    })
+
+    func(read(file : String, length : int, position : int => String) {
+        id : String = readOperation(file, length, position)
+        awaitReadOperation(id)
+    })
+
+    func(readAll(file : String => String) {
+        id : String = readAllOperation(file)
+        awaitReadOperation(id)
+    })
+
+    func(write(file : String, content : String, position : int => int) {
+        id : String = writeOperation(file, content, position)
+        awaitWriteOperation(id)
+    })
+
+    func(writeAll(file : String, content : String => int) {
+        id : String = writeAllOperation(file, content)
+        awaitWriteOperation(id)
     })
 })
