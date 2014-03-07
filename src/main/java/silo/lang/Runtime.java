@@ -42,6 +42,8 @@ public class Runtime {
     public ExecutorService actorExecutor;
     public ExecutorService backgroundExecutor;
 
+    public ConcurrentHashMap<String, Object> registry;
+
     public Runtime() {
         this(new RuntimeClassLoader(), java.lang.Runtime.getRuntime().availableProcessors() * 2);
     }
@@ -53,6 +55,8 @@ public class Runtime {
         this.actors = new ConcurrentHashMap<String, Actor>();
         this.actorExecutor = Executors.newFixedThreadPool(nThreads);
         this.backgroundExecutor = Executors.newCachedThreadPool();
+
+        this.registry = new ConcurrentHashMap<String, Object>();
     }
 
     public void shutdown() {

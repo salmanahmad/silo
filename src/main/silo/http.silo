@@ -12,10 +12,10 @@ package(silo.net.http.connection {
     alias(CharsetUtil, io.netty.util.CharsetUtil)
     alias(Unpooled, io.netty.buffer.Unpooled)
 
-    func(handle(f : Function, c : Connection) {
-        f(c)
+    func(handle(f : Function, c : Connection, r : Request) {
+        f(c, r)
 
-        if(!checkcast(map.get(c.headers, "Connection", "Close"), String)#equalsIgnoreCase("Keep-Alive") {
+        if(!checkcast(map.get(r.headers, "Connection", "Close"), String)#equalsIgnoreCase("Keep-Alive") {
             close(c)
         })
     })
@@ -30,6 +30,15 @@ package(silo.net.http.connection {
         c.closed = true
 
         c.context#close()
+    })
+
+    func(readHead(c : Connection => Response) {
+        if(c.type == Connection.SERVER {
+            // A client connection cannot be given another header
+            return(null)
+        })
+
+        return(null)
     })
 
     func(read(c : Connection => HttpContentMessage) {
@@ -88,6 +97,11 @@ package(silo.net.http.connection {
     })
 
     func(writeHead(c : Connection, status : int, headers : Map) {
+        if(c.type == Connection.CLIENT {
+            // A client connection cannot be given another header
+            return(null)
+        })
+
         if(c.doneWriting {
             return(null)
         })
@@ -150,7 +164,7 @@ package(silo.net.http.connection {
         response : DefaultFullHttpResponse = DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.valueOf(status), data)
         invokevirtual(response#headers(), set(checkcast("Content-Length", CharSequence), Integer(data#readableBytes())))
 
-        if(checkcast(map.get(c.headers, "Connection", "Close"), String)#equalsIgnoreCase("Keep-Alive") {
+        if(c.isKeepAlive {
             response#headers()#set("Connection", "Keep-Alive")
         } else {
             response#headers()#set("Connection", "Close")

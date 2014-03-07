@@ -12,6 +12,7 @@
 package silo.net.http.server;
 
 import silo.net.http.connection.Connection;
+import silo.net.http.connection.Request;
 import silo.net.http.connection.HttpContentMessage;
 
 import silo.lang.Actor;
@@ -107,23 +108,25 @@ public class HttpServerHandler extends SimpleChannelInboundHandler {
             this.connection.context = ctx;
             this.connection.actorId = UUID.randomUUID().toString();
             this.connection.connectionId = UUID.randomUUID().toString();
+            this.connection.isKeepAlive = HttpHeaders.isKeepAlive(request);
 
-            this.connection.httpVersion = request.getProtocolVersion().toString();
-            this.connection.method = request.getMethod().toString();
-            this.connection.uri = request.getUri();
-            this.connection.headers = headersMap;
+            Request httpRequest = new Request();
+            httpRequest.httpVersion = request.getProtocolVersion().toString();
+            httpRequest.method = request.getMethod().toString();
+            httpRequest.uri = request.getUri();
+            httpRequest.headers = headersMap;
 
             if (HttpHeaders.is100ContinueExpected(request)) {
-                this.connection.is100ContinueExpected = true;
+                httpRequest.is100ContinueExpected = true;
 
                 if(Boolean.TRUE.equals(PersistentMapHelper.get(this.options, "send-100-continue", Boolean.TRUE))) {
                     send100Continue(ctx);
                 }
             } else {
-                this.connection.is100ContinueExpected = false;
+                httpRequest.is100ContinueExpected = false;
             }
 
-            this.actor = runtime.spawn(connection.actorId, handle, handler, connection);
+            this.actor = runtime.spawn(connection.actorId, handle, handler, connection, httpRequest);
 
             // TODO: Do I need to check this?
             //appendDecoderResult(buf, request);

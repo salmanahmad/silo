@@ -16,6 +16,11 @@ import io.netty.channel.ChannelHandlerContext;
 
 public class Connection {
 
+    public static int SERVER = 0;
+    public static int CLIENT = 1;
+
+    public int type;
+
     public ChannelHandlerContext context;
     public boolean doneReading = false;
     public boolean doneWriting = false;
@@ -40,12 +45,5 @@ public class Connection {
     // public Pattern recievablePattern;
     // public Pattern messagePattern;
 
-    public String httpVersion;
-    public String method;
-    public String uri;
-    public IPersistentMap headers;
-    public boolean is100ContinueExpected;
-
-    // TODO: Support trailing headers
-    //public PersistentMap trailers;
+    public boolean isKeepAlive = false;
 }
