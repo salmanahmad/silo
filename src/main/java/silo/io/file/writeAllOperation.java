@@ -34,6 +34,7 @@ public class writeAllOperation extends Function {
             op.operationId = UUID.randomUUID().toString();
             op.actor = context.fiber.actor;
             op.buffer = ByteBuffer.wrap(content.getBytes());
+            op.channel = channel;
 
             channel.write(op.buffer, 0, op, new FileOperationHandler());
             return op.operationId;

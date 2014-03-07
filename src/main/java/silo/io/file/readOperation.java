@@ -34,6 +34,7 @@ public class readOperation extends Function {
             op.operationId = UUID.randomUUID().toString();
             op.actor = context.fiber.actor;
             op.buffer = ByteBuffer.allocate(length);
+            op.channel = channel;
 
             channel.read(op.buffer, position, op, new FileOperationHandler());
             return op.operationId;

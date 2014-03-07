@@ -14,8 +14,11 @@ package silo.io.file;
 import silo.lang.Actor;
 
 import java.nio.ByteBuffer;
+import java.nio.channels.AsynchronousFileChannel;
 
 class FileOperationMessage {
+    public AsynchronousFileChannel channel;
+
     public String operationId;
     public Actor actor;
 
