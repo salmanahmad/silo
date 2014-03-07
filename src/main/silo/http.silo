@@ -12,11 +12,13 @@ package(silo.net.http.connection {
     alias(CharsetUtil, io.netty.util.CharsetUtil)
     alias(Unpooled, io.netty.buffer.Unpooled)
 
-    func(handle(f : Function, c : Connection, r : Request) {
-        f(c, r)
-
-        if(!checkcast(map.get(r.headers, "Connection", "Close"), String)#equalsIgnoreCase("Keep-Alive") {
-            close(c)
+    func(handle(f : Function, r : Request, c : Connection) {
+        try({
+            f(r, c)
+        } finally {
+            if(!checkcast(map.get(r.headers, "Connection", "Close"), String)#equalsIgnoreCase("Keep-Alive") {
+                close(c)
+            })
         })
     })
 
