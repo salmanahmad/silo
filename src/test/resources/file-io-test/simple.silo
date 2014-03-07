@@ -1,0 +1,12 @@
+
+import(silo.io)
+
+func(test(message : String) {
+    path : Path = fs.createTempFile("", ".tmp")
+    message = "Hello" + message
+
+    file.writeAll(path#toString(), message)
+    file.readAll(path#toString())
+})
+
+
