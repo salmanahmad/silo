@@ -18,14 +18,36 @@ package(silo.io.file {
     })
 
     func(readAll(file : String => String) {
-        
+        id : String = readAllOperation(file)
+
+        while(true {
+            o : Object = actor.peek()
+
+            if(instanceof(o, FileOperationMessage) {
+                message : FileOperationMessage = checkcast(o, FileOperationMessage)
+                if(message.operationId == id {
+                    actor.read()
+                    if(message.exception {
+                        throw(message.exception)
+                    } else {
+                        // TODO: Why is this an issue? Why do I need a checkcast?
+                        a : array(byte) = checkcast(message.buffer#array(), array(byte))
+                        return(String(a))
+                    })
+                })
+            })
+
+            actor.skip()
+        })
+
+        return(null)
     })
 
     func(write(file : String, content : String, position : int => int) {
-        return(0)
+        0
     })
 
     func(writeAll(file : String, content : String => int) {
-        return(0)
+        0
     })
 })
