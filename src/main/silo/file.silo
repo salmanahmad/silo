@@ -48,6 +48,26 @@ package(silo.io.file {
     })
 
     func(writeAll(file : String, content : String => int) {
-        0
+        id : String = writeAllOperation(file, content)
+
+        while(true {
+            o : Object = actor.peek()
+
+            if(instanceof(o, FileOperationMessage) {
+                message : FileOperationMessage = checkcast(o, FileOperationMessage)
+                if(message.operationId == id {
+                    actor.read()
+                    if(message.exception {
+                        throw(message.exception)
+                    } else {
+                        return(message.count)
+                    })
+                })
+            })
+
+            actor.skip()
+        })
+
+        return(-1)
     })
 })
