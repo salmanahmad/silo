@@ -1,5 +1,4 @@
 
-
 alias(DefaultFullHttpRequest, io.netty.handler.codec.http.DefaultFullHttpRequest)
 alias(DefaultFullHttpResponse, io.netty.handler.codec.http.DefaultFullHttpResponse)
 alias(DefaultHttpRequest, io.netty.handler.codec.http.DefaultHttpRequest)
@@ -17,6 +16,8 @@ alias(Unpooled, io.netty.buffer.Unpooled)
 
 alias(Connection, silo.net.http.connection.Connection)
 alias(Message, silo.core.actor.Message)
+
+// TODO: DO I NEED TO RELEASE BYTEBUFS
 
 // TODO: Implement and handle socket timeouts and DNS errors. If I try to connect to a server
 // that is not running the client will just hang.
