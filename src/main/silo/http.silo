@@ -18,6 +18,9 @@ alias(Connection, silo.net.http.connection.Connection)
 alias(Message, silo.core.actor.Message)
 
 package(silo.net.http.client {
+
+    // TODO: Implement "get()" and "post()" and "postFile()" helper functions.
+
     func(request(options : Map => Connection) {
         host : String = checkcast(map.get(options, "host", "localhost"), String)
         port : int = checkcast(map.get(options, "port", Integer(80)), Integer)#intValue()
