@@ -7,10 +7,14 @@ alias(CompilationContext, silo.lang.CompilationContext)
 alias(FileUtils, org.apache.commons.io.FileUtils)
 alias(FilenameUtils, org.apache.commons.io.FilenameUtils)
 
+alias(Console, org.jboss.jreadline.console.Console)
+alias(ConsoleOutput, org.jboss.jreadline.console.ConsoleOutput)
+
 func(main(args : Vector) {
     if(args#length() == 0 {
         // TODO: Perhaps enter a REPL?
-        println(help(null))
+        //println(help(null))
+        shell()
         return()
     })
 
@@ -18,6 +22,8 @@ func(main(args : Vector) {
 
     if(first#equals("run") {
         run(args#nth(1, null))
+    } else(first#equals("shell")) {
+        shell()
     } else(first#equals("compile")) {
         compile(args#nth(1, null))
     } else(first#equals("help")) {
@@ -53,6 +59,21 @@ func(run(file_ : Object) {
     runtime#shutdown()
 })
 
+func(shell {
+    console : Console = Console();
+
+    println(version() + "\n")
+
+    line : ConsoleOutput = null;
+    while(line = console#read("> ") {
+        console#pushToStdOut(line#getBuffer() + "\n\n");
+
+        if(line#getBuffer() == "quit" || line#getBuffer() == "exit" {
+            break
+        })
+    })
+})
+
 func(compile(file_ : Object) {
     if(file_ {
         file : String = file_#toString();
@@ -76,7 +97,7 @@ func(compile(file_ : Object) {
 })
 
 func(version {
-    String.format("Silo %s (Codename: %s)", silo.lang.Version.string, silo.lang.Version.codename)
+    String.format("Silo %s (Codename: %s) - %s, %s.", silo.lang.Version.string, silo.lang.Version.codename, System.getProperty("java.vm.name"), System.getProperty("java.version"))
 })
 
 func(copyright() {
@@ -120,6 +141,15 @@ Options include:
   --show-bytecode       # Print the compiled byte code. Useful for
                         # debugging purposes.
 "
+    } else(command#equals("shell")) {
+
+"
+Usage: silo [shell]
+
+  Launch an interactive REPL (read-evaluate-print-loop) that allows you to type
+  and execute Silo commands directly into your terminal.
+"
+
     } else(command#equals("version")) {
 "
 Usage: silo version
@@ -139,6 +169,7 @@ Usage: silo [COMMAND] [command-specific-arguments]
 List of commands, type \"silo help COMMAND\" for more details:
 
   run         # Run a Silo program
+  shell       # Launch the interactive Silo shell
   compile     # Compile Silo source files and output JVM bytecode
   help        # Show the help page for a command
   version     # Show the Silo version
