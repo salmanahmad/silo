@@ -23,12 +23,16 @@ import java.util.UUID;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.IOException;
+
 // TODO: Re-implement this once you implement monitor-enter and monitor-exit
 
 @Function.Definition
-public class sleep extends Function {
+public class readln extends Function {
 
-    public static class Task extends TimerTask {
+    public static class Task implements Runnable {
         public String id = null;
         public Actor actor = null;
 
@@ -38,12 +42,19 @@ public class sleep extends Function {
         }
 
         public void run() {
-            actor.inboxPut(new Message(id, null, null));
+            BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+
+            try {
+               String line = reader.readLine();
+               actor.inboxPut(new Message(id, line, null));
+            } catch (IOException error) {
+               actor.inboxPut(new Message(id, null, error));
+            }
         }
     }
 
     @Function.Body
-    public static Object invoke(ExecutionContext context, long ms) {
+    public static String invoke(ExecutionContext context) throws Throwable {
         Actor actor = context.fiber.actor;
         Runtime runtime = actor.runtime;
 
@@ -51,25 +62,8 @@ public class sleep extends Function {
         String id = null;
 
         if(context.programCounter == -1) {
-            Timer t = null;
-            Object o = null;
-
             id = UUID.randomUUID().toString();
-
-            o = runtime.registry.get(registryKey);
-            if(o == null) {
-                synchronized(runtime.registry) {
-                    // Check again in case someone else set the key from another thread
-                    o = runtime.registry.get(registryKey);
-                    if(o == null) {
-                        o = new Timer(true);
-                        runtime.registry.put(registryKey, o);
-                    }
-                }
-            }
-
-            t = (Timer)o;
-            t.schedule(new Task(id, actor), ms);
+            runtime.backgroundExecutor.submit(new Task(id, actor));
         } else {
             ExecutionFrame frame = context.getCurrentFrame();
             id = (String)frame.locals[0];
@@ -87,9 +81,11 @@ public class sleep extends Function {
             } else {
                 if(o instanceof Message) {
                     Message message = (Message)o;
-                    if(message.id.equals(id)) {
+                    if(message.error == null) {
                         actor.inboxGet(context);
-                        return null;
+                        return (String)message.payload;
+                    } else {
+                        throw message.error;
                     }
                 }
 
