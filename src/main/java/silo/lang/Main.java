@@ -28,5 +28,6 @@ public class Main {
         IPersistentVector vector = PersistentVector.create(args);
         runtime.spawn("silo.cli.main", vector).await();
         runtime.shutdown();
+        System.exit(0);
     }
 }
