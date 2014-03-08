@@ -12,8 +12,11 @@
 package silo.lang;
 
 import java.util.Map;
+
+import com.github.krukow.clj_lang.IPersistentVector;
 import com.github.krukow.clj_lang.IPersistentMap;
 import com.github.krukow.clj_lang.PersistentHashMap;
+import com.github.krukow.clj_lang.RT;
 
 public class PersistentMapHelper {
 
@@ -27,6 +30,10 @@ public class PersistentMapHelper {
 
     public static IPersistentMap create(Map items) {
         return PersistentHashMap.create(items);
+    }
+
+    public static IPersistentVector keys(IPersistentMap map) {
+        return PersistentVectorHelper.create((Iterable)RT.keys(map));
     }
 
     public static Object get(IPersistentMap map, Object key) {

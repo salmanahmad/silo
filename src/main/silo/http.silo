@@ -2,6 +2,7 @@
 
 alias(DefaultFullHttpRequest, io.netty.handler.codec.http.DefaultFullHttpRequest)
 alias(DefaultFullHttpResponse, io.netty.handler.codec.http.DefaultFullHttpResponse)
+alias(DefaultHttpRequest, io.netty.handler.codec.http.DefaultHttpRequest)
 alias(DefaultHttpResponse, io.netty.handler.codec.http.DefaultHttpResponse)
 alias(DefaultHttpContent, io.netty.handler.codec.http.DefaultHttpContent)
 alias(LastHttpContent, io.netty.handler.codec.http.LastHttpContent)
@@ -17,23 +18,38 @@ alias(Unpooled, io.netty.buffer.Unpooled)
 alias(Connection, silo.net.http.connection.Connection)
 alias(Message, silo.core.actor.Message)
 
+// TODO: Implement and handle socket timeouts and DNS errors. If I try to connect to a server
+// that is not running the client will just hang.
+
 package(silo.net.http.client {
 
     // TODO: Implement "get()" and "post()" and "postFile()" helper functions.
+    // These functions would likely use DefaultFullHttpRequest (note the 'Full')
 
     func(request(options : Map => Connection) {
         host : String = checkcast(map.get(options, "host", "localhost"), String)
         port : int = checkcast(map.get(options, "port", Integer(80)), Integer)#intValue()
+        headers : Map = checkcast(map.get(options, "headers", map.create()), Map)
 
         c : Connection = connect(host, port)
 
         path : String = checkcast(map.get(options, "path", "/"), String)
         method : String = checkcast(map.get(options, "method", "GET"), String)
 
-        request : DefaultFullHttpRequest = DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.valueOf(method), path);
+        request : DefaultHttpRequest = DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.valueOf(method), path);
         request#headers()#set("Host", host);
         request#headers()#set("Connection", "close");
         request#headers()#set("Accept-Encoding", "gzip");
+
+        keys : Vector = map.keys(headers)
+
+        i : int = 0
+        while(i < vector.length(keys) {
+            key : Object = vector.get(keys, i)
+            value : Object = map.get(headers, key)
+            request#headers()#set(key#toString(), value);
+            i = i + 1
+        })
 
         c.context#write(request)
 
