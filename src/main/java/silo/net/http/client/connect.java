@@ -55,7 +55,7 @@ public class connect extends Function {
     }
 
     @Function.Body
-    public static Connection invoke(ExecutionContext context, String host, int port) {
+    public static Connection invoke(ExecutionContext context, String host, int port) throws Throwable {
         Actor actor = context.fiber.actor;
         Runtime runtime = actor.runtime;
         Connection connection = null;
@@ -111,9 +111,13 @@ public class connect extends Function {
                 if(o instanceof Message) {
                     Message message = (Message)o;
                     if(message.id.equals(connection.connectionId)) {
-                        actor.inboxGet(context);
-                        connection.context = (Channel)message.payload;
-                        return connection;
+                        if(message.error == null) {
+                            actor.inboxGet(context);
+                            connection.context = (Channel)message.payload;
+                            return connection;
+                        } else {
+                            throw message.error;
+                        }
                     }
                 }
 

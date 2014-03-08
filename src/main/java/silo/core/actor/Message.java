@@ -14,10 +14,12 @@ package silo.core.actor;
 public class Message {
     public String id;
     public Object payload;
+    public Throwable error;
 
-    public Message(String id, Object payload) {
+    public Message(String id, Object payload, Throwable error) {
         this.id = id;
         this.payload = payload;
+        this.error = error;
     }
 
 }

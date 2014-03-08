@@ -27,7 +27,12 @@ class ConnectionHandler implements ChannelFutureListener {
     }
 
     public void operationComplete(ChannelFuture future) {
-        Message message = new Message(this.id, future.channel());
-        actor.inboxPut(message);
+        if(future.isSuccess()) {
+            Message message = new Message(this.id, future.channel(), null);
+            actor.inboxPut(message);
+        } else {
+            Message message = new Message(this.id, null, future.cause());
+            actor.inboxPut(message);
+        }
     }
 }
