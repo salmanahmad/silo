@@ -15,6 +15,8 @@ import com.github.krukow.clj_lang.IPersistentMap;
 import io.netty.channel.ChannelHandlerContext;
 
 public class Request {
+    public String connectionId;
+
     public String httpVersion;
     public String method;
     public String uri;

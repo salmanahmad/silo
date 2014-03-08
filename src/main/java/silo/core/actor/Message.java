@@ -9,14 +9,15 @@
  *
  */
 
-package silo.net.http.connection;
+package silo.core.actor;
 
-import com.github.krukow.clj_lang.IPersistentMap;
-import io.netty.channel.ChannelHandlerContext;
+public class Message {
+    public String id;
+    public Object payload;
 
-public class Response {
-    public String connectionId;
+    public Message(String id, Object payload) {
+        this.id = id;
+        this.payload = payload;
+    }
 
-    public int status;
-    public IPersistentMap headers;
 }

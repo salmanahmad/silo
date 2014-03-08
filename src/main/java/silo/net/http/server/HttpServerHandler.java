@@ -105,12 +105,14 @@ public class HttpServerHandler extends SimpleChannelInboundHandler {
             }
 
             this.connection = new Connection();
-            this.connection.context = ctx;
+            this.connection.type = Connection.SERVER;
+            this.connection.context = ctx.channel();
             this.connection.actorId = UUID.randomUUID().toString();
             this.connection.connectionId = UUID.randomUUID().toString();
             this.connection.isKeepAlive = HttpHeaders.isKeepAlive(request);
 
             Request httpRequest = new Request();
+            httpRequest.connectionId = connection.connectionId;
             httpRequest.httpVersion = request.getProtocolVersion().toString();
             httpRequest.method = request.getMethod().toString();
             httpRequest.uri = request.getUri();

@@ -1,17 +1,44 @@
 
+
+alias(DefaultFullHttpRequest, io.netty.handler.codec.http.DefaultFullHttpRequest)
+alias(DefaultFullHttpResponse, io.netty.handler.codec.http.DefaultFullHttpResponse)
+alias(DefaultHttpResponse, io.netty.handler.codec.http.DefaultHttpResponse)
+alias(DefaultHttpContent, io.netty.handler.codec.http.DefaultHttpContent)
+alias(LastHttpContent, io.netty.handler.codec.http.LastHttpContent)
+
+alias(HttpMethod, io.netty.handler.codec.http.HttpMethod)
+alias(HttpVersion, io.netty.handler.codec.http.HttpVersion)
+alias(HttpResponseStatus, io.netty.handler.codec.http.HttpResponseStatus)
+
+alias(ByteBuf, io.netty.buffer.ByteBuf)
+alias(CharsetUtil, io.netty.util.CharsetUtil)
+alias(Unpooled, io.netty.buffer.Unpooled)
+
+alias(Connection, silo.net.http.connection.Connection)
+alias(Message, silo.core.actor.Message)
+
+package(silo.net.http.client {
+    func(request(options : Map => Connection) {
+        host : String = checkcast(map.get(options, "host", "localhost"), String)
+        port : int = checkcast(map.get(options, "port", Integer(80)), Integer)#intValue()
+
+        c : Connection = connect(host, port)
+
+        path : String = checkcast(map.get(options, "path", "/"), String)
+        method : String = checkcast(map.get(options, "method", "GET"), String)
+
+        request : DefaultFullHttpRequest = DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.valueOf(method), path);
+        request#headers()#set("Host", host);
+        request#headers()#set("Connection", "close");
+        request#headers()#set("Accept-Encoding", "gzip");
+
+        c.context#write(request)
+
+        return(c)
+    })
+})
+
 package(silo.net.http.connection {
-    alias(DefaultFullHttpResponse, io.netty.handler.codec.http.DefaultFullHttpResponse)
-    alias(DefaultHttpResponse, io.netty.handler.codec.http.DefaultHttpResponse)
-    alias(DefaultHttpContent, io.netty.handler.codec.http.DefaultHttpContent)
-    alias(LastHttpContent, io.netty.handler.codec.http.LastHttpContent)
-
-    alias(HttpVersion, io.netty.handler.codec.http.HttpVersion)
-    alias(HttpResponseStatus, io.netty.handler.codec.http.HttpResponseStatus)
-
-    alias(ByteBuf, io.netty.buffer.ByteBuf)
-    alias(CharsetUtil, io.netty.util.CharsetUtil)
-    alias(Unpooled, io.netty.buffer.Unpooled)
-
     func(handle(f : Function, r : Request, c : Connection) {
         try({
             f(r, c)
@@ -38,6 +65,20 @@ package(silo.net.http.connection {
         if(c.type == Connection.SERVER {
             // A client connection cannot be given another header
             return(null)
+        })
+
+        while(true {
+            o : Object = actor.peek()
+
+            if(instanceof(o, Response) {
+                message : Response = checkcast(o, Response)
+                if(message.connectionId == c.connectionId {
+                    actor.read()
+                    return(message);
+                })
+            })
+
+            actor.skip()
         })
 
         return(null)
@@ -152,6 +193,8 @@ package(silo.net.http.connection {
     })
 
     func(writeAll(c : Connection, status : int, headers : Map, message : Object) {
+        // TODO: Ignore headers for client connections
+
         if(c.doneWriting {
             return(null)
         } else {

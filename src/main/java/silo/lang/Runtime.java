@@ -60,8 +60,8 @@ public class Runtime {
     }
 
     public void shutdown() {
-        actorExecutor.shutdown();
-        backgroundExecutor.shutdown();
+        actorExecutor.shutdownNow();
+        backgroundExecutor.shutdownNow();
     }
 
     public Actor spawn(String fullyQualifiedFunctionName, Object ... arguments) {

@@ -13,6 +13,7 @@ package silo.net.http.connection;
 
 import com.github.krukow.clj_lang.IPersistentMap;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.Channel;
 
 public class Connection {
 
@@ -21,7 +22,7 @@ public class Connection {
 
     public int type;
 
-    public ChannelHandlerContext context;
+    public Channel context;
     public boolean doneReading = false;
     public boolean doneWriting = false;
     public boolean closed = false;
