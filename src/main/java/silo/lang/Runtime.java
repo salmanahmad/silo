@@ -179,4 +179,21 @@ public class Runtime {
         return compilationContext.classes;
     }
 
+    public Object expandCode(Object code) {
+        Node program = new Node(new Symbol("function"),
+            new Node(new Symbol("do"),
+                code
+            )
+        );
+
+        if(code instanceof Node) {
+            program.meta = ((Node)code).meta;
+        }
+
+        return Compiler.expandCode(compilationContext, program);
+    }
+
+    public Vector<Class> compileExpandedCode(Object code) {
+        return Compiler.compileExpandedCode(compilationContext, code);
+    }
 }

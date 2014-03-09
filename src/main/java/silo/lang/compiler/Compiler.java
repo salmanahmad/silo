@@ -44,6 +44,15 @@ public class Compiler {
         primitives.put("silo.core.void", Void.TYPE);
     }
 
+    public static Object expandCode(CompilationContext context, Object code) {
+        return buildExpression(code).scaffold(context);
+    }
+
+    public static Vector<Class> compileExpandedCode(CompilationContext context, Object code) {
+        buildExpression(code).emit(context);
+        return context.classes;
+    }
+
     public static Vector<Class> compile(CompilationContext context, Object code) {
         // TODO: Next consider updating this logic with the "macro-extract" algorithm described
         // in the TODO.md file... That way I have two steps: "macro-extract", "macro-expand", and "scaffold".

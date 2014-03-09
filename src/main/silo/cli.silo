@@ -7,8 +7,14 @@ alias(CompilationContext, silo.lang.CompilationContext)
 alias(FileUtils, org.apache.commons.io.FileUtils)
 alias(FilenameUtils, org.apache.commons.io.FilenameUtils)
 
+alias(Actor, silo.lang.Actor)
+alias(Compiler, silo.lang.compiler.Compiler)
+alias(Parser, silo.lang.compiler.Parser)
+
 alias(Console, org.jboss.jreadline.console.Console)
 alias(ConsoleOutput, org.jboss.jreadline.console.ConsoleOutput)
+
+alias(JavaVector, java.util.Vector)
 
 func(main(args : Vector) {
     if(args#length() == 0 {
@@ -59,18 +65,38 @@ func(run(file_ : Object) {
     runtime#shutdown()
 })
 
+func(processLocals(code : Object, locals : Map => Vector) {
+    vector.create(code, locals)
+})
+
 func(shell {
-    console : Console = Console();
+    runtime : Runtime = Runtime()
+    console : Console = Console()
+
+    locals : Map = map.create()
 
     println(version() + "\n")
 
-    line : ConsoleOutput = null;
+    line : ConsoleOutput = null
     while(line = console#read("> ") {
-        console#pushToStdOut(line#getBuffer() + "\n\n");
-
         if(line#getBuffer() == "quit" || line#getBuffer() == "exit" {
             break
         })
+
+        code : Object = Parser.parse(line#getBuffer())
+        code = runtime#expandCode(code)
+
+        v : Vector = processLocals(code, locals)
+        code = vector.get(v, 0)
+        locals = checkcast(vector.get(v, 1), Map)
+
+        classes : JavaVector = runtime#compileExpandedCode(code)
+
+        f : Function = checkcast(checkcast(classes#get(classes#size() - 1), Class)#newInstance() Function)
+        actor : Actor = runtime#spawn(f)
+        output : Object = actor#await()
+
+        console#pushToStdOut(": " + output + "\n\n")
     })
 })
 
