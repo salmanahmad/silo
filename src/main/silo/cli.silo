@@ -192,20 +192,24 @@ func(shell {
             break
         })
 
-        code : Object = Parser.parse(line#getBuffer())
-        code = runtime#expandCode(code)
+        try({
+            code : Object = Parser.parse(line#getBuffer())
+            code = runtime#expandCode(code)
 
-        v : Vector = processLocals(code, locals, true)
-        code = vector.get(v, 0)
-        locals = checkcast(vector.get(v, 1), Map)
+            v : Vector = processLocals(code, locals, true)
+            code = vector.get(v, 0)
+            locals = checkcast(vector.get(v, 1), Map)
 
-        classes : JavaVector = runtime#compileExpandedCode(code)
+            classes : JavaVector = runtime#compileExpandedCode(code)
 
-        f : Function = checkcast(checkcast(classes#get(classes#size() - 1), Class)#newInstance() Function)
-        actor : Actor = runtime#spawn(f)
-        output : Object = actor#await()
+            f : Function = checkcast(checkcast(classes#get(classes#size() - 1), Class)#newInstance() Function)
+            actor : Actor = runtime#spawn(f)
+            output : Object = actor#await()
 
-        console#pushToStdOut(": " + output + "\n\n")
+            console#pushToStdOut(": " + output + "\n\n")
+        } catch(e : Exception) {
+            e#printStackTrace()
+        })
     })
 })
 
