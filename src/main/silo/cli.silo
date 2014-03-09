@@ -70,7 +70,7 @@ func(run(file_ : Object) {
 func(processLocals(code : Object, locals : Map, processFunctions : boolean => Vector) {
     if(instanceof(code Symbol) {
         if(map.get(locals, code) {
-            t : Class = checkcast(map.get(locals, code) Class)
+            t : Object = map.get(locals, code)
 
             functionName : Object = Parser.parse("silo.cli.getLocal")#getFirstChild()
             code = Node.fromVector(
@@ -82,7 +82,7 @@ func(processLocals(code : Object, locals : Map, processFunctions : boolean => Ve
                             code#toString()
                         )
                     )
-                    Parser.parse(t#getName())#getFirstChild()
+                    Parser.parse(t#toString())#getFirstChild()
                 )
             )
         })
@@ -110,9 +110,10 @@ func(processLocals(code : Object, locals : Map, processFunctions : boolean => Ve
             second = vector.get(v, 0)
             locals = checkcast(vector.get(v, 1), Map)
 
-            if(first == Node(":") {
+            if(instanceof(first Node) && (checkcast(first Node)#getLabel() == Symbol(":")) {
                 n : Node = checkcast(first, Node)
-                locals = map.set(locals, n#getFirstChild(), n#getSecondChild())
+
+                locals = map.set(locals, n#getFirstChild(), n#getSecondChild()#toString())
 
                 code = Node.fromVector(
                     vector.create(
@@ -124,7 +125,7 @@ func(processLocals(code : Object, locals : Map, processFunctions : boolean => Ve
 
                 return(vector.create(code locals))
             } else(instanceof(first, Symbol)) {
-                locals = map.set(locals, first, Object)
+                locals = map.set(locals, first, Parser.parse("java.lang.Object")#getFirstChild())
                 code = Node.fromVector(
                     vector.create(
                         functionName
