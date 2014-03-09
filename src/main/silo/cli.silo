@@ -8,6 +8,8 @@ alias(FileUtils, org.apache.commons.io.FileUtils)
 alias(FilenameUtils, org.apache.commons.io.FilenameUtils)
 
 alias(Actor, silo.lang.Actor)
+alias(Node, silo.lang.Node)
+alias(Symbol, silo.lang.Symbol)
 alias(Compiler, silo.lang.compiler.Compiler)
 alias(Parser, silo.lang.compiler.Parser)
 
@@ -65,8 +67,114 @@ func(run(file_ : Object) {
     runtime#shutdown()
 })
 
-func(processLocals(code : Object, locals : Map => Vector) {
-    vector.create(code, locals)
+func(processLocals(code : Object, locals : Map, processFunctions : boolean => Vector) {
+    if(instanceof(code Symbol) {
+        if(map.get(locals, code) {
+            t : Class = checkcast(map.get(locals, code) Class)
+
+            functionName : Object = Parser.parse("silo.cli.getLocal")#getFirstChild()
+            code = Node.fromVector(
+                vector.create(
+                    Symbol("checkcast")
+                    Node.fromVector(
+                        vector.create(
+                            functionName
+                            code#toString()
+                        )
+                    )
+                    Parser.parse(t#getName())#getFirstChild()
+                )
+            )
+        })
+
+        return(vector.create(code, locals))
+    } else(instanceof(code Node)) {
+        v : Vector = null
+
+        node : Node = checkcast(code, Node)
+        label : Object = node#getLabel()
+
+        if(label == Symbol("function") && !processFunctions {
+            // Do not recurse any more
+            return(vector.create(code, locals))
+        })
+
+        if(label == Symbol("=") {
+            // Assigning a local variable
+            first : Object = node#getFirstChild()
+            second : Object = node#getSecondChild()
+
+            functionName : Object = Parser.parse("silo.cli.setLocal")#getFirstChild()
+
+            v = processLocals(second, locals, false)
+            second = vector.get(v, 0)
+            locals = checkcast(vector.get(v, 1), Map)
+
+            if(first == Node(":") {
+                n : Node = checkcast(first, Node)
+                locals = map.set(locals, n#getFirstChild(), n#getSecondChild())
+
+                code = Node.fromVector(
+                    vector.create(
+                        functionName
+                        n#getFirstChild()#toString()
+                        second
+                    )
+                )
+
+                return(vector.create(code locals))
+            } else(instanceof(first, Symbol)) {
+                locals = map.set(locals, first, Object)
+                code = Node.fromVector(
+                    vector.create(
+                        functionName
+                        first#toString()
+                        second
+                    )
+                )
+
+                return(vector.create(code locals))
+            } else {
+                v = processLocals(first, locals, false)
+                first = vector.get(v, 0)
+                locals = checkcast(vector.get(v, 1), Map)
+
+                return(vector.create(Node.fromVector(
+                    vector.create(
+                        Symbol("=")
+                        first
+                        second
+                    )
+                ) locals))
+            })
+        })
+
+        v = processLocals(label, locals, false);
+        label = vector.get(v, 0)
+        locals = checkcast(vector.get(v, 1), Map)
+
+        nodeContent : Vector = vector.create()
+        nodeContent = vector.push(nodeContent, label)
+
+        i : int = 0
+        children : JavaVector = node#getChildren()
+        while(i < children#size() {
+            child : Object = children#get(i)
+            v = processLocals(child, locals, false)
+
+            child = vector.get(v, 0)
+            locals = checkcast(vector.get(v, 1), Map)
+            nodeContent = vector.push(nodeContent, child)
+
+            i = i + 1
+        })
+
+        return(vector.create(Node.fromVector(nodeContent), locals))
+    } else {
+        return(vector.create(code, locals))
+    })
+
+    null
 })
 
 func(shell {
@@ -86,7 +194,7 @@ func(shell {
         code : Object = Parser.parse(line#getBuffer())
         code = runtime#expandCode(code)
 
-        v : Vector = processLocals(code, locals)
+        v : Vector = processLocals(code, locals, true)
         code = vector.get(v, 0)
         locals = checkcast(vector.get(v, 1), Map)
 
