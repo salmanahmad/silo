@@ -21,6 +21,7 @@ public class setLocal extends Function {
     @Function.Body
     public static Object invoke(ExecutionContext context, Object local, Object value) {
         Runtime runtime = context.fiber.actor.runtime;
-        return runtime.registry.put("silo.cli.shell.locals." + local.toString(), value);
+        runtime.registry.put("silo.cli.shell.locals." + local.toString(), value);
+        return value;
     }
 }
