@@ -189,6 +189,7 @@ func(shell {
     // Multi-line edits are actually somewhat simple. I should just count the number of unbalanced
     // parens and braces and then go into multiline mode. I should end when the parens are balanced.
     console : ConsoleReader = ConsoleReader()
+    console#setExpandEvents(false)
     console#setPrompt("> ")
 
     locals : Map = map.create()
