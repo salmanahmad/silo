@@ -1043,7 +1043,7 @@ public class Invoke implements Expression {
         if(identifier != null) {
             Vector result = Compiler.resolveIdentifierPath(identifier, context);
 
-            if(frame.locals.containsKey(identifier.get(0))) {
+            if(!identifier.isEmpty() && frame.locals.containsKey(identifier.get(0))) {
                 result = null;
             }
 

@@ -867,4 +867,14 @@ public class CompilerTest {
         IPersistentVector vector = PersistentVectorHelper.create("foobar", "barfoo", "foobar", "barfoo", "foobar", "barfoo");
         Assert.assertEquals(vector, runtime.eval(classes.get(0)));
     }
+
+    @Test
+    public void testCallingAnonymousFunction() {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/examples/function-resolution.silo");
+        Vector<Class> classes = runtime.compile(Parser.parse("function({vector.create(Integer(3) Integer(1) Integer(4))})()"));
+
+        IPersistentVector vector = PersistentVectorHelper.create(3, 1, 4);
+        Assert.assertEquals(vector, runtime.eval(classes.get(0)));
+    }
 }
