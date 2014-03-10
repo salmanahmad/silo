@@ -318,6 +318,10 @@ public class Compiler {
                 return new Break(node);
             } else if(label.equals(new Symbol("branch"))) {
                 return new Branch(node);
+            } else if(label.equals(new Symbol("monitorenter"))) {
+                return new MonitorEnter(node);
+            } else if(label.equals(new Symbol("monitorexit"))) {
+                return new MonitorExit(node);
             } else if(label.equals(new Symbol("return"))) {
                 return new Return(node);
             } else if(label.equals(new Symbol("checkcast"))) {

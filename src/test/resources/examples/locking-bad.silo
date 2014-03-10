@@ -1,0 +1,36 @@
+
+function(
+    name(a)
+    inputs(s : String)
+    {
+        // TODO: This is bad because sleep will cause the monitor to be lost
+        monitorenter(s)
+        sleep(5000L)
+        println("from a")
+        actor.send(s, "")
+        monitorexit(s)
+    }
+)
+
+function(
+    name(b)
+    inputs(s : String)
+    {
+        monitorenter(s)
+        println("from b")
+        actor.send(s, "")
+        monitorexit(s)
+    }
+)
+
+function(
+    name(test)
+    {
+        actor.spawn(a, actor.self())
+        sleep(1000L)
+        actor.spawn(b, actor.self())
+
+        actor.read()
+        actor.read()
+    }
+)
