@@ -1,0 +1,16 @@
+
+function(
+    name(adder)
+    outputs(Function)
+    {
+        function(
+            inputs(a : int, b : int)
+            outputs(int)
+            {
+                a + b
+            }
+        )
+    }
+)
+
+adder()(5 4)

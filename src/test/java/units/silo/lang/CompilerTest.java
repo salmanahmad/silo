@@ -871,10 +871,13 @@ public class CompilerTest {
     @Test
     public void testCallingAnonymousFunction() {
         Runtime runtime = new Runtime();
+        String source = Helper.readResource("/examples/calling-anonymous-function.silo");
         Vector<Class> classes = runtime.compile(Parser.parse("function({vector.create(Integer(3) Integer(1) Integer(4))})()"));
 
-        IPersistentVector vector = PersistentVectorHelper.create(3, 1, 4);
-        Assert.assertEquals(vector, runtime.eval(classes.get(0)));
+        Assert.assertEquals(PersistentVectorHelper.create(3, 1, 4), runtime.eval(classes.get(0)));
+
+        classes = runtime.compile(Parser.parse(source));
+        Assert.assertEquals(9, runtime.eval(classes.get(2)));
     }
 
     @Test
