@@ -1,0 +1,43 @@
+
+function(
+    name(add)
+    inputs(a : int, b : int)
+    outputs(int)
+    {
+        a + b
+    }
+)
+
+function(
+    name(bar)
+    outputs(int)
+    {
+        42
+    }
+)
+
+function({
+    5 | add(3)
+})
+
+function({
+    bar() | add(-2)
+})
+
+function({
+    i : int = bar() | add(8)
+    return(i)
+})
+
+function({
+    v : Vector = vector.create()
+    v = v | vector.push("Hello")
+    v = v | vector.push("World")
+
+    return(v)
+})
+
+function({
+    v : Vector = vector.create() | vector.push("Hello") | vector.push("World") | vector.push("!")
+    return(v)
+})

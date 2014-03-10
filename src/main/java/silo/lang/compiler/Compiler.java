@@ -335,6 +335,8 @@ public class Compiler {
                 return new Access(node);
             } else if(label.equals(new Symbol("="))) {
                 return new Assign(node);
+            } else if(label.equals(new Symbol("|"))) {
+                return Pipe.build(node);
             } else if(LogicalOperation.accepts(node.getLabel())) {
                 return LogicalOperation.build(node);
             } else if(MathOperation.accepts(node.getLabel())) {

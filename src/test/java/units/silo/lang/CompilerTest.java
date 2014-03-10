@@ -871,10 +871,22 @@ public class CompilerTest {
     @Test
     public void testCallingAnonymousFunction() {
         Runtime runtime = new Runtime();
-        String source = Helper.readResource("/examples/function-resolution.silo");
         Vector<Class> classes = runtime.compile(Parser.parse("function({vector.create(Integer(3) Integer(1) Integer(4))})()"));
 
         IPersistentVector vector = PersistentVectorHelper.create(3, 1, 4);
         Assert.assertEquals(vector, runtime.eval(classes.get(0)));
+    }
+
+    @Test
+    public void testPipeOperator() {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/examples/pipe-operator.silo");
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+
+        Assert.assertEquals(8, runtime.eval(classes.get(2)));
+        Assert.assertEquals(40, runtime.eval(classes.get(3)));
+        Assert.assertEquals(50, runtime.eval(classes.get(4)));
+        Assert.assertEquals(PersistentVectorHelper.create("Hello", "World"), runtime.eval(classes.get(5)));
+        Assert.assertEquals(PersistentVectorHelper.create("Hello", "World", "!"), runtime.eval(classes.get(6)));
     }
 }
