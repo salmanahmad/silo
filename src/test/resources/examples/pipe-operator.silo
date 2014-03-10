@@ -41,3 +41,11 @@ function({
     v : Vector = vector.create() | vector.push("Hello") | vector.push("World") | vector.push("!")
     return(v)
 })
+
+function({
+    v : Vector = vector.create()
+    v |= vector.push("Bye")
+    v |= vector.push("World")
+
+    return(v)
+})

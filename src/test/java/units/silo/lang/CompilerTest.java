@@ -891,5 +891,6 @@ public class CompilerTest {
         Assert.assertEquals(50, runtime.eval(classes.get(4)));
         Assert.assertEquals(PersistentVectorHelper.create("Hello", "World"), runtime.eval(classes.get(5)));
         Assert.assertEquals(PersistentVectorHelper.create("Hello", "World", "!"), runtime.eval(classes.get(6)));
+        Assert.assertEquals(PersistentVectorHelper.create("Bye", "World"), runtime.eval(classes.get(7)));
     }
 }

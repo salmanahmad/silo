@@ -74,7 +74,7 @@ expression returns [Object value]
 
 assignmentExpression returns [Object value]
   : n1=orExpression                    { $value = $n1.value; }
-    ( op=ASSIGN
+    ( op=(ASSIGN | PIPE_ASSIGN)
       n2=assignmentExpression          { $value = Node.withMeta(Helper.meta(fileName, $start.getLine(), $start.getCharPositionInLine()), new Symbol($op.text), $n1.value, $n2.value); }
     )?
   ;
@@ -203,6 +203,7 @@ parenExpression returns [Node value]
 symbol returns [Symbol value]
   : IDENTIFIER
   | ASSIGN
+  | PIPE_ASSIGN
   | AND
   | OR
   | NOT
@@ -313,6 +314,7 @@ OPEN_BRACE:         '{';
 CLOSE_BRACE:        '}';
 
 ASSIGN: FRAGMENT_ASSIGN;
+PIPE_ASSIGN: FRAGMENT_PIPE FRAGMENT_ASSIGN;
 AND: FRAGMENT_AMP FRAGMENT_AMP;
 OR: FRAGMENT_PIPE FRAGMENT_PIPE;
 NOT: FRAGMENT_NOT;
