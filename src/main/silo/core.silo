@@ -2,6 +2,8 @@
 package(silo.core)
 
 alias(RT, com.github.krukow.clj_lang.RT)
+alias(Node, silo.lang.Node)
+alias(Symbol, silo.lang.Symbol)
 
 function(
     name(while)
@@ -396,6 +398,32 @@ function(
             start
             o
             finish
+        )
+    }
+)
+
+
+function(
+    name(ignore)
+    macro
+    varargs(args)
+    outputs(Object)
+    {
+        code : Vector = vector.create(Symbol("try"), vector.last(args))
+
+        i : int = 0
+        while(i < (vector.length(args) - 1) {
+            catchVariable : Node = Node.fromVector(vector.create(Symbol(":"), uniquesymbol(), vector.get(args, i)))
+            catchBlock : Node = Node.fromVector(vector.create(Symbol("catch"), catchVariable))
+
+            code = code | vector.push(catchBlock)
+            code = code | vector.push(Node.fromVector(vector.create(null)))
+
+            i = i + 1
+        })
+
+        Node.fromVector(
+            code
         )
     }
 )

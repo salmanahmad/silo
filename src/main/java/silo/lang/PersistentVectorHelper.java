@@ -47,4 +47,8 @@ public class PersistentVectorHelper {
     public static int length(IPersistentVector vector) {
         return vector.length();
     }
+
+    public static Object last(IPersistentVector vector) {
+        return get(vector, length(vector) - 1);
+    }
 }
