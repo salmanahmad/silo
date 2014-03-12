@@ -27,6 +27,8 @@ public class Actor implements Runnable {
     ArrayDeque inbox = new ArrayDeque();
     ArrayDeque drain = new ArrayDeque();
 
+    Throwable error = null;
+
     boolean done = false;
     boolean running = false;
     boolean yielding = false;
@@ -154,6 +156,9 @@ public class Actor implements Runnable {
             } catch(Exception e) {
                 System.err.println("Error: actor (" + this.address + ") encountered an uncaught exception.");
                 e.printStackTrace(System.err);
+
+                this.error = e;
+
                 awake();
                 return;
             }
@@ -187,6 +192,10 @@ public class Actor implements Runnable {
             }
         }
 
-        return fiber.value;
+        if(error == null) {
+            return fiber.value;
+        } else {
+            throw new RuntimeException(error);
+        }
     }
 }

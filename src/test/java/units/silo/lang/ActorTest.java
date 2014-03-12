@@ -118,7 +118,13 @@ public class ActorTest {
             ps = new PrintStream(os);
             System.setErr(ps);
 
-            runtime.spawn("main").await();
+            try {
+                runtime.spawn("main").await();
+                Assert.fail();
+            } catch(Exception e) {
+                // Ignore
+            }
+
             Assert.assertTrue(os.toString().length() != 0);
             Assert.assertTrue(StringUtils.startsWith(os.toString(), "Error: actor"));
             Assert.assertEquals(StringUtils.split(os.toString(), "\n")[1], "java.lang.RuntimeException: FooBar");
