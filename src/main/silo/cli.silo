@@ -190,7 +190,7 @@ func(shell {
     // parens and braces and then go into multiline mode. I should end when the parens are balanced.
     console : ConsoleReader = ConsoleReader()
     console#setExpandEvents(false)
-    console#setPrompt("> ")
+    console#setPrompt("$ ")
 
     locals : Map = map.create()
 
@@ -214,9 +214,14 @@ func(shell {
 
             f : Function = checkcast(checkcast(classes#get(classes#size() - 1), Class)#newInstance() Function)
             actor : Actor = runtime#spawn(f)
-            output : Object = actor#await()
 
-            println(output + "\n")
+            try({
+                output : Object = actor#await()
+            } catch(e : Exception) {
+                // Ignore this...
+            })
+
+            println("> " + output + "\n")
         } catch(e : Exception) {
             e#printStackTrace()
         })
