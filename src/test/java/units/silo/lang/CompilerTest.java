@@ -894,6 +894,24 @@ public class CompilerTest {
         Assert.assertEquals(PersistentVectorHelper.create("Bye", "World"), runtime.eval(classes.get(7)));
     }
 
+    @Test
+    public void testInferredAssignmentOperator() {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/examples/inferred-assign-bad.silo");
+
+        try{
+            Vector<Class> classes = runtime.compile(Parser.parse(source));
+            Assert.fail();
+        } catch(Exception e) {
+            Assert.assertEquals(e.getMessage(), "Parameter mismatch in class last. Expected: interface com.github.krukow.clj_lang.IPersistentVector Provided: class java.lang.Object");
+        }
+
+        runtime = new Runtime();
+        source = Helper.readResource("/examples/inferred-assign-good.silo");
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+        Assert.assertEquals("e", runtime.eval(classes.get(1)));
+    }
+
     /*
         TODO: Re-implement / re-enable this test case once monitorlocking is working correctly. I need
         to acquire the lock on another thread and then execute the actor in a blocking manner until I am

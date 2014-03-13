@@ -1,0 +1,16 @@
+
+function(
+    name(last)
+    inputs(v : Vector)
+    {
+        vector.last(v)
+    }
+)
+
+function(
+    name(bad)
+    {
+        v = vector.create("a" "b" "c" "d" "e")
+        last(v)
+    }
+)

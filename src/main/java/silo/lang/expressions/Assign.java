@@ -45,8 +45,12 @@ public class Assign implements Expression {
             // If it is not then define it with the type
 
             if(typeClass == null) {
-                // TODO: Change this to the Var
-                typeClass = Object.class;
+                if(node.getLabel().equals(new Symbol(":="))) {
+                    typeClass = valueClass;
+                } else {
+                    // TODO: Change this to the Var
+                    typeClass = Object.class;
+                }
             }
 
             local = frame.newLocal(identifier, typeClass);

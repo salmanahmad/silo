@@ -216,7 +216,8 @@ func(shell {
             actor : Actor = runtime#spawn(f)
 
             try({
-                output : Object = actor#await()
+                output : Object =  null
+                output = actor#await()
             } catch(e : Exception) {
                 // Ignore this...
             })
