@@ -427,3 +427,31 @@ function(
         )
     }
 )
+
+function(
+    name(parse)
+    inputs(str : String)
+    outputs(Object)
+    {
+        silo.lang.compiler.Parser.parse(str)
+    }
+)
+
+function(
+    name(macroexpand)
+    inputs(form : Object)
+    outputs(Object)
+    {
+        rt : silo.lang.Runtime = silo.lang.Runtime()
+        silo.lang.compiler.Compiler.expandCode(silo.lang.CompilationContext(rt), form);
+    }
+)
+
+function(
+    name(macroexpand1)
+    inputs(form : Object)
+    outputs(Object)
+    {
+        throw("macroexpand1 is unimplemented currently.")
+    }
+)
