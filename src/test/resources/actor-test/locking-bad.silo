@@ -1,0 +1,31 @@
+
+function(
+    name(a)
+    inputs(s : String)
+    {
+        sleep(5000L)
+        println("from a")
+        actor.send(s, "")
+    }
+)
+
+function(
+    name(b)
+    inputs(s : String)
+    {
+        println("from b")
+        actor.send(s, "")
+    }
+)
+
+function(
+    name(test)
+    {
+        actor.spawn(a, actor.self())
+        sleep(1000L)
+        actor.spawn(b, actor.self())
+
+        actor.read()
+        actor.read()
+    }
+)

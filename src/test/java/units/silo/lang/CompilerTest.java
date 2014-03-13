@@ -911,49 +911,4 @@ public class CompilerTest {
         Vector<Class> classes = runtime.compile(Parser.parse(source));
         Assert.assertEquals("e", runtime.eval(classes.get(1)));
     }
-
-    /*
-        TODO: Re-implement / re-enable this test case once monitorlocking is working correctly. I need
-        to acquire the lock on another thread and then execute the actor in a blocking manner until I am
-        done.
-
-    @Test
-    public void testLocking() {
-        Runtime runtime = new Runtime();
-        String source = Helper.readResource("/examples/locking-bad.silo");
-        Vector<Class> classes = runtime.compile(Parser.parse(source));
-
-        PrintStream oldOut = System.out;
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        PrintStream ps = new PrintStream(os);
-        System.setOut(ps);
-
-        try {
-            Actor a = runtime.spawn("test");
-            a.await();
-            Assert.assertEquals("from b\nfrom a\n", os.toString());
-        } finally {
-            System.setOut(oldOut);
-        }
-
-
-
-
-        source = Helper.readResource("/examples/locking-good.silo");
-        classes = runtime.compile(Parser.parse(source));
-
-        oldOut = System.out;
-        os = new ByteArrayOutputStream();
-        ps = new PrintStream(os);
-        System.setOut(ps);
-
-        try {
-            Actor a = runtime.spawn("test");
-            a.await();
-            Assert.assertEquals("from b\nfrom a\n", os.toString());
-        } finally {
-            System.setOut(oldOut);
-        }
-    }
-    */
 }

@@ -24,14 +24,15 @@ public class Actor implements Runnable {
     public String address;
     public Fiber fiber;
 
+    Throwable error = null;
+
     ArrayDeque inbox = new ArrayDeque();
     ArrayDeque drain = new ArrayDeque();
-
-    Throwable error = null;
 
     boolean done = false;
     boolean running = false;
     boolean yielding = false;
+    boolean locked = false;
 
     int scheduleAttempts = 0;
     int acknowledgedAttempt = 0;
@@ -48,7 +49,9 @@ public class Actor implements Runnable {
         return inbox.size() == 0;
     }
 
-    private void block(ExecutionContext context) {
+    private synchronized void blockFiber(ExecutionContext context) {
+        acknowledgeAttempts();
+
         ExecutionFrame frame = new ExecutionFrame();
         frame.programCounter = 0;
 
@@ -56,44 +59,65 @@ public class Actor implements Runnable {
         context.yielding = true;
     }
 
+    private synchronized void blockThread() {
+        acknowledgeAttempts();
+
+        while(inbox.size() == 0) {
+            try {
+                this.wait();
+            } catch(InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
     public synchronized Object inboxPeek(ExecutionContext context) {
         if(inbox.size() == 0) {
-            acknowledgeAttempts();
-            block(context);
-            return null;
-        } else {
-            return inbox.getLast();
+            if(this.locked) {
+                blockThread();
+            } else {
+                blockFiber(context);
+                return null;
+            }
         }
+
+        return inbox.getLast();
     }
 
     public synchronized Object inboxSkip(ExecutionContext context) {
         if(inbox.size() == 0) {
-            acknowledgeAttempts();
-            block(context);
-            return null;
-        } else {
-            Object o = inbox.removeLast();
-            drain.addLast(o);
-
-            return o;
+            if(this.locked) {
+                blockThread();
+            } else {
+                blockFiber(context);
+                return null;
+            }
         }
+
+        Object o = inbox.removeLast();
+        drain.addLast(o);
+
+        return o;
     }
 
     public synchronized Object inboxGet(ExecutionContext context) {
         if(inbox.size() == 0) {
-            acknowledgeAttempts();
-            block(context);
-            return null;
-        } else {
-            Object o = inbox.removeLast();
-
-            int size = drain.size();
-            for(int i = 0; i < size; i++) {
-                inbox.addLast(drain.removeFirst());
+            if(this.locked) {
+                blockThread();
+            } else {
+                blockFiber(context);
+                return null;
             }
-
-            return o;
         }
+
+        Object o = inbox.removeLast();
+
+        int size = drain.size();
+        for(int i = 0; i < size; i++) {
+            inbox.addLast(drain.removeFirst());
+        }
+
+        return o;
     }
 
     public synchronized Object inboxPut(Object value) {
@@ -107,8 +131,15 @@ public class Actor implements Runnable {
     }
 
     public synchronized void yield() {
-        this.running = false;
         this.yielding = true;
+    }
+
+    public synchronized void lock() {
+        this.locked = true;
+    }
+
+    public synchronized void unlock() {
+        this.locked = false;
     }
 
     public synchronized void schedule() {
@@ -118,19 +149,30 @@ public class Actor implements Runnable {
 
         if(running) {
             scheduleAttempts++;
+
+            if(this.locked) {
+                // If the actor has locked a thread notify it
+                // in case it is blocking on the inbox.
+                this.notifyAll();
+            }
         } else {
             this.running = true;
             this.yielding = false;
-            this.runtime.actorExecutor.submit(this);
+            if(this.locked) {
+                this.runtime.backgroundExecutor.submit(this);
+            } else {
+                this.runtime.actorExecutor.submit(this);
+            }
         }
     }
 
-    public synchronized boolean shouldRun() {
+    private synchronized boolean shouldRun() {
         if(done) {
             return false;
         }
 
         if(yielding) {
+            running = false;
             return false;
         }
 
@@ -146,6 +188,8 @@ public class Actor implements Runnable {
     }
 
     public void run() {
+        // TODO: To be super safe, should I wrap this in a "runlock"?
+
         boolean firstTime = true;
 
         while(firstTime || shouldRun()) {

@@ -29,6 +29,7 @@ import java.io.ByteArrayOutputStream;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.github.krukow.clj_lang.IPersistentVector;
 import com.github.krukow.clj_lang.PersistentVector;
 
 public class ActorTest {
@@ -183,6 +184,69 @@ public class ActorTest {
         a.inboxPut("FooBar");
 
         Assert.assertEquals("Value: FooBar", a.await());
+    }
+
+    @Test
+    public void testLock() throws Exception {
+        Runtime runtime = null;
+        String source = null;
+        IPersistentVector output = null;
+
+        runtime = new Runtime(new RuntimeClassLoader(), 1);
+        source = Helper.readResource("/actor-test/lock-case-1.silo");
+        runtime.compile(Parser.parse(source));
+        for(int i = 0; i < 100; i++) {
+            // Try a bunch of times to make sure
+            output = (IPersistentVector)runtime.spawn("main").await();
+            Assert.assertEquals(PersistentVectorHelper.get(output, 0), PersistentVectorHelper.get(output, 1));
+        }
+
+        runtime = new Runtime(new RuntimeClassLoader(), 1);
+        source = Helper.readResource("/actor-test/lock-case-2.silo");
+        runtime.compile(Parser.parse(source));
+        for(int i = 0; i < 100; i++) {
+            output = (IPersistentVector)runtime.spawn("main").await();
+            Assert.assertNotEquals(PersistentVectorHelper.get(output, 0), PersistentVectorHelper.get(output, 1));
+        }
+    }
+
+    @Test
+    public void testLocking() {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/actor-test/locking-bad.silo");
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+
+        PrintStream oldOut = System.out;
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        PrintStream ps = new PrintStream(os);
+        System.setOut(ps);
+
+        try {
+            Actor a = runtime.spawn("test");
+            a.await();
+            Assert.assertEquals("from b\nfrom a\n", os.toString());
+        } finally {
+            System.setOut(oldOut);
+        }
+
+
+
+        runtime = new Runtime();
+        source = Helper.readResource("/actor-test/locking-good.silo");
+        classes = runtime.compile(Parser.parse(source));
+
+        oldOut = System.out;
+        os = new ByteArrayOutputStream();
+        ps = new PrintStream(os);
+        System.setOut(ps);
+
+        try {
+            Actor a = runtime.spawn("test");
+            a.await();
+            Assert.assertEquals("from a\nfrom b\n", os.toString());
+        } finally {
+            System.setOut(oldOut);
+        }
     }
 }
 

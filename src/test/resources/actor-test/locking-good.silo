@@ -3,12 +3,15 @@ function(
     name(a)
     inputs(s : String)
     {
-        // TODO: This is bad because sleep will cause the monitor to be lost
+        actor.lockThread()
         monitorenter(s)
+
         sleep(5000L)
         println("from a")
         actor.send(s, "")
+
         monitorexit(s)
+        actor.unlockThread()
     }
 )
 
@@ -16,10 +19,14 @@ function(
     name(b)
     inputs(s : String)
     {
+        actor.lockThread()
         monitorenter(s)
+
         println("from b")
         actor.send(s, "")
+
         monitorexit(s)
+        actor.lockThread()
     }
 )
 

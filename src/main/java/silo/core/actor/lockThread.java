@@ -17,21 +17,14 @@ import silo.lang.Function;
 import silo.lang.Actor;
 
 @Function.Definition
-public class yield extends Function {
+public class lockThread extends Function {
 
     @Function.Body
     public static Object invoke(ExecutionContext context) {
         switch(context.programCounter) {
             case -1:
-                // TODO: Don't I have to yielding the "calling" fiber as well
-                // to ensure that the actor properly yields?
-                context.fiber.actor.yield();
-
-                ExecutionFrame frame = new ExecutionFrame();
-                frame.programCounter = 0;
-
-                context.setCurrentFrame(frame);
-                context.yielding = true;
+                context.fiber.actor.lock();
+                yield.invoke(context);
         }
 
         return null;

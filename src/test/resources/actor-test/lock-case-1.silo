@@ -1,0 +1,11 @@
+
+func(main {
+    v := vector.create()
+
+    v |= vector.push(Long(Thread.currentThread()#getId()))
+    actor.yield()
+    v |= vector.push(Long(Thread.currentThread()#getId()))
+
+    return(v)
+})
+
