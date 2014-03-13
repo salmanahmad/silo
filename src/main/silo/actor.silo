@@ -1,0 +1,12 @@
+
+package(silo.core.actor {
+    function(
+        name(block)
+        macro
+        varargs(code)
+        outputs(Object)
+        {
+            throw("actor.block is unimplemented")
+        }
+    )
+})

@@ -161,6 +161,7 @@
                   <!--<arg line="${files}" />-->
                   <sysproperty key="bootstrap.skip" value="${bootstrap.skip}"/>
                   <arg value="${basedir}/src/main/silo/core.silo" />
+                  <arg value="${basedir}/src/main/silo/actor.silo" />
                   <arg value="${basedir}/src/main/silo/cli.silo" />
                   <arg value="${basedir}/src/main/silo/file.silo" />
                   <arg value="${basedir}/src/main/silo/http.silo" />
