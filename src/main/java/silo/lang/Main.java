@@ -26,7 +26,13 @@ public class Main {
     public static void main(String[] args) throws Exception {
         Runtime runtime = new Runtime();
         IPersistentVector vector = PersistentVector.create(args);
-        runtime.spawn("silo.cli.main", vector).await();
+
+        try {
+            runtime.spawn("silo.cli.main", vector).await();
+        } catch(Exception e) {
+            // Ignore any exceptions thrown by await
+        }
+
         runtime.shutdown();
         System.exit(0);
     }
