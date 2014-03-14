@@ -1,0 +1,24 @@
+
+function(
+    name(foo)
+    {
+        "foo"
+    }
+)
+
+function(
+    name(bar)
+    {
+        "bar"
+    }
+)
+
+function({
+    try({
+        output : Object = foo()
+    } catch(e : Exception) {
+        output : Object = bar()
+    })
+
+    return(output)
+})

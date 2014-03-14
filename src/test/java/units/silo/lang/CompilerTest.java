@@ -911,4 +911,12 @@ public class CompilerTest {
         Vector<Class> classes = runtime.compile(Parser.parse(source));
         Assert.assertEquals("e", runtime.eval(classes.get(1)));
     }
+
+    @Test
+    public void testVariablesInFinallyBlocks() {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/examples/variables-in-finally.silo");
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+        Assert.assertEquals("foo", runtime.eval(classes.get(2)));
+    }
 }
