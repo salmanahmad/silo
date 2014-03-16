@@ -13,11 +13,14 @@ package silo.lang;
 
 import java.util.Set;
 import java.util.HashSet;
+import java.util.HashMap;
 
 import java.net.URLClassLoader;
 import java.net.URL;
 
 public class RuntimeClassLoader extends URLClassLoader {
+
+    HashMap<String, Class> lookAsideCache = new HashMap<String, Class>();
 
     public RuntimeClassLoader() {
         super(new URL[] {});
@@ -33,6 +36,7 @@ public class RuntimeClassLoader extends URLClassLoader {
         try {
             // TODO - This seems really slow. Investigate more.
             klass = defineClass(null, b, 0, b.length);
+            lookAsideCache.put(klass.getName(), klass);
         } catch(Exception e) {
             // TODO - Remove this comment
             //e.printStackTrace();
@@ -47,6 +51,20 @@ public class RuntimeClassLoader extends URLClassLoader {
         return super.findClass(name);
     }
 
+    public Class resolveType(String name) {
+        if(lookAsideCache.containsKey(name)) {
+            return lookAsideCache.get(name);
+        } else {
+            try {
+                Class klass = this.loadClass(name);
+                lookAsideCache.put(name, klass);
+                return klass;
+            } catch(ClassNotFoundException e) {
+                lookAsideCache.put(name, null);
+                return null;
+            }
+        }
+    }
 
     public Package getPackage(String name) {
         return super.getPackage(name);

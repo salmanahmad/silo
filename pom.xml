@@ -160,6 +160,7 @@
                   <arg value="${project.build.outputDirectory}" />
                   <!--<arg line="${files}" />-->
                   <sysproperty key="bootstrap.skip" value="${bootstrap.skip}"/>
+                  <!--<jvmarg line="-agentlib:hprof=cpu=samples" />-->
                   <arg value="${basedir}/src/main/silo/core.silo" />
                   <arg value="${basedir}/src/main/silo/actor.silo" />
                   <arg value="${basedir}/src/main/silo/cli.silo" />
