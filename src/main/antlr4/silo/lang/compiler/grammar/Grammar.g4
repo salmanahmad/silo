@@ -46,7 +46,7 @@ program returns [Node value]
     ( expressions                      { $value = $expressions.value; }
       terminator
     )?
-//    EOF!
+    EOF
   ;
 
 expressions returns [Node value]
@@ -384,7 +384,6 @@ fragment ESC
     | '/'    {setText("/");}
     | '\\'   {setText("\\");}
     | 'u' (HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT) { setText(Character.toString((char)Integer.parseInt(getText(), 16))); }
-    // TODO: Should I throw an exception here?
     )
   ;
 
