@@ -455,3 +455,52 @@ function(
         throw("macroexpand1 is unimplemented currently.")
     }
 )
+
+function(
+    name(quote)
+    macro
+    inputs(form : Object) {
+        if(form | instanceof(Node) {
+            node : Node = checkcast(form, Node)
+
+            nodeConstructor : Node = Node(
+                Symbol(".")
+                Node(Symbol(".")
+                    Symbol("silo")
+                    Symbol("lang")
+                )
+                Symbol("Node")
+            )
+
+            v : Vector = vector.create()
+            v = v | vector.push(nodeConstructor)
+            v = v | vector.push(quote(node#getLabel()))
+
+            children : java.util.Vector = node#getChildren()
+            i :  int = 0
+            while(i < children#size() {
+                v = v | vector.push(quote(children#get(i)))
+                i = i + 1
+            })
+
+            n : Node = Node.fromVector(v)
+            //println(n)
+            n
+        } else(form | instanceof(Symbol)) {
+
+            symbolConstructor : Node = Node(
+                Symbol(".")
+                Node(Symbol(".")
+                    Symbol("silo")
+                    Symbol("lang")
+                )
+                Symbol("Symbol")
+            )
+
+            Node.fromVector(vector.create(symbolConstructor, form#toString()))
+        } else {
+            // It must be a literal value or null
+            form
+        })
+    }
+)
