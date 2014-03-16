@@ -15,7 +15,8 @@ import silo.lang.*;
 import silo.lang.compiler.grammar.GrammarLexer;
 import silo.lang.compiler.grammar.GrammarParser;
 
-import org.antlr.runtime.*;
+import org.antlr.v4.runtime.*;
+import org.antlr.v4.runtime.atn.PredictionMode;
 
 public class Parser {
 
@@ -24,7 +25,7 @@ public class Parser {
     }
 
     public static Node parse(String fileName, String source) {
-        ANTLRStringStream stream = new ANTLRStringStream(source);
+        ANTLRInputStream stream = new ANTLRInputStream(source);
         GrammarLexer lexer = new GrammarLexer(stream);
 
         /*
@@ -40,6 +41,7 @@ public class Parser {
 
         CommonTokenStream tokens = new CommonTokenStream(lexer);
         GrammarParser parser = new GrammarParser(fileName, tokens);
+        parser.getInterpreter().setPredictionMode(PredictionMode.SLL);
 
         try {
             return parser.program().value;

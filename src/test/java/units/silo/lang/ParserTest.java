@@ -265,6 +265,12 @@ public class ParserTest {
     }
 
     @Test
+    public void testEscapeSequences() {
+        String source = Helper.readResource("/parser-test/string-escapes.silo");
+        Assert.assertEquals("Hello World!\n", Parser.parse(source).getFirstChild());
+    }
+
+    @Test
     public void testLeftAssociativityOfHashAndPipe() {
         Node expected = null;
 
