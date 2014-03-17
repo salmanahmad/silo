@@ -1061,6 +1061,13 @@ public class Invoke implements Expression {
                         // TODO: Should I support type overloading?
                         // TODO: If I do, I should consider doing it how Clojure does it... or implement it as a macro...
 
+                        if(!shouldEmit) {
+                            // Fast exit to improve the performance of Expression#type()
+                            Method method = Function.methodHandle(klass);
+                            frame.operandStack.push(method.getReturnType());
+                            return;
+                        }
+
                         performInvoke(context, klass, arguments, true, shouldEmit);
                         return;
                     } else {
@@ -1078,7 +1085,7 @@ public class Invoke implements Expression {
                         }
 
                         if(!shouldEmit) {
-                            // Fast Exit for type propagation
+                            // Fast exit to improve the performance of Expression#type()
                             frame.operandStack.push(klass);
                             return;
                         }
@@ -1151,6 +1158,12 @@ public class Invoke implements Expression {
 
                     if(method == null) {
                         throw new RuntimeException("Could not find function: " + symbol.toString());
+                    }
+
+                    if(!shouldEmit) {
+                        // Fast exit to improve the performance of Expression#type()
+                        frame.operandStack.push(method.getReturnType());
+                        return;
                     }
 
                     Class[] params = method.getParameterTypes();

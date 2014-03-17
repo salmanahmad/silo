@@ -91,10 +91,11 @@ public class InvokeVirtual implements Expression {
         RuntimeClassLoader loader = context.runtime.loader;
         CompilationFrame frame = context.currentFrame();
 
-
         if(shouldEmit) {
             receiver.emit(context);
         } else {
+            // I actually need this here, even for fast exit for Expression#type()
+            // because I use frame.operandStack.peek() to determine the method.
             frame.operandStack.push(receiver.type(context));
         }
 
@@ -104,6 +105,14 @@ public class InvokeVirtual implements Expression {
         Vector<Class> types = Invoke.argumentTypes(arguments, context);
 
         java.lang.reflect.Method m = Invoke.resolveMethod(originalklass, method.toString(), false, types.toArray(new Class[0]));
+
+        if(!shouldEmit) {
+            // Fast exit to improve the performance of Expression#type()
+            // But first, pop the reciever type that we pushed.
+            frame.operandStack.pop();
+            frame.operandStack.push(m.getReturnType());
+            return;
+        }
 
         if(m == null && originalklass.isInterface()) {
             m = Invoke.resolveMethod(Object.class, method.toString(), false, types.toArray(new Class[0]));
