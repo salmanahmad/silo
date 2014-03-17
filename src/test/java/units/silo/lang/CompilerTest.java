@@ -926,5 +926,25 @@ public class CompilerTest {
         String source = "quote(a.b.c.d.e.f.g.h.i)";
         Vector<Class> classes = runtime.compile(Parser.parse(source));
         Assert.assertEquals(Parser.parse("a.b.c.d.e.f.g.h.i").getFirstChild(), runtime.eval(classes.get(0)));
+
+        runtime = new Runtime();
+        source = "quote(a + b)";
+        classes = runtime.compile(Parser.parse(source));
+        Assert.assertEquals(Parser.parse("a + b").getFirstChild(), runtime.eval(classes.get(0)));
+
+        runtime = new Runtime();
+        source = "quote(a + escape)";
+        classes = runtime.compile(Parser.parse(source));
+        Assert.assertEquals(Parser.parse("a + escape").getFirstChild(), runtime.eval(classes.get(0)));
+
+        runtime = new Runtime();
+        source = "b = \"Howdy!\"; quote(a + escape(b))";
+        classes = runtime.compile(Parser.parse(source));
+        Assert.assertEquals(Parser.parse("a + \"Howdy!\"").getFirstChild(), runtime.eval(classes.get(0)));
+
+        runtime = new Runtime();
+        source = "quote(a + escape(quote(escape))(b))";
+        classes = runtime.compile(Parser.parse(source));
+        Assert.assertEquals(Parser.parse("a + escape(b)").getFirstChild(), runtime.eval(classes.get(0)));
     }
 }

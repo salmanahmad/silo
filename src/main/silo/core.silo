@@ -463,6 +463,14 @@ function(
         if(form | instanceof(Node) {
             node : Node = checkcast(form, Node)
 
+            if(node#getLabel() == Symbol("escape") {
+                if(node#getChildren()#size() == 0 {
+                    return(null)
+                } else {
+                    return(node#getFirstChild())
+                })
+            })
+
             nodeConstructor : Node = Node(
                 Symbol(".")
                 Node(Symbol(".")
