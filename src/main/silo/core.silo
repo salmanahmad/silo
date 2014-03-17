@@ -111,9 +111,15 @@ function(
 function(
     name(func)
     macro
+    varargs(extraOptions)
     inputs(id_ : Object, body_ : Object)
     outputs(silo.lang.Node)
     {
+        macroFlag : Symbol = null
+        branch((vector.length(extraOptions) == 1) {
+            macroFlag = Symbol("macro")
+        })
+
         id : silo.lang.Node = null
 
         if(instanceof(id_, silo.lang.Node) {
@@ -207,6 +213,7 @@ function(
 
             node(
                 symbol("function")
+                macroFlag
                 silo.lang.Node(symbol("name"), id#getLabel())
                 silo.lang.Node.fromVector(inputs)
                 silo.lang.Node.fromVector(outputs)
@@ -216,6 +223,7 @@ function(
         } {
             node(
                 symbol("function")
+                macroFlag
                 silo.lang.Node(symbol("name"), id#getLabel())
                 silo.lang.Node.fromVector(inputs)
                 silo.lang.Node.fromVector(outputs)
@@ -228,6 +236,8 @@ function(
 function(
     name(fn)
     macro
+    // Optional parameters
+    //      args[0] : Boolean - Is this a macro
     varargs(args)
     outputs(silo.lang.Node)
     {
@@ -509,5 +519,14 @@ function(
             // It must be a literal value or null
             form
         })
+    }
+)
+
+function(
+    name(macro)
+    macro
+    inputs(id : Object, body : Object)
+    {
+        quote(silo.core.func(escape(id), escape(body), Boolean.TRUE))
     }
 )

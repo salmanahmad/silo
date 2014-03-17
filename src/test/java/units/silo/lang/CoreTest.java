@@ -132,6 +132,15 @@ public class CoreTest {
 
         Assert.assertEquals("bar", runtime.eval("test"));
     }
+
+    @Test
+    public void testMacro() throws Exception {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/core-test/macro.silo");
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+
+        Assert.assertEquals(Parser.parse("print(\"Hello, World!\")").getFirstChild(), runtime.eval(classes.get(2)));
+    }
 }
 
 

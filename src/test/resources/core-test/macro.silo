@@ -1,0 +1,17 @@
+
+// This is to ensure that the "func" macro still works
+// along with the "macro" macro since they share the same
+// internals
+func(foo(arg : Object) {
+    arg
+})
+
+macro(baz(arg : Object) {
+    quote(
+        quote(escape(arg))
+    )
+})
+
+
+foo(baz(print("Hello, World!")))
+
