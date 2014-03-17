@@ -484,7 +484,6 @@ function(
             })
 
             n : Node = Node.fromVector(v)
-            //println(n)
             n
         } else(form | instanceof(Symbol)) {
 

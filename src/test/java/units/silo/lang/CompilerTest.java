@@ -919,4 +919,12 @@ public class CompilerTest {
         Vector<Class> classes = runtime.compile(Parser.parse(source));
         Assert.assertEquals("foo", runtime.eval(classes.get(2)));
     }
+
+    @Test
+    public void testQuote() {
+        Runtime runtime = new Runtime();
+        String source = "quote(a.b.c.d.e.f.g.h.i)";
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+        Assert.assertEquals(Parser.parse("a.b.c.d.e.f.g.h.i").getFirstChild(), runtime.eval(classes.get(0)));
+    }
 }

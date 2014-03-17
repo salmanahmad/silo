@@ -1077,6 +1077,12 @@ public class Invoke implements Expression {
                             throw new RuntimeException("Could not find constructor");
                         }
 
+                        if(!shouldEmit) {
+                            // Fast Exit for type propagation
+                            frame.operandStack.push(klass);
+                            return;
+                        }
+
                         Class[] params = constructor.getParameterTypes();
                         boolean shouldVarArgs = false;
 

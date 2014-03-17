@@ -560,10 +560,6 @@ public class Compiler {
     }
 
     public static Vector resolveIdentifierPath(Vector<Symbol> path, CompilationContext context) {
-        //if(context.currentNamespace().identifierCache.containsKey(path)) {
-        //    return context.currentNamespace().identifierCache.get(path);
-        //}
-
         int index = 0;
         String name = null;
 
@@ -585,12 +581,10 @@ public class Compiler {
                 vec.add(klass);
                 vec.add(remaining);
 
-                //context.currentNamespace().identifierCache.put(path, vec);
                 return vec;
             }
         }
 
-        //context.currentNamespace().identifierCache.put(path, null);
         return null;
     }
 
