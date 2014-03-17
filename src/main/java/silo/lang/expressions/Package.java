@@ -47,12 +47,12 @@ public class Package implements Expression {
             context.currentNamespace().packageName = packageName(node);
             return node;
         } else if(node.getChildren().size() == 2) {
-            String name = context.currentNamespace().packageName;
-            context.currentNamespace().packageName = packageName(node);
+            CompilationContext.Namespace ns = new CompilationContext.Namespace(context.currentNamespace());
+            ns.packageName = packageName(node);
 
+            context.namespaces.push(ns);
             Object second = Compiler.buildExpression(node.getSecondChild()).scaffold(context);
-
-            context.currentNamespace().packageName = name;
+            context.namespaces.pop();
 
             return new Node(node.getLabel(), node.getFirstChild(), second);
         } else {
@@ -69,13 +69,13 @@ public class Package implements Expression {
         if(node.getChildren().size() == 1) {
             context.currentNamespace().packageName = packageName(node);
         } else if(node.getChildren().size() == 2) {
-            String name = context.currentNamespace().packageName;
-            context.currentNamespace().packageName = packageName(node);
+            CompilationContext.Namespace ns = new CompilationContext.Namespace(context.currentNamespace());
+            ns.packageName = packageName(node);
 
+            context.namespaces.push(ns);
             Compiler.buildExpression(node.getSecondChild()).emit(context);
             frame.operandStack.pop();
-
-            context.currentNamespace().packageName = name;
+            context.namespaces.pop();
         } else {
             throw new RuntimeException("Invalid package declaration");
         }

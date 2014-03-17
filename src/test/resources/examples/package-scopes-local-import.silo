@@ -1,0 +1,8 @@
+
+package(foo.bar.baz {
+    import(java.awt)
+
+    colorHandle : java.lang.Class = Color
+})
+
+fontHandle : java.lang.Class = Font

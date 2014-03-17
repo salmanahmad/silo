@@ -947,4 +947,22 @@ public class CompilerTest {
         classes = runtime.compile(Parser.parse(source));
         Assert.assertEquals(Parser.parse("a + escape(b)").getFirstChild(), runtime.eval(classes.get(0)));
     }
+
+    @Test
+    public void testPackageScopes() {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/examples/package-scopes-local-import.silo");
+
+        try {
+            runtime.compile(Parser.parse(source));
+            Assert.fail("Import escaped scope");
+        } catch(Exception e) {
+            Assert.assertEquals("Could not find local variable: Font", e.getMessage());
+        }
+
+
+        runtime = new Runtime();
+        source = Helper.readResource("/examples/package-scopes-inherited-import.silo");
+        runtime.compile(Parser.parse(source));
+    }
 }

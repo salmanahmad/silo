@@ -41,6 +41,15 @@ public class CompilationContext {
         public String packageName;
         public final LinkedHashSet<String> imports = new LinkedHashSet<String>();
         public final HashMap<String, String> aliases = new HashMap<String, String>();
+
+        public Namespace() {
+            this.imports.add("");
+        }
+
+        public Namespace(Namespace ns) {
+            this.imports.addAll(ns.imports);
+            this.aliases.putAll(ns.aliases);
+        }
     }
 
     public final Runtime runtime;
@@ -118,6 +127,7 @@ public class CompilationContext {
         this.symbolLoader = new RuntimeClassLoader();
         this.symbolTable.clear();
 
+        this.namespaces.clear();
         this.namespaces.push(new Namespace());
         this.currentNamespace().packageName = "";
         this.currentNamespace().imports.add("");
