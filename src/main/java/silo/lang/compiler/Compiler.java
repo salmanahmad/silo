@@ -121,7 +121,7 @@ public class Compiler {
         Vector children = node.getChildren();
 
         if(children == null) {
-            n = new Node(node.getLabel(), null);
+            n = new Node(node.getLabel(), new Vector());
         } else {
             Vector newChildren = new Vector();
 

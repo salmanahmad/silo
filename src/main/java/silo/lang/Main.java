@@ -24,7 +24,7 @@ import org.objectweb.asm.ClassReader;
 
 public class Main {
     public static void main(String[] args) throws Exception {
-        Runtime runtime = new Runtime();
+        Runtime runtime = new Runtime(new RuntimeClassLoader(), 1);
         IPersistentVector vector = PersistentVector.create(args);
 
         try {
