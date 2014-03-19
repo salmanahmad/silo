@@ -64,7 +64,9 @@ func(run(file_ : Object) {
     f : Function = checkcast(c#newInstance(), Function)
 
     a : silo.lang.Actor = runtime#spawn(f)
-    a#await()
+    ignore(RuntimeException {
+        a#await()
+    })
 
     runtime#shutdown()
 })
