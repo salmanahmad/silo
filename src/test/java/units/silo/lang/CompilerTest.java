@@ -954,6 +954,31 @@ public class CompilerTest {
         String source = "quotecontext(println(null))";
         Vector<Class> classes = runtime.compile(Parser.parse(source));
         Assert.assertEquals(Parser.parse("silo.core.println(null)").getFirstChild(), runtime.eval(classes.get(0)));
+
+
+        source = "quotecontext(String#println())";
+        classes = runtime.compile(Parser.parse(source));
+        Assert.assertEquals(Parser.parse("java.lang.String#println()").getFirstChild(), runtime.eval(classes.get(0)));
+
+
+        source = "quotecontext(String#println(b))";
+        classes = runtime.compile(Parser.parse(source));
+        Assert.assertEquals(Parser.parse("java.lang.String#println(b)").getFirstChild(), runtime.eval(classes.get(0)));
+
+
+        source = "b = \"Howdy!\"; quotecontext(String#println(escape(b)))";
+        classes = runtime.compile(Parser.parse(source));
+        Assert.assertEquals(Parser.parse("java.lang.String#println(\"Howdy!\")").getFirstChild(), runtime.eval(classes.get(0)));
+
+
+        source = "quotecontext(String#println(escape(quote(escape))))";
+        classes = runtime.compile(Parser.parse(source));
+        Assert.assertEquals(Parser.parse("java.lang.String#println(escape)").getFirstChild(), runtime.eval(classes.get(0)));
+
+
+        source = "quotecontext(function(name(foo), macro, inputs(args), {println(args)}))";
+        classes = runtime.compile(Parser.parse(source));
+        Assert.assertEquals(Parser.parse("function(name(foo), macro, inputs(args), {silo.core.println(args)})").getFirstChild(), runtime.eval(classes.get(0)));
     }
 
     @Test

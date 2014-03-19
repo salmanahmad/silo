@@ -25,6 +25,10 @@ import com.github.krukow.clj_lang.PersistentVector;
 public class QuoteContext implements Expression {
 
     public static final Symbol DOT = new Symbol(".");
+    public static final Symbol DO = new Symbol("do");
+    public static final Symbol HASH = new Symbol("#");
+    public static final Symbol ESCAPE = new Symbol("escape");
+    public static final Symbol FUNCTION = new Symbol("function");
 
     Node node;
 
@@ -57,39 +61,63 @@ public class QuoteContext implements Expression {
     }
 
     public static void quote(Object value, CompilationContext context) {
+        quote(value, context, true);
+    }
+
+    public static void quote(Object value, CompilationContext context, boolean shouldQualify) {
         if(value instanceof Node) {
             Node node = (Node)value;
+            boolean flag = shouldQualify;
 
-            Vector children = node.getChildren();
-            Object label = node.getLabel();
+            if(ESCAPE.equals(node.getLabel())) {
+                if(node.getChildren().size() != 1) {
+                    throw new RuntimeException("escape requires a single argument");
+                }
 
-            if(DOT.equals(label)) {
-                Vector<Symbol> identifier = Node.symbolListFromNode(Node.flattenTree(node, DOT));
+                Compiler.buildExpression(node.getChildren().get(0)).emit(context);
+                return;
+            }
 
-                if(identifier != null) {
-                    Vector result = Compiler.resolveIdentifierPath(identifier, context);
-                    if(result != null) {
-                        node = (Node)qualifiedClassName((Class)result.get(0));
-                        Vector<Symbol> list = (Vector<Symbol>)result.get(1);
-                        for(Symbol s : list) {
-                            node = new Node(
-                                DOT,
-                                node,
-                                s
-                            );
+            if(shouldQualify) {
+                Vector children = node.getChildren();
+                Object label = node.getLabel();
+
+                if(DOT.equals(label)) {
+                    Vector<Symbol> identifier = Node.symbolListFromNode(Node.flattenTree(node, DOT));
+
+                    if(identifier != null) {
+                        Vector result = Compiler.resolveIdentifierPath(identifier, context);
+                        if(result != null) {
+                            node = (Node)qualifiedClassName((Class)result.get(0));
+                            Vector<Symbol> list = (Vector<Symbol>)result.get(1);
+                            for(Symbol s : list) {
+                                node = new Node(
+                                    DOT,
+                                    node,
+                                    s
+                                );
+
+                                // We have already qualified, don't do it again otherwise
+                                // we will get stuck in infinite recursion.
+                                flag = false;
+                            }
                         }
                     }
                 }
             }
 
-            quoteNode(node, context);
+            quoteNode(node, context, flag);
         } else if(value instanceof Symbol) {
-            Class klass = Compiler.resolveType(value, context);
-            if(klass != null) {
-                Object name = qualifiedClassName(klass);
-                if(!name.equals(value)) {
-                    quote(name, context);
-                    return;
+            if(shouldQualify) {
+                Class klass = Compiler.resolveType(value, context);
+                if(klass != null) {
+                    Object name = qualifiedClassName(klass);
+                    if(!name.equals(value)) {
+                        // Don't call just "quoteSymbol" because "name" could be a Node
+                        // Use "false" since we have already qualified. No need to do it again
+                        quote(name, context, false);
+                        return;
+                    }
                 }
             }
 
@@ -117,7 +145,7 @@ public class QuoteContext implements Expression {
         frame.operandStack.push(Symbol.class);
     }
 
-    public static void quoteNode(Node node, CompilationContext context) {
+    public static void quoteNode(Node node, CompilationContext context, boolean shouldQualify) {
         CompilationFrame frame = context.currentFrame();
         GeneratorAdapter generator = context.currentFrame().generator;
 
@@ -140,7 +168,7 @@ public class QuoteContext implements Expression {
 
 
         // Quote the label
-        quote(label, context);
+        quote(label, context, shouldQualify);
         generator.invokeVirtual(
             Type.getType(PersistentVector.class),
             new org.objectweb.asm.commons.Method(
@@ -156,10 +184,22 @@ public class QuoteContext implements Expression {
         // Quote the children
         for(int i = 0; i < children.size(); i++) {
             Object child = children.get(i);
-            if(DOT.equals(label) && (child instanceof Symbol)) {
-                quoteSymbol((Symbol)child, context);
+
+            if(HASH.equals(label) && (i == 1)) {
+                quote(child, context, false);
+            } else if(FUNCTION.equals(label)) {
+                boolean flag = false;
+
+                if(child instanceof Node) {
+                    Object l = ((Node)child).getLabel();
+                    if(l == null || DO.equals(l)) {
+                        flag = shouldQualify;
+                    }
+                }
+
+                quote(child, context, flag);
             } else {
-                quote(child, context);
+                quote(child, context, shouldQualify);
             }
 
             generator.invokeVirtual(
