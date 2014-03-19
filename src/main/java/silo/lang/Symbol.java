@@ -19,6 +19,10 @@ public class Symbol {
         this.name = name;
     }
 
+    public static Symbol create(String name) {
+        return new Symbol(name);
+    }
+
     public boolean equals(Object o) {
         if(o instanceof Symbol) {
             Symbol symbol = (Symbol)o;

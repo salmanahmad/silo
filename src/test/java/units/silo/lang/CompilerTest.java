@@ -949,6 +949,14 @@ public class CompilerTest {
     }
 
     @Test
+    public void testQuoteContext() {
+        Runtime runtime = new Runtime();
+        String source = "quotecontext(println(null))";
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+        Assert.assertEquals(Parser.parse("silo.core.println(null)").getFirstChild(), runtime.eval(classes.get(0)));
+    }
+
+    @Test
     public void testPackageScopes() {
         Runtime runtime = new Runtime();
         String source = Helper.readResource("/examples/package-scopes-local-import.silo");
