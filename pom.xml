@@ -5,24 +5,17 @@
   <modelVersion>4.0.0</modelVersion>
 
   <properties>
-      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-      <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
   </properties>
 
   <groupId>com.salmanahmad</groupId>
   <artifactId>silo</artifactId>
-  <version>0.1-SNAPSHOT</version>
+  <version>0.0.1-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>The Silo Programming Language</name>
   <url>http://www.salmanahmad.com/silo</url>
-
-  <!--
-  faye - http://webtide.intalio.com/2011/08/websocket-example-server-client-and-loadtest/ / http://cometdproject.dojotoolkit.org
-  sinatra_async - http://wiki.eclipse.org/Jetty/Feature/Continuations#Obtaining_a_Continuation
-  sinatra - http://www.sparkjava.com/
-  sprockets - https://github.com/samaxes/minify-maven-plugin/
-  -->
 
   <dependencies>
     <dependency>
@@ -75,17 +68,17 @@
 
   <build>
     <pluginManagement>
-        <plugins>
-            <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.3.2</version>
-                <configuration>
-                    <source>1.6</source>
-                    <target>1.6</target>
-                    <compilerArgument></compilerArgument>
-                </configuration>
-            </plugin>
-        </plugins>
+      <plugins>
+        <plugin>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>2.3.2</version>
+          <configuration>
+            <source>1.6</source>
+            <target>1.6</target>
+            <compilerArgument></compilerArgument>
+          <configuration>
+        </plugin>
+      </plugins>
     </pluginManagement>
     <plugins>
       <plugin>
@@ -133,9 +126,19 @@
             <phase>package</phase>
             <configuration>
               <target>
-                <mkdir dir="${project.build.directory}/lib"/>
-                <copy file="${project.build.directory}/${project.build.finalName}-jar-with-dependencies.jar" tofile="${project.build.directory}/lib/${project.artifactId}.jar"/>
-                <!--<copy file="${project.build.directory}/${project.build.finalName}.jar" tofile="${project.build.directory}/lib/${project.artifactId}.jar"/>-->
+                <property name="silo.release.directory" value="${project.build.directory}/lib/${project.artifactId}-${project.version}" />
+
+                <mkdir dir="${silo.release.directory}"/>
+                <mkdir dir="${silo.release.directory}/bin"/>
+
+                <copy file="${basedir}/README.md" tofile="${silo.release.directory}/README.md" />
+                <copy file="${project.build.directory}/${project.build.finalName}-jar-with-dependencies.jar" tofile="${silo.release.directory}/${project.artifactId}.jar" />
+
+                <copy file="${basedir}/src/bin/silo" tofile="${silo.release.directory}/bin/silo" />
+                <copy file="${basedir}/src/bin/silo.sh" tofile="${silo.release.directory}/bin/silo.sh" />
+
+                <chmod file="${silo.release.directory}/bin/silo" perm="755"/>
+                <chmod file="${silo.release.directory}/bin/silo.sh" perm="755"/>
               </target>
             </configuration>
             <goals>

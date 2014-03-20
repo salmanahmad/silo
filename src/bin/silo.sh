@@ -24,6 +24,8 @@ while [ -h "$PRG" ] ; do
     fi
 done
 
+DIR_NAME=`dirname "$PRG"`
+
 
 
 # Process the command-line arguments.
@@ -58,15 +60,21 @@ done
 
 # Build the classpath
 
-DIR_NAME=`dirname "$PRG"`
-# TODO - I need to switch over to the jar-with-dependencies at some point.
-# JAR_NAME="silo.jar"
-
-DEP_PATH="$DIR_NAME/../../target/dependency/*"
-BUILD_PATH="$DIR_NAME/../../target/classes"
-#JAR_PATH="$DIR_NAME/../../target/lib/$JAR_NAME"
-
-CLASSPATH="$CLASSPATH:$DEP_PATH:$BUILD_PATH:$JAR_PATH"
+JAR_NAME="silo.jar"
 COMMAND_NAME="silo.lang.Main"
+JAR_PATH="$DIR_NAME/../$JAR_NAME"
+
+if [ -e "$JAR_PATH" ]
+then
+    # This script is colocated with a Silo jar.
+    # Assume we are in a release / production environment.
+    CLASSPATH="$CLASSPATH:$JAR_PATH"
+else
+    # The Silo jar file could not be found.
+    # Assume we are in mvn development environment.
+    DEP_PATH="$DIR_NAME/../../target/dependency/*"
+    BUILD_PATH="$DIR_NAME/../../target/classes"
+    CLASSPATH="$CLASSPATH:$DEP_PATH:$BUILD_PATH"
+fi
 
 exec java "${java_args[@]}" -classpath "$CLASSPATH" "$COMMAND_NAME" "${silo_args[@]}"
