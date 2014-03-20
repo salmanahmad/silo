@@ -36,6 +36,10 @@ declare -a silo_args
 while [ $# -gt 0 ]
 do
     case "$1" in
+        --java )
+            JAVA_CMD="$2"
+            shift 2
+            ;;
         --java.cp|-j.cp|--classpath|-cp )
             # Add the next argument to the classpath
             CLASSPATH="$CLASSPATH:$2"
@@ -58,6 +62,30 @@ done
 
 
 
+# Figure out which Java to use
+
+if [ -z "$JAVA_CMD" ]
+then
+    if [ -z "$JAVA_HOME" ]
+    then
+        for jre in $DIR_NAME/../jre*
+        do
+            [[ -e $jre ]] || continue
+            JAVA_CMD="$jre/bin/java"
+            break
+        done
+
+        if [ -z "$JAVA_CMD" ]
+        then
+            JAVA_CMD="java"
+        fi
+    else
+        JAVA_CMD="$JAVA_HOME/bin/java"
+    fi
+fi
+
+
+
 # Build the classpath
 
 JAR_NAME="silo.jar"
@@ -77,4 +105,4 @@ else
     CLASSPATH="$CLASSPATH:$DEP_PATH:$BUILD_PATH"
 fi
 
-exec java "${java_args[@]}" -classpath "$CLASSPATH" "$COMMAND_NAME" "${silo_args[@]}"
+exec "$JAVA_CMD" "${java_args[@]}" -classpath "$CLASSPATH" "$COMMAND_NAME" "${silo_args[@]}"
