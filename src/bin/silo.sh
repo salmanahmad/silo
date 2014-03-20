@@ -28,7 +28,6 @@ done
 
 # Process the command-line arguments.
 
-declare -a args
 declare -a java_args
 declare -a silo_args
 
