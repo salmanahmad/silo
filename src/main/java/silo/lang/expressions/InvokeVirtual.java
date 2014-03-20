@@ -106,14 +106,6 @@ public class InvokeVirtual implements Expression {
 
         java.lang.reflect.Method m = Invoke.resolveMethod(originalklass, method.toString(), false, types.toArray(new Class[0]));
 
-        if(!shouldEmit) {
-            // Fast exit to improve the performance of Expression#type()
-            // But first, pop the reciever type that we pushed.
-            frame.operandStack.pop();
-            frame.operandStack.push(m.getReturnType());
-            return;
-        }
-
         if(m == null && originalklass.isInterface()) {
             m = Invoke.resolveMethod(Object.class, method.toString(), false, types.toArray(new Class[0]));
 
@@ -124,6 +116,14 @@ public class InvokeVirtual implements Expression {
 
         if(m == null) {
             throw new RuntimeException("Could not find function: " + method.toString() + " in class: " + originalklass);
+        }
+
+        if(!shouldEmit) {
+            // Fast exit to improve the performance of Expression#type()
+            // But first, pop the reciever type that we pushed.
+            frame.operandStack.pop();
+            frame.operandStack.push(m.getReturnType());
+            return;
         }
 
         Class[] params = m.getParameterTypes();

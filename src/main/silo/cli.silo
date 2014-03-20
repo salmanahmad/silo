@@ -22,8 +22,6 @@ alias(JavaVector, java.util.Vector)
 
 func(main(args : Vector) {
     if(args#length() == 0 {
-        // TODO: Perhaps enter a REPL?
-        //println(help(null))
         shell()
         return()
     })
@@ -47,21 +45,26 @@ func(main(args : Vector) {
     })
 })
 
-func(run(file_ : Object) {
-    if(file_ {
-        file : String = file_#toString();
+func(run(arg : Object) {
+    runtime : Runtime = Runtime()
+    main : java.lang.Class = null
+
+    if(arg {
+        name : String = arg#toString()
+        main = runtime.loader#resolveType(name)
+
+        if(!main {
+            source : String = FileUtils.readFileToString(File(name))
+            code : silo.lang.Node = silo.lang.compiler.Parser.parse(name, source)
+
+            classes : java.util.Vector = runtime#compile(code)
+            main = checkcast(classes#get(classes#size() - 1), java.lang.Class)
+        })
     } else {
         return
     })
 
-    source : String = FileUtils.readFileToString(File(file))
-    code : silo.lang.Node = silo.lang.compiler.Parser.parse(file, source)
-
-    runtime : Runtime = Runtime();
-    classes : java.util.Vector = runtime#compile(code)
-
-    c : Class = checkcast(classes#get(classes#size() - 1), java.lang.Class)
-    f : Function = checkcast(c#newInstance(), Function)
+    f : Function = checkcast(main#newInstance(), Function)
 
     a : silo.lang.Actor = runtime#spawn(f)
     ignore(RuntimeException {
