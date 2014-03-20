@@ -13,6 +13,7 @@ package silo.lang;
 
 import com.github.krukow.clj_lang.IPersistentVector;
 import com.github.krukow.clj_lang.PersistentVector;
+import com.github.krukow.clj_lang.RT;
 
 public class PersistentVectorHelper {
 
@@ -40,8 +41,20 @@ public class PersistentVectorHelper {
         return vector.assocN(index, value);
     }
 
+    public static IPersistentVector subVector(IPersistentVector vector, int start, int end) {
+        return RT.subvec(vector, start, end);
+    }
+
+    public static IPersistentVector removeFirst(IPersistentVector vector) {
+        return subVector(vector, 1, length(vector));
+    }
+
     public static IPersistentVector push(IPersistentVector vector, Object value) {
         return vector.cons(value);
+    }
+
+    public static IPersistentVector pop(IPersistentVector vector) {
+        return subVector(vector, 0, length(vector) - 1);
     }
 
     public static int length(IPersistentVector vector) {
