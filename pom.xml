@@ -140,7 +140,31 @@
                 <chmod file="${silo.release.directory}/bin/silo.sh" perm="755"/>
                 <chmod file="${silo.release.directory}/bin/silo" perm="755"/>
 
-                <zip destfile="${project.build.directory}/${project.artifactId}-${project.version}.zip" basedir="${silo.release.directory}"/>
+                <zip destfile="${project.build.directory}/${project.artifactId}-${project.version}.zip">
+                  <zipfileset
+                    excludes="bin/*"
+                    dir="${silo.release.directory}"
+                    prefix="${project.artifactId}-${project.version}"
+                  />
+                  <zipfileset
+                    filemode="755"
+                    dir="${silo.release.directory}/bin"
+                    prefix="${project.artifactId}-${project.version}/bin"
+                  />
+                </zip>
+
+                <tar compression="gzip" destfile="${project.build.directory}/${project.artifactId}-${project.version}.tgz">
+                  <tarfileset
+                    excludes="bin/*"
+                    dir="${silo.release.directory}"
+                    prefix="${project.artifactId}-${project.version}"
+                  />
+                  <tarfileset
+                    filemode="755"
+                    dir="${silo.release.directory}/bin"
+                    prefix="${project.artifactId}-${project.version}/bin"
+                  />
+                </tar>
               </target>
             </configuration>
             <goals>
