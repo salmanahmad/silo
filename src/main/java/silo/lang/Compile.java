@@ -43,10 +43,10 @@ public class Compile {
 
     public static void main(String[] args) throws Exception {
         // To not compile the standard library invoke Maven
-        // with "-Dbootstrap.skip=true" on the commandline.
-        // Example: "mvn test -Dbootstrap.skip=true"
-        if(System.getProperty("bootstrap.skip") != null) {
-            if(System.getProperty("bootstrap.skip").equals("true")) {
+        // with "-DskipSilo=true" on the commandline.
+        // Example: "mvn test -DskipSilo=true"
+        if(System.getProperty("skipSilo") != null) {
+            if(System.getProperty("skipSilo").equals("true")) {
                 return;
             }
         }

@@ -134,11 +134,13 @@
                 <copy file="${basedir}/README.md" tofile="${silo.release.directory}/README.md" />
                 <copy file="${project.build.directory}/${project.build.finalName}-jar-with-dependencies.jar" tofile="${silo.release.directory}/${project.artifactId}.jar" />
 
-                <copy file="${basedir}/src/bin/silo" tofile="${silo.release.directory}/bin/silo" />
                 <copy file="${basedir}/src/bin/silo.sh" tofile="${silo.release.directory}/bin/silo.sh" />
+                <symlink link="${silo.release.directory}/bin/silo" resource="silo.sh"/>
 
-                <chmod file="${silo.release.directory}/bin/silo" perm="755"/>
                 <chmod file="${silo.release.directory}/bin/silo.sh" perm="755"/>
+                <chmod file="${silo.release.directory}/bin/silo" perm="755"/>
+
+                <zip destfile="${project.build.directory}/${project.artifactId}-${project.version}.zip" basedir="${silo.release.directory}"/>
               </target>
             </configuration>
             <goals>
@@ -162,7 +164,7 @@
                   </classpath>
                   <arg value="${project.build.outputDirectory}" />
                   <!--<arg line="${files}" />-->
-                  <sysproperty key="bootstrap.skip" value="${bootstrap.skip}"/>
+                  <sysproperty key="skipSilo" value="${skipSilo}"/>
                   <!--<jvmarg line="-agentlib:hprof=cpu=samples" />-->
                   <arg value="${basedir}/src/main/silo/core.silo" />
                   <arg value="${basedir}/src/main/silo/actor.silo" />
