@@ -324,16 +324,30 @@ Usage: silo copyright
 "
     } else {
 "
-Usage: silo [COMMAND] [command-specific-arguments]
+Usage: silo [java-flags] [COMMAND] [command-specific-arguments]
 
 List of commands, type \"silo help COMMAND\" for more details:
 
-  run         # Run a Silo program
-  shell       # Launch the interactive Silo shell
-  compile     # Compile Silo source files and output JVM bytecode
-  help        # Show the help page for a command
-  version     # Show the Silo version
-  copyright   # Show the Silo copyright
+  run                        # Run a Silo program
+  shell                      # Launch the interactive Silo shell
+  compile                    # Compile Silo source files and output JVM bytecode
+  help                       # Show the help page for a command
+  version                    # Show the Silo version
+  copyright                  # Show the Silo copyright
+
+
+List of Java and JVM flags:
+
+  --java <java-path>         # Specify the path to the \"java\" executable.
+                             # This is optional. Silo will, by default
+                             # search the PATH and JAVA_HOME env variables.
+
+  --classpath <path-spec>    # Specify additions to the CLASSPATH
+  -cp <path-spec>            # Shorthand for --classpath
+
+  --java.<flag>              # Specify any arbitrary Java flag.
+  -j.<flag>                  # Shorthand for --java.
+
 "
     })
 })
