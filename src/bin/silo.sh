@@ -68,10 +68,16 @@ if [ -z "$JAVA_CMD" ]
 then
     if [ -z "$JAVA_HOME" ]
     then
-        for jre in $DIR_NAME/../+(jre|jdk)*
+        for j in $DIR_NAME/../jre*
         do
-            [[ -e $jre ]] || continue
-            JAVA_CMD="$jre/bin/java"
+            [[ -e $j ]] || continue
+            JAVA_CMD="$j/bin/java"
+        done
+
+        for j in $DIR_NAME/../jdk*
+        do
+            [[ -e $j ]] || continue
+            JAVA_CMD="$j/bin/java"
         done
 
         if [ -z "$JAVA_CMD" ]
