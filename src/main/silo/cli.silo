@@ -6,6 +6,7 @@ alias(Runtime, silo.lang.Runtime)
 alias(CompilationContext, silo.lang.CompilationContext)
 alias(FileUtils, org.apache.commons.io.FileUtils)
 alias(FilenameUtils, org.apache.commons.io.FilenameUtils)
+alias(SystemUtils, org.apache.commons.lang3.SystemUtils)
 
 alias(Actor, silo.lang.Actor)
 alias(Node, silo.lang.Node)
@@ -32,6 +33,24 @@ func(main(args : Vector) {
         run(args#nth(1, null))
     } else(first#equals("shell")) {
         shell()
+    } else(first#equals("service")) {
+        args = vector.removeFirst(args)
+        first = args#nth(0, null)
+
+        if(!SystemUtils.IS_OS_UNIX {
+            println("Sorry, but the \"silo service\" command is currently only available on POSIX operating systems. Windows support is coming soon!")
+            return
+        })
+
+        if(first == "start" {
+
+        } else(first == "stop") {
+
+        } else(first == "monitor") {
+
+        } else {
+            println(help("service"))
+        })
     } else(first#equals("compile")) {
         compile(args#nth(1, null))
     } else(first#equals("help")) {
@@ -269,14 +288,38 @@ func(help(command) {
 
     if(command#equals("run") {
 "
-Usage: silo [run] FILES
+Usage: silo [run] <program-file> [arguments]
 
   Run a Silo program. If files lists raw '.silo' files they will be compiled
   and dynamically executed. If a '.jar' file is present it will be run instead.
 "
+    } else(command#equals("service")) {
+"
+Usage: silo service <command> <name> [run-arguments]
+
+  Run a Silo program as a background service. This service will not not block
+  the current terminal and will continue to run even after the terminal has
+  been closed. This is perfect for launching a long-running app, for example,
+  over an SSH connection.
+
+  The sub commands to \"service\" include:
+
+    start              # Start a service with the given name. This command
+                       # will create a directory called \"<name>.service\"
+                       # that contains the service's log and pid. This
+                       # command also accepts \"run-arguments\" which
+                       # will be passed through to \"silo run\".
+
+    stop               # Stops the service from running and removes the
+                       # \"<name>.service\" directory.
+
+    monitor            # Connects to a running service and displays its
+                       # running log in real time. The log is contained
+                       # in \"<name>.service\".
+"
     } else(command#equals("compile")) {
 "
-Usage: silo compile [options] [FILES]
+Usage: silo compile [options] <files>
 
   Compile a Silo source files and output JVM bytecode.
 
@@ -324,11 +367,12 @@ Usage: silo copyright
 "
     } else {
 "
-Usage: silo [java-flags] [COMMAND] [command-specific-arguments]
+Usage: silo [java-flags] <command> [command-specific-arguments]
 
-List of commands, type \"silo help COMMAND\" for more details:
+List of commands, type \"silo help <command>\" for more details:
 
   run                        # Run a Silo program
+  service                    # Run a Silo program as a background service
   shell                      # Launch the interactive Silo shell
   compile                    # Compile Silo source files and output JVM bytecode
   help                       # Show the help page for a command
@@ -336,14 +380,14 @@ List of commands, type \"silo help COMMAND\" for more details:
   copyright                  # Show the Silo copyright
 
 
-List of Java and JVM flags:
+Java and JVM include:
 
-  --java <java-path>         # Specify the path to the \"java\" executable.
+  --java <path>              # Specify the path to the \"java\" executable.
                              # This is optional. Silo will, by default
                              # search the PATH and JAVA_HOME env variables.
 
-  --classpath <path-spec>    # Specify additions to the CLASSPATH
-  -cp <path-spec>            # Shorthand for --classpath
+  --classpath <path>         # Specify additions to the CLASSPATH
+  -cp <path>                 # Shorthand for --classpath
 
   --java.<flag>              # Specify any arbitrary Java flag.
   -j.<flag>                  # Shorthand for --java.
