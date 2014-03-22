@@ -36,6 +36,7 @@ func(main(args : Vector) {
     } else(first#equals("service")) {
         args = vector.removeFirst(args)
         first = args#nth(0, null)
+        args = vector.removeFirst(args)
 
         if(!SystemUtils.IS_OS_UNIX {
             println("Sorry, but the \"silo service\" command is currently only available on POSIX operating systems. Windows support is coming soon!")
@@ -43,11 +44,11 @@ func(main(args : Vector) {
         })
 
         if(first == "start" {
-
+            serviceStart(args)
         } else(first == "stop") {
-
+            serviceStop(args)
         } else(first == "monitor") {
-
+            serviceMonitor(args)
         } else {
             println(help("service"))
         })
@@ -91,6 +92,18 @@ func(run(arg : Object) {
     })
 
     runtime#shutdown()
+})
+
+func(serviceStart(args : Vector) {
+    println("silo service start: unimplemented")
+})
+
+func(serviceStop(args : Vector) {
+    println("silo service stop: unimplemented")
+})
+
+func(serviceMonitor(args : Vector) {
+    println("silo service monitor: unimplemented")
 })
 
 func(processLocals(code : Object, locals : Map, processFunctions : boolean => Vector) {
