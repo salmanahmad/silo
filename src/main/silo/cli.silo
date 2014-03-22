@@ -7,6 +7,8 @@ alias(CompilationContext, silo.lang.CompilationContext)
 alias(FileUtils, org.apache.commons.io.FileUtils)
 alias(FilenameUtils, org.apache.commons.io.FilenameUtils)
 alias(SystemUtils, org.apache.commons.lang3.SystemUtils)
+alias(StringUtils, org.apache.commons.lang3.StringUtils)
+alias(ManagementFactory, java.lang.management.ManagementFactory)
 
 alias(Actor, silo.lang.Actor)
 alias(Node, silo.lang.Node)
@@ -95,7 +97,31 @@ func(run(arg : Object) {
 })
 
 func(serviceStart(args : Vector) {
-    println("silo service start: unimplemented")
+    javaHome : String = System.getProperty("java.home")
+    javaFlags : String = ManagementFactory.getRuntimeMXBean()#getInputArguments() | StringUtils.join(" ")
+    javaPath : String = System.getProperty("java.class.path")
+
+    serviceName : String = args#nth(0, null) | checkcast(String)
+    serviceName = serviceName + ".service"
+    args = vector.removeFirst(args)
+
+    argsString : String = ""
+    i : int = 0
+    while(i < args | vector.length() {
+        if(i == 0 {
+            argsString = "" + vector.get(args, i)
+        } else {
+            argsString = argsString + " " + vector.get(args, i)
+        })
+
+        i = i + 1
+    })
+
+    java.nio.file.Paths.get(serviceName) | fs.createDirectories()
+
+    command : String = String.format("nohup %s/bin/java %s --classpath %s silo.lang.Main %s > %s/log.txt 2>&1 < /dev/null & echo $! > %s/service.pid", javaHome, javaFlags, javaPath, argsString, serviceName, serviceName)
+
+    println(command)
 })
 
 func(serviceStop(args : Vector) {
