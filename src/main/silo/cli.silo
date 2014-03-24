@@ -121,6 +121,8 @@ func(serviceStart(args : Vector) {
 
     command : String = String.format("nohup %s/bin/java %s --classpath %s silo.lang.Main %s > %s/log.txt 2>&1 < /dev/null & echo $! > %s/service.pid", javaHome, javaFlags, javaPath, argsString, serviceName, serviceName)
 
+    java.lang.Runtime.exec(command)
+
     println(command)
 })
 
