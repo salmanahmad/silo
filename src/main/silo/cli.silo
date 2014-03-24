@@ -1,6 +1,7 @@
 
 package(silo.cli)
 import(silo.core)
+import(silo.io)
 
 alias(Runtime, silo.lang.Runtime)
 alias(CompilationContext, silo.lang.CompilationContext)
@@ -8,6 +9,7 @@ alias(FileUtils, org.apache.commons.io.FileUtils)
 alias(FilenameUtils, org.apache.commons.io.FilenameUtils)
 alias(SystemUtils, org.apache.commons.lang3.SystemUtils)
 alias(StringUtils, org.apache.commons.lang3.StringUtils)
+alias(FileUtils, org.apache.commons.io.FileUtils)
 alias(ManagementFactory, java.lang.management.ManagementFactory)
 
 alias(Actor, silo.lang.Actor)
@@ -102,6 +104,7 @@ func(serviceStart(args : Vector) {
     javaPath : String = System.getProperty("java.class.path")
 
     serviceName : String = args#nth(0, null) | checkcast(String)
+    name : String = serviceName
     serviceName = serviceName + ".service"
     args = vector.removeFirst(args)
 
@@ -119,19 +122,56 @@ func(serviceStart(args : Vector) {
 
     java.nio.file.Paths.get(serviceName) | fs.createDirectories()
 
-    command : String = String.format("nohup %s/bin/java %s --classpath %s silo.lang.Main %s > %s/log.txt 2>&1 < /dev/null & echo $! > %s/service.pid", javaHome, javaFlags, javaPath, argsString, serviceName, serviceName)
+    if(java.nio.file.Paths.get(serviceName, "service.pid") | fs.exists() {
+        println("Service is already running.")
+    } else {
+        command : array(String) = arraynew(String, 3)
+        command(0) = "sh"
+        command(1) = "-c"
+        command(2) = String.format("nohup %s/bin/java %s -classpath %s silo.lang.Main %s > %s/log.txt 2>&1 < /dev/null & echo $! > %s/service.pid", javaHome, javaFlags, javaPath, argsString, serviceName, serviceName)
 
-    java.lang.Runtime.exec(command)
+        java.lang.Runtime.getRuntime()#exec(command)
+        println("Starting service: " + name)
+    })
 
-    println(command)
 })
 
 func(serviceStop(args : Vector) {
-    println("silo service stop: unimplemented")
+    serviceName : String = args#nth(0, null) | checkcast(String)
+    name = serviceName
+    if(!serviceName#endsWith(".service") && !serviceName#endsWith(".service/") {
+        serviceName = serviceName + ".service"
+    })
+
+    pid : String = file.readAll(file.path(serviceName, "service.pid")#toString())
+    pid = pid#trim()
+
+    java.lang.Runtime.getRuntime()#exec("kill -9 " + pid)
+    FileUtils.deleteDirectory(File(serviceName))
+
+    println("Stopping service: " + name)
 })
 
 func(serviceMonitor(args : Vector) {
-    println("silo service monitor: unimplemented")
+    serviceName : String = args#nth(0, null) | checkcast(String)
+    name = serviceName
+    if(!serviceName#endsWith(".service") && !serviceName#endsWith(".service/") {
+        serviceName = serviceName + ".service"
+    })
+
+    command : array(String) = arraynew(String, 3)
+    command(0) = "tail"
+    command(1) = "-f"
+    command(2) = file.path(serviceName, "log.txt")#toString()
+
+    p : Process = java.lang.Runtime.getRuntime()#exec(command)
+
+    line : String = "";
+    input : BufferedReader = BufferedReader(InputStreamReader(p#getInputStream()));
+    while(((line = input#readLine()) != null) {
+        System.out#println(line)
+    })
+    input#close();
 })
 
 func(processLocals(code : Object, locals : Map, processFunctions : boolean => Vector) {

@@ -192,9 +192,9 @@
                   <!--<jvmarg line="-agentlib:hprof=cpu=samples" />-->
                   <arg value="${basedir}/src/main/silo/core.silo" />
                   <arg value="${basedir}/src/main/silo/actor.silo" />
-                  <arg value="${basedir}/src/main/silo/cli.silo" />
                   <arg value="${basedir}/src/main/silo/file.silo" />
                   <arg value="${basedir}/src/main/silo/http.silo" />
+                  <arg value="${basedir}/src/main/silo/cli.silo" />
                 </java>
               </target>
             </configuration>
