@@ -13,6 +13,10 @@ package silo.lang;
 
 import com.github.krukow.clj_lang.IPersistentVector;
 import com.github.krukow.clj_lang.PersistentVector;
+
+import com.github.krukow.clj_lang.IEditableCollection;
+import com.github.krukow.clj_lang.ITransientCollection;
+
 import com.github.krukow.clj_lang.RT;
 
 public class PersistentVectorHelper {
@@ -51,6 +55,18 @@ public class PersistentVectorHelper {
 
     public static IPersistentVector push(IPersistentVector vector, Object value) {
         return vector.cons(value);
+    }
+
+    public static IPersistentVector concat(IPersistentVector a, IPersistentVector b) {
+        IPersistentVector head = a;
+        IPersistentVector tail = b;
+
+        ITransientCollection buffer = ((IEditableCollection)head).asTransient();
+        for(int i = 0; i < length(tail); i++) {
+            buffer.conj(get(tail, i));
+        }
+
+        return (IPersistentVector)buffer.persistent();
     }
 
     public static IPersistentVector pop(IPersistentVector vector) {

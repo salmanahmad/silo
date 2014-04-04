@@ -33,7 +33,13 @@ public class PersistentMapHelper {
     }
 
     public static IPersistentVector keys(IPersistentMap map) {
-        return PersistentVectorHelper.create((Iterable)RT.keys(map));
+        Iterable i = (Iterable)RT.keys(map);
+
+        if(i == null) {
+            return PersistentVectorHelper.create();
+        } else {
+            return PersistentVectorHelper.create(i);
+        }
     }
 
     public static Object get(IPersistentMap map, Object key) {
