@@ -33,6 +33,8 @@ DIR_NAME=`dirname "$PRG"`
 declare -a java_args
 declare -a silo_args
 
+CLASSPATH="$CLASSPATH:$PWD/lib/*:$PWD/vendor/*"
+
 while [ $# -gt 0 ]
 do
     case "$1" in
@@ -42,7 +44,7 @@ do
             ;;
         --java.cp|-j.cp|--classpath|-cp )
             # Add the next argument to the classpath
-            CLASSPATH="$CLASSPATH:$2"
+            CLASSPATH="$2:$CLASSPATH"
             shift 2
             ;;
         --java.* )
