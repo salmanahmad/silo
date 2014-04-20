@@ -12,6 +12,7 @@
 package silo.lang;
 
 import java.util.ArrayDeque;
+import java.util.concurrent.ForkJoinTask;
 
 // TODO: move Fiber into silo.lang
 import silo.core.fiber.Fiber;
@@ -20,6 +21,28 @@ import com.github.krukow.clj_lang.IPersistentVector;
 import com.github.krukow.clj_lang.PersistentVector;
 
 public class Actor implements Runnable {
+    public static class Task extends ForkJoinTask {
+        public final Actor actor;
+
+        public Task(Actor actor) {
+            this.actor = actor;
+        }
+
+        public boolean exec() {
+            actor.run();
+            return true;
+        }
+
+        public Object getRawResult() {
+            return null;
+        }
+
+        public void setRawResult(Object o) {
+
+        }
+    }
+
+
     public Runtime runtime;
     public String address;
     public Fiber fiber;
@@ -161,7 +184,8 @@ public class Actor implements Runnable {
             if(this.locked) {
                 this.runtime.backgroundExecutor.submit(this);
             } else {
-                this.runtime.actorExecutor.submit(this);
+                //this.runtime.actorExecutor.submit(this);
+                (new Task(this)).fork();
             }
         }
     }

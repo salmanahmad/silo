@@ -17,6 +17,7 @@ import silo.lang.compiler.Compiler;
 import java.util.UUID;
 import java.util.Vector;
 import java.util.HashMap;
+import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
@@ -53,7 +54,8 @@ public class Runtime {
         this.compilationContext = new CompilationContext(this);
 
         this.actors = new ConcurrentHashMap<String, Actor>();
-        this.actorExecutor = Executors.newFixedThreadPool(nThreads);
+        //this.actorExecutor = Executors.newFixedThreadPool(nThreads);
+        this.actorExecutor = new ForkJoinPool(java.lang.Runtime.getRuntime().availableProcessors(), ForkJoinPool.defaultForkJoinWorkerThreadFactory, null, true);
         this.backgroundExecutor = Executors.newCachedThreadPool();
 
         this.registry = new ConcurrentHashMap<String, Object>();
