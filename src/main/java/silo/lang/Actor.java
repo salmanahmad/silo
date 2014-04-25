@@ -21,6 +21,9 @@ import com.github.krukow.clj_lang.IPersistentVector;
 import com.github.krukow.clj_lang.PersistentVector;
 
 public class Actor implements Runnable {
+
+    private final static Object NULL = new Object();
+
     public static class Task extends ForkJoinTask {
         public final Actor actor;
 
@@ -104,7 +107,13 @@ public class Actor implements Runnable {
             }
         }
 
-        return inbox.getLast();
+        Object o = inbox.getLast();
+
+        if(o == NULL) {
+            o = null;
+        }
+
+        return o;
     }
 
     public synchronized Object inboxSkip(ExecutionContext context) {
@@ -119,6 +128,10 @@ public class Actor implements Runnable {
 
         Object o = inbox.removeLast();
         drain.addLast(o);
+
+        if(o == NULL) {
+            o = null;
+        }
 
         return o;
     }
@@ -140,10 +153,18 @@ public class Actor implements Runnable {
             inbox.addLast(drain.removeFirst());
         }
 
+        if(o == NULL) {
+            o = null;
+        }
+
         return o;
     }
 
     public synchronized Object inboxPut(Object value) {
+        if(value == null) {
+            value = NULL;
+        }
+
         inbox.addFirst(value);
         schedule();
         return value;

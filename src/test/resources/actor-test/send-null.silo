@@ -1,0 +1,8 @@
+func(foo(address : String) {
+    actor.send(address, null)
+})
+
+func(main {
+    actor.spawn(foo, actor.self())
+    return(actor.read())
+})
