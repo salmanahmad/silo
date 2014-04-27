@@ -126,6 +126,27 @@ public class Node {
         return null;
     }
 
+    public IPersistentVector getChildNodes(Symbol name) {
+        IPersistentVector output = PersistentVectorHelper.create();
+
+        for(Object child : children) {
+            if(child instanceof Node) {
+                Node node = (Node)child;
+                if(node.getLabel() == null) {
+                    if(name == null) {
+                        output =  PersistentVectorHelper.push(output, node);
+                    }
+                } else {
+                    if(node.getLabel().equals(name)) {
+                        output =  PersistentVectorHelper.push(output, node);
+                    }
+                }
+            }
+        }
+
+        return output;
+    }
+
     public Object getChildNamed(Symbol name) {
         for(Object child : children) {
             if(name.equals(child)) {

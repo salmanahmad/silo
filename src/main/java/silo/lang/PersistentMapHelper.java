@@ -42,6 +42,23 @@ public class PersistentMapHelper {
         }
     }
 
+    public static IPersistentMap merge(IPersistentMap map1, IPersistentMap map2) {
+        IPersistentMap output = map1;
+
+        IPersistentVector keys = keys(map2);
+        for(int i = 0; i < PersistentVectorHelper.length(keys); i++) {
+            Object key = PersistentVectorHelper.get(keys, i);
+            output = set(output, key, get(map2, key));
+        }
+
+        return output;
+    }
+
+    public static boolean contains(IPersistentMap map, Object key) {
+        Object o = new Object();
+        return get(map, key, o) != o;
+    }
+
     public static Object get(IPersistentMap map, Object key) {
         return map.valAt(key);
     }
