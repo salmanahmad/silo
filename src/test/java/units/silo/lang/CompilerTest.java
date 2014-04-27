@@ -1007,4 +1007,15 @@ public class CompilerTest {
 
         Assert.assertEquals("hello, world!", runtime.eval(classes.get(1)));
     }
+
+    @Test
+    public void testDefineClassMethods() {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/examples/defineclass-methods.silo");
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+
+        Assert.assertEquals("Hello, World!", runtime.eval(classes.get(1)));
+        Assert.assertEquals("Hello, World!", runtime.eval(classes.get(2)));
+        Assert.assertEquals("Hello, World!", runtime.eval(classes.get(3)));
+    }
 }

@@ -322,7 +322,7 @@ public class FunctionExpression implements Expression, Opcodes {
         av.visitEnd();
 
         // Start a new frame...
-        CompilationFrame frame = new CompilationFrame(ACC_PUBLIC + ACC_STATIC, m, g, outputClass);
+        CompilationFrame frame = new CompilationFrame(ACC_PUBLIC + ACC_STATIC, m, g, null, true, outputClass);
         context.frames.push(frame);
 
         frame.restoreLocalsLabel = frame.generator.newLabel();

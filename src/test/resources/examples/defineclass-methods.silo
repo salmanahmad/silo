@@ -1,0 +1,45 @@
+defineclass(
+    name(Foo)
+
+    method(
+        name(bar)
+        outputs(String)
+        modifiers(public static)
+        {
+            return("Hello, World!")
+        }
+    )
+
+    method(
+        name(baz)
+        outputs(String)
+        modifiers(public)
+        {
+            return("Hello, World!")
+        }
+    )
+
+    method(
+        name(fiz)
+        inputs(a : String, b : String)
+        outputs(String)
+        modifiers(public)
+        {
+            return(a + b)
+        }
+    )
+)
+
+function({
+    return(Foo.bar())
+})
+
+function({
+    f : Foo = Foo()
+    return(f#baz())
+})
+
+function({
+    f : Foo = Foo()
+    return(f#fiz("Hello, ", "World!"))
+})

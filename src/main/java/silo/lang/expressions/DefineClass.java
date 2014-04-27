@@ -71,7 +71,7 @@ public class DefineClass implements Expression, Opcodes {
             if(child instanceof Node) {
                 Node childNode = (Node)child;
                 if(new Symbol("method").equals(childNode.getLabel())) {
-                    children.add(scaffoldMethod(node, context));
+                    children.add(scaffoldMethod(childNode, context));
                 } else {
                     children.add(child);
                 }
@@ -114,6 +114,163 @@ public class DefineClass implements Expression, Opcodes {
         }
 
         return null;
+    }
+
+    public IPersistentMap doEmitMethod(Node node, CompilationContext context, IPersistentMap methods, ClassWriter cw, String fullyQualifiedName, boolean shouldEmit) {
+        /*method(
+            name(i)
+            modifiers(static, public)
+            inputs(int)
+            outputs(int) {
+                ...
+            }
+        )*/
+
+        Symbol name = getSymbol(node, "name");
+        Node modifiersNode = node.getChildNode(new Symbol("modifiers"));
+        Node inputsNode = node.getChildNode(new Symbol("inputs"));
+        Object outputs = getObject(node, "outputs");
+        Node body = node.getChildNode(null);
+
+        Vector modifiers = new Vector();
+        Vector inputs = new Vector();
+
+        if(modifiersNode != null) {
+            modifiers = modifiersNode.getChildren();
+        }
+
+        if(inputsNode != null) {
+            inputs = inputsNode.getChildren();
+        }
+
+
+        if(name == null) {
+            throw new RuntimeException("Method must have a name");
+        }
+
+        int access = 0;
+        for(Object modifier : modifiers) {
+            if(modifier.equals(new Symbol("public"))) {
+                access = access + ACC_PUBLIC;
+            } else if(modifier.equals(new Symbol("private"))) {
+                access = access + ACC_PRIVATE;
+            } else if(modifier.equals(new Symbol("protected"))) {
+                access = access + ACC_PROTECTED;
+            } else if(modifier.equals(new Symbol("static"))) {
+                access = access + ACC_STATIC;
+            } else if(modifier.equals(new Symbol("varargs"))) {
+                access = access + ACC_VARARGS;
+            }
+        }
+
+        Vector<Type> inputTypes = new Vector<Type>();
+        Vector<Class> inputClasses = new Vector<Class>();
+        Vector<Symbol> inputNames = new Vector<Symbol>();
+
+        // TODO: handle resumable
+        //inputTypes.add(Type.getType(ExecutionContext.class));
+        //inputClasses.add(ExecutionContext.class);
+        //inputNames.add(context.uniqueIdentifier("context:variable"));
+
+        for(Object o : inputs) {
+            if(o instanceof Symbol) {
+                // This is the case where the user did not supply any type information
+
+                // TODO: Change this to "Var"
+                inputTypes.add(Type.getType(Object.class));
+                inputClasses.add(Object.class);
+                inputNames.add((Symbol)o);
+            } else if(o instanceof Node) {
+                Node n = (Node)o;
+
+                Symbol variableName = (Symbol)n.getFirstChild();
+
+                Object symbol = n.getSecondChild();
+                Class klass = Compiler.resolveType(symbol, context);
+                if(klass == null) {
+                    throw new RuntimeException("Could not find symbol: " + symbol.toString());
+                }
+
+                inputTypes.add(Type.getType(klass));
+                inputClasses.add(klass);
+                inputNames.add(variableName);
+            } else {
+                throw new RuntimeException("Invalid input specification for function: " + o);
+            }
+        }
+
+        Class outputClass = null;
+        if(outputs == null) {
+            // TODO: Make this Var?
+            outputClass = Object.class;
+        } else {
+            outputClass = Compiler.resolveType(outputs, context);
+            if(outputClass == null) {
+                throw new RuntimeException("Could not resolve type: " + outputs);
+            }
+        }
+
+        Method m = new Method(name.toString(), Type.getType(outputClass), inputTypes.toArray(new Type[0]));
+        GeneratorAdapter g = new GeneratorAdapter(access, m, null, null, cw);
+
+        String methodDescriptor = name.toString() + ":" + m.getDescriptor();
+        if(PersistentMapHelper.contains(methods, methodDescriptor)) {
+            throw new RuntimeException("Duplicate method");
+        } else {
+            methods = PersistentMapHelper.set(methods, methodDescriptor, Boolean.TRUE);
+        }
+
+        // Start a new frame...
+        Class declaringClass = null;
+        CompilationFrame frame = null;
+
+        if(shouldEmit) {
+            CompilationContext.SymbolEntry symbolEntry = context.symbolTable.get(fullyQualifiedName);
+            if(symbolEntry != null) {
+                // TODO: Handle resumable
+                declaringClass = symbolEntry.klass;
+                frame = new CompilationFrame(access, m, g, declaringClass, false, outputClass);
+            } else {
+                throw new RuntimeException("Internal error should have scaffolded: " + fullyQualifiedName);
+            }
+        } else {
+            // TODO: Handle resumable
+            frame = new CompilationFrame(access, m, g, null, false, outputClass);
+        }
+
+        context.frames.push(frame);
+
+        // Handle local variables
+        if(shouldEmit) {
+            frame.newLocal(new Symbol("this"), declaringClass);
+
+            if(inputClasses.size() == inputNames.size()) {
+                for(int i = 0; i < inputClasses.size(); i++) {
+                    frame.newLocal(inputNames.get(i), inputClasses.get(i));
+                }
+            } else {
+                throw new RuntimeException("Internal error. The length of the input names and types should be the same.");
+            }
+
+            frame.newLocal(new Symbol("super"), declaringClass.getSuperclass());
+
+            (new Block(body)).emit(context);
+        } else {
+            Node newBody = new Node(
+                new Symbol("return"),
+                Compiler.defaultValueForType(outputClass)
+            );
+
+            Compiler.buildExpression(newBody).emit(context);
+        }
+
+        (new Return(null, false)).emit(context);
+
+        // End method
+        context.frames.pop();
+        g.endMethod();
+
+        return methods;
     }
 
     public IPersistentMap doEmitField(Node node, CompilationContext context, IPersistentMap fields, ClassWriter cw) {
@@ -270,10 +427,47 @@ public class DefineClass implements Expression, Opcodes {
 
 
 
+        // Handle methods
+        IPersistentVector methodNodes = node.getChildNodes(new Symbol("method"));
+        IPersistentMap methods = PersistentMapHelper.create();
+
+        for(int i = 0; i < PersistentVectorHelper.length(methodNodes); i++) {
+            Node method = (Node)PersistentVectorHelper.get(methodNodes, i);
+            methods = PersistentMapHelper.merge(methods, doEmitMethod(method, context, methods, cw, fullyQualifiedName, shouldEmit));
+        }
+
+
+
         // Wrap up
         cw.visitEnd();
 
         byte[] code = cw.toByteArray();
+
+
+
+        /*
+        if(shouldEmit) {
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+            ClassReader classReader = new ClassReader(code);
+            PrintWriter printWriter = new PrintWriter(outputStream);
+            TraceClassVisitor traceClassVisitor = new TraceClassVisitor(printWriter);
+            classReader.accept(traceClassVisitor, ClassReader.SKIP_DEBUG);
+
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            CheckClassAdapter.verify(new ClassReader(code), false, pw);
+
+            System.out.println(sw.toString());
+
+            System.out.println();
+            System.out.println(outputStream.toString());
+            System.out.println();
+            System.out.println();
+        }
+        */
+
+
 
         if(shouldEmit) {
             Class klass = context.runtime.loader.loadClass(code);

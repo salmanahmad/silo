@@ -32,6 +32,10 @@ public class CompilationFrame {
     public final int access;
     public final Method method;
 
+    // If this is null, then it means that we are compiling a Function and not a normal Java class.
+    public final Class declaringClass;
+    public final boolean resumable;
+
     public GeneratorAdapter generator;
 
     public final Class outputClass;
@@ -48,9 +52,12 @@ public class CompilationFrame {
     public Label restoreLocalsLabel;
     public Label captureLocalsLabel;
 
-    public CompilationFrame(int access, Method method, GeneratorAdapter generator, Class outputClass) {
+    public CompilationFrame(int access, Method method, GeneratorAdapter generator, Class declaringClass, boolean resumable, Class outputClass) {
         this.access = access;
         this.method = method;
+
+        this.declaringClass = declaringClass;
+        this.resumable = resumable;
 
         this.generator = generator;
         this.outputClass = outputClass;
