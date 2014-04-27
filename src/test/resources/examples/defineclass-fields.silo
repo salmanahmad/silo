@@ -1,0 +1,11 @@
+defineclass(
+    name(Foo)
+    field(
+        name(bar)
+        type(String)
+        modifiers(public)))
+
+
+f : Foo = Foo()
+f.bar = "hello, world!"
+return(f.bar)

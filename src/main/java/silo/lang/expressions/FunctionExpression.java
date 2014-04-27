@@ -92,17 +92,6 @@ public class FunctionExpression implements Expression, Opcodes {
         return scaffolded;
     }
 
-    public String fullyQualifiedName(Symbol name, CompilationContext context) {
-        String fullyQualifiedName = context.currentNamespace().packageName;
-        if(fullyQualifiedName == null || fullyQualifiedName.equals("")) {
-            fullyQualifiedName = name.toString();
-        } else {
-            fullyQualifiedName = fullyQualifiedName + "." + name.toString();
-        }
-
-        return fullyQualifiedName;
-    }
-
     public void emit(CompilationContext context) {
         doEmit(node, context, true);
     }
@@ -188,7 +177,7 @@ public class FunctionExpression implements Expression, Opcodes {
 
 
 
-        String fullyQualifiedName = fullyQualifiedName(name, context);
+        String fullyQualifiedName = Compiler.fullyQualifiedName(name, context);
         CompilationContext.SymbolEntry symbolEntry = context.symbolTable.get(fullyQualifiedName);
         if(symbolEntry != null) {
             if(symbolEntry.compiled) {

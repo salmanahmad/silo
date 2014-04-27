@@ -300,6 +300,8 @@ public class Compiler {
                 return new Alias(node);
             } else if(label.equals(new Symbol("import"))) {
                 return new Import(node);
+            } else if(label.equals(new Symbol("defineclass"))) {
+                return new DefineClass(node);
             } else if(label.equals(new Symbol("function"))) {
                 return new FunctionExpression(node);
             } else if(label.equals(new Symbol("declare"))) {
@@ -751,6 +753,17 @@ public class Compiler {
                 context.currentFrame().operandStack.push(Compiler.assignmentBoxType(operandClass));
             }
         }
+    }
+
+    public static String fullyQualifiedName(Symbol name, CompilationContext context) {
+        String fullyQualifiedName = context.currentNamespace().packageName;
+        if(fullyQualifiedName == null || fullyQualifiedName.equals("")) {
+            fullyQualifiedName = name.toString();
+        } else {
+            fullyQualifiedName = fullyQualifiedName + "." + name.toString();
+        }
+
+        return fullyQualifiedName;
     }
 }
 

@@ -18,6 +18,7 @@ import silo.lang.compiler.*;
 import silo.lang.compiler.grammar.*;
 
 import com.github.krukow.clj_lang.IPersistentVector;
+import com.github.krukow.clj_lang.IPersistentMap;
 
 public class CollectionsTest {
 
@@ -30,5 +31,14 @@ public class CollectionsTest {
         Assert.assertEquals(a, PersistentVectorHelper.create("a", "b"));
         Assert.assertEquals(b, PersistentVectorHelper.create("c", "d"));
         Assert.assertEquals(c, PersistentVectorHelper.create("a", "b", "c", "d"));
+    }
+
+    @Test
+    public void testMerge() {
+        IPersistentMap a = PersistentMapHelper.create("a", "b");
+        IPersistentMap b = PersistentMapHelper.create("c", "d");
+        IPersistentMap c = PersistentMapHelper.merge(a, b);
+
+        Assert.assertEquals(c, PersistentMapHelper.create("a", "b", "c", "d"));
     }
 }

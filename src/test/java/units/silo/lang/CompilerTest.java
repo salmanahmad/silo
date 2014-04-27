@@ -998,4 +998,13 @@ public class CompilerTest {
         source = Helper.readResource("/examples/package-scopes-inherited-import.silo");
         runtime.compile(Parser.parse(source));
     }
+
+    @Test
+    public void testDefineClassFields() {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/examples/defineclass-fields.silo");
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+
+        Assert.assertEquals("hello, world!", runtime.eval(classes.get(1)));
+    }
 }
