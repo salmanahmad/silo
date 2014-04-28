@@ -1,6 +1,24 @@
 defineclass(
     name(Foo)
 
+    constructor(modifiers(public) {
+        
+    })
+
+    constructor(
+        inputs(a : int)
+        modifiers(public) {
+            this.a = a
+        }
+    )
+
+    field(
+        name(a)
+        type(int)
+        modifiers(public)
+        default(5)
+    )
+
     method(
         name(bar)
         outputs(String)
@@ -28,6 +46,15 @@ defineclass(
             return(a + b)
         }
     )
+
+    method(
+        name(setA)
+        inputs(a : int)
+        modifiers(public)
+        {
+            this.a = a
+        }
+    )
 )
 
 function({
@@ -42,4 +69,34 @@ function({
 function({
     f : Foo = Foo()
     return(f#fiz("Hello, ", "World!"))
+})
+
+function({
+    f : Foo = Foo()
+    f#setA(10)
+    return(Integer(f.a))
+})
+
+function({
+    f1 : Foo = Foo()
+
+    f2 : Foo = Foo()
+    f2#setA(10)
+
+    return(vector.create(
+        Integer(f1.a)
+        Integer(f2.a)
+    ))
+})
+
+function({
+    f1 : Foo = Foo(30)
+
+    f2 : Foo = Foo()
+    f2#setA(10)
+
+    return(vector.create(
+        Integer(f1.a)
+        Integer(f2.a)
+    ))
 })

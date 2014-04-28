@@ -116,6 +116,158 @@ public class DefineClass implements Expression, Opcodes {
         return null;
     }
 
+    public IPersistentMap doEmitConstructor(Node node, CompilationContext context, IPersistentMap ctors, IPersistentMap fields, ClassWriter cw, String fullyQualifiedName, boolean shouldEmit) {
+        /*constructor(
+            modifiers(public, varargs)
+            inputs(int) {
+                ...
+            }
+        )*/
+
+        Node modifiersNode = node.getChildNode(new Symbol("modifiers"));
+        Node inputsNode = node.getChildNode(new Symbol("inputs"));
+        Node body = node.getChildNode(null);
+
+        Vector modifiers = new Vector();
+        Vector inputs = new Vector();
+
+        if(modifiersNode != null) {
+            modifiers = modifiersNode.getChildren();
+        }
+
+        if(inputsNode != null) {
+            inputs = inputsNode.getChildren();
+        }
+
+        int access = 0;
+        for(Object modifier : modifiers) {
+            if(modifier.equals(new Symbol("public"))) {
+                access = access + ACC_PUBLIC;
+            } else if(modifier.equals(new Symbol("private"))) {
+                access = access + ACC_PRIVATE;
+            } else if(modifier.equals(new Symbol("protected"))) {
+                access = access + ACC_PROTECTED;
+            } else if(modifier.equals(new Symbol("varargs"))) {
+                access = access + ACC_VARARGS;
+            }
+        }
+
+        Vector<Type> inputTypes = new Vector<Type>();
+        Vector<Class> inputClasses = new Vector<Class>();
+        Vector<Symbol> inputNames = new Vector<Symbol>();
+
+        for(Object o : inputs) {
+            if(o instanceof Symbol) {
+                // This is the case where the user did not supply any type information
+
+                // TODO: Change this to "Var"
+                inputTypes.add(Type.getType(Object.class));
+                inputClasses.add(Object.class);
+                inputNames.add((Symbol)o);
+            } else if(o instanceof Node) {
+                Node n = (Node)o;
+
+                Symbol variableName = (Symbol)n.getFirstChild();
+
+                Object symbol = n.getSecondChild();
+                Class klass = Compiler.resolveType(symbol, context);
+                if(klass == null) {
+                    throw new RuntimeException("Could not find symbol: " + symbol.toString());
+                }
+
+                inputTypes.add(Type.getType(klass));
+                inputClasses.add(klass);
+                inputNames.add(variableName);
+            } else {
+                throw new RuntimeException("Invalid input specification for function: " + o);
+            }
+        }
+
+        Method m = new Method("<init>", Type.getType(Void.TYPE), inputTypes.toArray(new Type[0]));
+        GeneratorAdapter g = new GeneratorAdapter(access, m, null, null, cw);
+
+        String methodDescriptor = m.getDescriptor();
+        if(PersistentMapHelper.contains(ctors, methodDescriptor)) {
+            throw new RuntimeException("Duplicate constructor");
+        } else {
+            ctors = PersistentMapHelper.set(ctors, methodDescriptor, Boolean.TRUE);
+        }
+
+        // Start a new frame...
+        Class declaringClass = null;
+        CompilationFrame frame = null;
+
+        if(shouldEmit) {
+            CompilationContext.SymbolEntry symbolEntry = context.symbolTable.get(fullyQualifiedName);
+            if(symbolEntry != null) {
+                declaringClass = symbolEntry.klass;
+                frame = new CompilationFrame(access, m, g, declaringClass, false, Void.TYPE);
+            } else {
+                throw new RuntimeException("Internal error should have scaffolded: " + fullyQualifiedName);
+            }
+        } else {
+            frame = new CompilationFrame(access, m, g, null, false, Void.TYPE);
+        }
+
+        context.frames.push(frame);
+
+        // Handle local variables
+        if(shouldEmit) {
+            frame.newLocal(new Symbol("this"), declaringClass);
+
+            if(inputClasses.size() == inputNames.size()) {
+                for(int i = 0; i < inputClasses.size(); i++) {
+                    frame.newLocal(inputNames.get(i), inputClasses.get(i));
+                }
+            } else {
+                throw new RuntimeException("Internal error. The length of the input names and types should be the same.");
+            }
+
+            // TODO: Handle super properly
+            frame.newLocal(new Symbol("super"), declaringClass.getSuperclass());
+
+            // Invoke super constructor
+            g.loadThis();
+            g.invokeConstructor(Type.getType(declaringClass.getSuperclass()), Method.getMethod("void <init> ()"));
+
+            // Set the fields
+            IPersistentVector fieldsVector = PersistentMapHelper.keys(fields);
+            for(int i = 0; i < PersistentVectorHelper.length(fieldsVector); i++) {
+                Object fieldName = PersistentVectorHelper.get(fieldsVector, i);
+                Object fieldValue = PersistentMapHelper.get(fields, fieldName);
+
+                if(fieldValue == null) {
+                    continue;
+                }
+
+                Node fieldAssignment = new Node(new Symbol("="),
+                    new Node(new Symbol("."),
+                        new Symbol("this"),
+                        fieldName
+                    ),
+                    fieldValue
+                );
+
+                Compiler.buildExpression(fieldAssignment).emit(context);
+            }
+
+            (new Block(body)).emit(context);
+            g.returnValue();
+        } else {
+            // Invoke super constructor just to avoid verification errors
+            g.loadThis();
+            g.invokeConstructor(Type.getType(Object.class), Method.getMethod("void <init> ()"));
+
+            g.returnValue();
+        }
+
+        // End method
+        context.frames.pop();
+        g.endMethod();
+
+        return ctors;
+    }
+
     public IPersistentMap doEmitMethod(Node node, CompilationContext context, IPersistentMap methods, ClassWriter cw, String fullyQualifiedName, boolean shouldEmit) {
         /*method(
             name(i)
@@ -252,6 +404,7 @@ public class DefineClass implements Expression, Opcodes {
                 throw new RuntimeException("Internal error. The length of the input names and types should be the same.");
             }
 
+            // TODO: I need to assign "this" to "super"
             frame.newLocal(new Symbol("super"), declaringClass.getSuperclass());
 
             (new Block(body)).emit(context);
@@ -406,16 +559,6 @@ public class DefineClass implements Expression, Opcodes {
 
 
 
-        // Constructors
-        m = Method.getMethod("void <init> ()");
-        g = new GeneratorAdapter(ACC_PUBLIC, m, null, null, cw);
-        g.loadThis();
-        g.invokeConstructor(Type.getType(superClass), m);
-        g.returnValue();
-        g.endMethod();
-
-
-
         // Handle fields
         IPersistentVector fieldNodes = node.getChildNodes(new Symbol("field"));
         IPersistentMap fields = PersistentMapHelper.create();
@@ -423,6 +566,27 @@ public class DefineClass implements Expression, Opcodes {
         for(int i = 0; i < PersistentVectorHelper.length(fieldNodes); i++) {
             Node field = (Node)PersistentVectorHelper.get(fieldNodes, i);
             fields = PersistentMapHelper.merge(fields, doEmitField(field, context, fields, cw));
+        }
+
+
+
+        // Handle constructors
+        IPersistentVector constructorNodes = node.getChildNodes(new Symbol("constructor"));
+        IPersistentMap constructors = PersistentMapHelper.create();
+
+        if(PersistentVectorHelper.length(constructorNodes) == 0) {
+            // Add the default constructor
+            m = Method.getMethod("void <init> ()");
+            g = new GeneratorAdapter(ACC_PUBLIC, m, null, null, cw);
+            g.loadThis();
+            g.invokeConstructor(Type.getType(superClass), m);
+            g.returnValue();
+            g.endMethod();
+        } else {
+            for(int i = 0; i < PersistentVectorHelper.length(constructorNodes); i++) {
+                Node constructor = (Node)PersistentVectorHelper.get(constructorNodes, i);
+                constructors = PersistentMapHelper.merge(constructors, doEmitConstructor(constructor, context, constructors, fields, cw, fullyQualifiedName, shouldEmit));
+            }
         }
 
 

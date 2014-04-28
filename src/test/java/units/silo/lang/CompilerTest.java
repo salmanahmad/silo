@@ -1017,5 +1017,8 @@ public class CompilerTest {
         Assert.assertEquals("Hello, World!", runtime.eval(classes.get(1)));
         Assert.assertEquals("Hello, World!", runtime.eval(classes.get(2)));
         Assert.assertEquals("Hello, World!", runtime.eval(classes.get(3)));
+        Assert.assertEquals(new Integer(10), runtime.eval(classes.get(4)));
+        Assert.assertEquals(PersistentVectorHelper.create(new Integer(5), new Integer(10)), runtime.eval(classes.get(5)));
+        Assert.assertEquals(PersistentVectorHelper.create(new Integer(30), new Integer(10)), runtime.eval(classes.get(6)));
     }
 }
