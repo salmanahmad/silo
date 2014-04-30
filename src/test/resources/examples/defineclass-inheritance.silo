@@ -70,7 +70,8 @@ defineclass(
         outputs(String)
         modifiers(public)
         {
-            this | invokespecial(Vehicle, accelerate())
+            this | invokesuper(accelerate())
+            //this | invokespecial(Vehicle, accelerate())
         }
     )
 )

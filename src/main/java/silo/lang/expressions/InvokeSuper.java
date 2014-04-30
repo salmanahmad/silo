@@ -21,23 +21,7 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.Method;
 import org.objectweb.asm.commons.GeneratorAdapter;
 
-// I am keeping this expression but also break it out into
-// invoke private and invokesuper. The reasons why is because
-// I think that this expressions is pretty confusing as
-// outlined by this OpenJDK issue:
-// https://bugs.openjdk.java.net/browse/JDK-8009697
-//
-// Comment below:
-//
-// invokespecial seems to have a restriction that it only be
-// used on a method in a superclass of the calling class
-// (with the exception of <init> calls); and even then, the
-// receiver must be an instance of the calling class.
-//
-// Salman comment: which is why this | checkcast(...) | invokespecial
-// does NOT work...
-
-public class InvokeSpecial implements Expression {
+public class InvokeSuper implements Expression {
 
     Node node;
 
@@ -45,19 +29,19 @@ public class InvokeSpecial implements Expression {
     Symbol method;
     Vector<Expression> arguments;
 
-    public InvokeSpecial(Node node) {
+    public InvokeSuper(Node node) {
         this.node = node;
     }
 
     public void validate() {
-        if(node.getChildren().size() != 3) {
-            throw new RuntimeException("invokespecial requires three arguments.");
+        if(node.getChildren().size() != 2) {
+            throw new RuntimeException("invokesuper requires two arguments.");
         }
 
         receiver = Compiler.buildExpression(node.getFirstChild());
         arguments = new Vector<Expression>();
 
-        Object second = node.getLastChild();
+        Object second = node.getSecondChild();
         if(second instanceof Node) {
             Node methodNode = (Node)second;
 
@@ -109,7 +93,7 @@ public class InvokeSpecial implements Expression {
             frame.operandStack.push(receiver.type(context));
         }
 
-        Class originalklass = Compiler.resolveType(node.getSecondChild(), context);
+        Class originalklass = frame.operandStack.peek().getSuperclass();
 
         Vector<Class> types = Invoke.argumentTypes(arguments, context);
 

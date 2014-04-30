@@ -334,6 +334,8 @@ public class Compiler {
                 return new InstanceOf(node);
             } else if(label.equals(new Symbol("uniquesymbol"))) {
                 return new UniqueSymbol(node);
+            } else if(label.equals(new Symbol("invokesuper"))) {
+                return new InvokeSuper(node);
             } else if(label.equals(new Symbol("invokespecial"))) {
                 return new InvokeSpecial(node);
             } else if(label.equals(new Symbol("invokevirtual"))) {

@@ -248,6 +248,7 @@ public class DefineClass implements Expression, Opcodes {
                 Compiler.buildExpression(fieldAssignment).emit(context);
             }
 
+            frame.newLocal(new Symbol("constructor:variable"), Object[].class);
             (new Block(body)).emit(context);
             g.returnValue();
         } else {
@@ -401,6 +402,7 @@ public class DefineClass implements Expression, Opcodes {
                 throw new RuntimeException("Internal error. The length of the input names and types should be the same.");
             }
 
+            frame.newLocal(new Symbol("constructor:variable"), Object[].class);
             (new Block(body)).emit(context);
         } else {
             Node newBody = new Node(
