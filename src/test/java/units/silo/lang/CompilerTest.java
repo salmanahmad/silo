@@ -1021,4 +1021,41 @@ public class CompilerTest {
         Assert.assertEquals(PersistentVectorHelper.create(new Integer(5), new Integer(10)), runtime.eval(classes.get(5)));
         Assert.assertEquals(PersistentVectorHelper.create(new Integer(30), new Integer(10)), runtime.eval(classes.get(6)));
     }
+
+    @Test
+    public void testDefineClassInheritance() {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/examples/defineclass-inheritance.silo");
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+
+        Assert.assertEquals(PersistentVectorHelper.create(
+            "Vehicle Driving.",
+            "Car Driving.",
+            "Truck Driving."
+        ), runtime.eval(classes.get(3)));
+
+        Assert.assertEquals(PersistentVectorHelper.create(
+            "Vehicle Driving.",
+            "Car Driving.",
+            "Truck Driving."
+        ), runtime.eval(classes.get(4)));
+
+        Assert.assertEquals(PersistentVectorHelper.create(
+            "Vehicle Repairing.",
+            "Vehicle Repairing.",
+            "Vehicle Repairing."
+        ), runtime.eval(classes.get(5)));
+
+        Assert.assertEquals(PersistentVectorHelper.create(
+            "Vehicle Repairing.",
+            "Vehicle Repairing.",
+            "Vehicle Repairing."
+        ), runtime.eval(classes.get(5)));
+
+        Assert.assertEquals(PersistentVectorHelper.create(
+            "Vehicle Accelerate.",
+            "Car Accelerate.",
+            "Vehicle Accelerate."
+        ), runtime.eval(classes.get(6)));
+    }
 }

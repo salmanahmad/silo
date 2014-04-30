@@ -1,0 +1,104 @@
+defineclass(
+    name(Vehicle)
+
+    method(
+        name(drive)
+        outputs(String)
+        modifiers(public)
+        {
+            return("Vehicle Driving.")
+        }
+    )
+
+    method(
+        name(repair)
+        outputs(String)
+        modifiers(public)
+        {
+            return("Vehicle Repairing.")
+        }
+    )
+
+    method(
+        name(accelerate)
+        outputs(String)
+        modifiers(public)
+        {
+            return("Vehicle Accelerate.")
+        }
+    )
+)
+
+defineclass(
+    name(Car)
+    extends(Vehicle)
+
+    method(
+        name(drive)
+        outputs(String)
+        modifiers(public)
+        {
+            return("Car Driving.")
+        }
+    )
+
+    method(
+        name(accelerate)
+        outputs(String)
+        modifiers(public)
+        {
+            return("Car Accelerate.")
+        }
+    )
+)
+
+defineclass(
+    name(Truck)
+    extends(Vehicle)
+
+    method(
+        name(drive)
+        outputs(String)
+        modifiers(public)
+        {
+            return("Truck Driving.")
+        }
+    )
+
+    method(
+        name(accelerate)
+        outputs(String)
+        modifiers(public)
+        {
+            this | invokespecial(Vehicle, accelerate())
+        }
+    )
+)
+
+function({
+    v : Vector = vector.create()
+    a : Vehicle = null
+
+    a = Vehicle()
+    v = vector.push(v, a#drive())
+
+    a = Car()
+    v = vector.push(v, a#drive())
+
+    a = Truck()
+    v = vector.push(v, a#drive())
+
+    return(v)
+})
+
+function({
+    vector.create(Vehicle()#drive(), Car()#drive(), Truck()#drive())
+})
+
+function({
+    vector.create(Vehicle()#repair(), Car()#repair(), Truck()#repair())
+})
+
+function({
+    vector.create(Vehicle()#accelerate(), Car()#accelerate(), Truck()#accelerate())
+})

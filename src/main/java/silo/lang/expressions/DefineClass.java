@@ -223,9 +223,6 @@ public class DefineClass implements Expression, Opcodes {
                 throw new RuntimeException("Internal error. The length of the input names and types should be the same.");
             }
 
-            // TODO: Handle super properly
-            frame.newLocal(new Symbol("super"), declaringClass.getSuperclass());
-
             // Invoke super constructor
             g.loadThis();
             g.invokeConstructor(Type.getType(declaringClass.getSuperclass()), Method.getMethod("void <init> ()"));
@@ -403,9 +400,6 @@ public class DefineClass implements Expression, Opcodes {
             } else {
                 throw new RuntimeException("Internal error. The length of the input names and types should be the same.");
             }
-
-            // TODO: I need to assign "this" to "super"
-            frame.newLocal(new Symbol("super"), declaringClass.getSuperclass());
 
             (new Block(body)).emit(context);
         } else {
