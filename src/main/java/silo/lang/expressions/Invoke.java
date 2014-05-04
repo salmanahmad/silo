@@ -551,6 +551,312 @@ public class Invoke implements Expression {
         return shouldVarArgs;
     }
 
+    public void performNonResumableInvoke(CompilationContext context, Method method, Vector<Expression> arguments) {
+        // TODO
+    }
+
+    public void performResumableInvoke(CompilationContext context, Method method, Vector<Expression> arguments) {
+        CompilationFrame frame = context.currentFrame();
+        GeneratorAdapter generator = frame.generator;
+
+        Class klass = method.getDeclaringClass();
+        boolean isNative = Function.class.isAssignableFrom(klass);
+        boolean isStatic = Modifier.isStatic(method.getModifiers());
+
+        Class[] params = method.getParameterTypes();
+        Vector<Class> types = argumentTypes(arguments, context);
+        params = Arrays.copyOfRange(params, 1, params.length);
+
+        boolean isVarArg = false;
+        if(isNative) {
+            isVarArg = Function.isVarArgs(klass);
+        } else {
+            isVarArg = method.isVarArgs();
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+        Label resumeSite = generator.newLabel();
+        Label preCallSite = generator.newLabel();
+        Label callSite = generator.newLabel();
+
+
+
+        // ###
+        // ### Skip over the resume point during normal execution
+        generator.goTo(preCallSite);
+
+
+
+        // ###
+        // ### Resume Site - Load the execution context and dummy values for the invocation
+        int programCounter = 0;
+        generator.mark(resumeSite);
+
+        for(int i = 0; i < frame.operandStack.size(); i++) {
+            Class operandType = frame.operandStack.get(i);
+            Compiler.pushInitializationValue(operandType, generator);
+        }
+
+        if(!isStatic) {
+            // If this call site is virtual, I need to load the "reciever"
+
+            // Pop the dummy value I just inserted onto the stack. It is a function handle so
+            // I do not need to do "Compiler.pop()" and worry about category2 data types.
+            generator.pop();
+
+            Compiler.loadExecutionContext(context);
+            generator.invokeVirtual(Type.getType(ExecutionContext.class), org.objectweb.asm.commons.Method.getMethod("silo.lang.ExecutionFrame getCurrentFrame()"));
+            generator.getField(Type.getType(ExecutionFrame.class), "stack", Type.getType(Object[].class));
+            generator.push(frame.operandStack.size() - 1);
+            generator.arrayLoad(Type.getType(klass));
+            generator.checkCast(Type.getType(klass));
+
+            // Duplicate the reciever
+            generator.dup();
+        }
+        Compiler.loadExecutionContext(context);
+
+        for(Class param : params) {
+            Compiler.pushInitializationValue(param, generator);
+        }
+
+        // Skip over the rest and go to the call site
+        generator.goTo(callSite);
+
+
+
+        // ###
+        // ### Pre Call Site - Load the execution context and the actual parameters for the invocation
+        generator.mark(preCallSite);
+
+        if(!isStatic) {
+            // Duplicate the receiever. It will be popped off below during RUNNING
+            generator.dup();
+            frame.operandStack.push(frame.operandStack.peek());
+        }
+
+        Compiler.loadExecutionContext(context);
+        frame.operandStack.push(ExecutionContext.class);
+
+        if(isVarArg) {
+            // TODO: Perhaps "apply" should follow the same conventions as "invoke" for varargs so that I do not need
+            // to branch out here and use different method calling conventions.
+            // TODO: Making apply and invoke have the same conventions will also mean that the varargs check
+            // earlier in this function can be combined and not need the branches that I take...
+
+            if(isNative && isStatic) {
+                Invoke.compileVariableArgumentsForNativeFunction(params, arguments, context, true);
+            } else {
+                Invoke.compileVariableArguments(params, arguments, context, true);
+            }
+        } else {
+            Invoke.compileArguments(params, arguments, context, true);
+        }
+
+
+
+        // ###
+        // ### Actual Call Site
+        generator.mark(callSite);
+
+        Compiler.loadExecutionContext(context);
+        generator.invokeVirtual(Type.getType(ExecutionContext.class), org.objectweb.asm.commons.Method.getMethod("void beginCall()"));
+
+        if(isStatic) {
+            generator.invokeStatic(Type.getType(klass), org.objectweb.asm.commons.Method.getMethod(method));
+        } else {
+            // TODO: Support calls with invokeSpecial?
+            generator.invokeVirtual(Type.getType(klass), org.objectweb.asm.commons.Method.getMethod(method));
+        }
+
+        if(method.getReturnType().equals(Void.TYPE)) {
+            generator.push((String)null);
+        }
+
+        // Pop the execution context
+        frame.operandStack.pop();
+
+        // Pop the arguments
+        for(int i = 0; i < params.length; i++) {
+            frame.operandStack.pop();
+        }
+
+        Class returnClass = null;
+        if(isStatic) {
+            // Push the return value
+            if(method.getReturnType().equals(Void.TYPE)) {
+                frame.operandStack.push(Object.class);
+                returnClass = Object.class;
+            } else {
+                frame.operandStack.push(method.getReturnType());
+                returnClass = method.getReturnType();
+            }
+        } else {
+            // Pop the reciever then push the return value.
+            frame.operandStack.pop();
+
+            // Pop the duplicate of the reciever
+            frame.operandStack.pop();
+
+            // Push the return value
+            // TODO: This should be Var eventually as specified by the
+            // Function#apply method...
+            frame.operandStack.push(Object.class);
+            returnClass = Object.class;
+        }
+
+        Compiler.loadExecutionContext(context);
+        generator.invokeVirtual(Type.getType(ExecutionContext.class), org.objectweb.asm.commons.Method.getMethod("int endCall()"));
+
+
+
+        // ###
+        // ### Post Call Site - Inspect the execution context to see if we need to pause or not
+
+        Label continuationSite = generator.newLabel();
+
+        Label running = generator.newLabel();
+        Label resuming = generator.newLabel();
+        Label capturing = generator.newLabel();
+        Label yielding = generator.newLabel();
+        Label rest = generator.newLabel();
+
+        CompilationFrame.CallSite frameCallSite = new CompilationFrame.CallSite();
+        frameCallSite.resumeSite = resumeSite;
+        frameCallSite.continuationSite = continuationSite;
+        frame.callSites.push(frameCallSite);
+        programCounter = frame.callSites.size() - 1;
+
+        generator.visitTableSwitchInsn(1, 4, running, new Label[] { running, resuming, capturing, yielding });
+
+        generator.mark(running);
+        if(!isStatic) {
+            // Pop the duplicate reciever
+            generator.swap(Type.getType(Function.class), Type.getType(returnClass));
+            generator.pop();
+        }
+        generator.goTo(rest);
+
+        generator.mark(resuming);
+        // First, pop the duplicate reciever
+        if(!isStatic) {
+            // Pop the duplicate reciever
+            generator.swap(Type.getType(Function.class), Type.getType(returnClass));
+            generator.pop();
+        }
+        // Second, clear the stack
+        for(int i = frame.operandStack.size() - 2; i >= 0; i--) {
+            Class operandType = frame.operandStack.get(i);
+            generator.swap(Type.getType(operandType), Type.getType(returnClass));
+            Compiler.pop(operandType, generator);
+        }
+        // Box the return type to avoid any verification issues
+        generator.box(Type.getType(returnClass));
+        generator.checkCast(Type.getType(Object.class));
+        // Restore the local variables
+        generator.goTo(frame.restoreLocalsLabel);
+        // I get transfered back here. Unbox the return type
+        generator.mark(continuationSite);
+        generator.unbox(Type.getType(returnClass));
+        // Restore the stack
+        for(int i = 0; i < frame.operandStack.size() - 1; i++) {
+            Class operandType = frame.operandStack.get(i);
+
+            // TODO: Is this more or less efficient than doing weird DUP / DUPX2 / Swaps
+            Compiler.loadExecutionFrame(context);
+            generator.getField(Type.getType(ExecutionFrame.class), "stack", Type.getType(Object[].class));
+            generator.push(i);
+            generator.arrayLoad(Type.getType(Object.class));
+
+            generator.unbox(Type.getType(operandType));
+            generator.swap(Type.getType(returnClass), Type.getType(operandType));
+        }
+        Compiler.loadExecutionContext(context);
+        generator.push((String)null);
+        generator.invokeVirtual(Type.getType(ExecutionContext.class), org.objectweb.asm.commons.Method.getMethod("void setCurrentFrame(silo.lang.ExecutionFrame)"));
+        generator.goTo(rest);
+
+        generator.mark(capturing);
+        // Pop the return value, we do not care about it
+        Compiler.pop(returnClass, generator);
+        // Create new frame
+        Compiler.loadExecutionContext(context);
+        generator.newInstance(Type.getType(ExecutionFrame.class));
+        generator.dup();
+        generator.dup();
+        generator.dup();
+        // Call the frame constructor
+        generator.invokeConstructor(Type.getType(ExecutionFrame.class), org.objectweb.asm.commons.Method.getMethod("void <init> ()"));
+        // Set the program counter
+        generator.push(programCounter);
+        generator.putField(Type.getType(ExecutionFrame.class), "programCounter", Type.getType(int.class));
+        // Set the operand stack - the size is the size of the operand stack - 1 because we ignore the return value
+        if(isStatic) {
+            generator.push(frame.operandStack.size() - 1);
+        } else {
+            // Extra room for the duplicated reciever
+            generator.push(frame.operandStack.size() - 1 + 1);
+        }
+        generator.newArray(Type.getType(Object.class));
+        generator.putField(Type.getType(ExecutionFrame.class), "stack", Type.getType(Object[].class));
+        // Set the current frame
+        generator.invokeVirtual(Type.getType(ExecutionContext.class), org.objectweb.asm.commons.Method.getMethod("void setCurrentFrame(silo.lang.ExecutionFrame)"));
+        // Store the duplicated reciever
+        if(!isStatic) {
+            Compiler.loadExecutionFrame(context);
+            generator.getField(Type.getType(ExecutionFrame.class), "stack", Type.getType(Object[].class));
+
+            generator.swap(Type.getType(Function.class), Type.getType(Object[].class));
+            generator.push(frame.operandStack.size() - 2 + 1);
+            generator.swap(Type.getType(int.class), Type.getType(Object[].class));
+            generator.arrayStore(Type.getType(Function.class));
+        }
+        // Store Stack - Skip the return value which is on the top
+        for(int i = frame.operandStack.size() - 2; i >= 0; i--) {
+            Class operandType = frame.operandStack.get(i);
+
+            // TODO: Is this more or less efficient than doing weird DUP / DUPX2 / Swaps
+            Compiler.loadExecutionFrame(context);
+            generator.getField(Type.getType(ExecutionFrame.class), "stack", Type.getType(Object[].class));
+
+            generator.swap(Type.getType(operandType), Type.getType(Object[].class));
+            generator.push(i);
+            generator.swap(Type.getType(int.class), Type.getType(Object[].class));
+            generator.box(Type.getType(operandType));
+            generator.arrayStore(Type.getType(Object.class));
+        }
+        // Store Local Variables
+        generator.goTo(frame.captureLocalsLabel);
+
+        generator.mark(yielding);
+        // It turns out that I do not need to clear the stack before returning from a method.
+        // Hence, I do not clear the returnValue nor (in the case of a function handle) the
+        // receiver. The fact that I do not need to clear the stack is confirmed from tests
+        // that I have run which inserts a bunch of "generator.push((String)null)" in this
+        // code region as well as the JVM's online documentation where it seems to insinuate
+        // that the stack is cleared:
+        // http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-6.html#jvms-6.5.areturn
+
+        // Compiler.pop(returnClass, generator);
+        // if(!staticInvoke) {
+        //     Compiler.pop(Function.class, generator);
+        // }
+        Compiler.pushInitializationValue(frame.outputClass, generator);
+        generator.returnValue();
+
+        generator.mark(rest);
+    }
+
     public void performInvoke(CompilationContext context, Class klass, Vector<Expression> arguments, boolean staticInvoke, boolean shouldEmit) {
         CompilationFrame frame = context.currentFrame();
         GeneratorAdapter generator = frame.generator;
@@ -1168,6 +1474,7 @@ public class Invoke implements Expression {
 
                     Class[] params = method.getParameterTypes();
                     boolean shouldVarArgs = false;
+                    boolean resumable = Compiler.isResumableMethod(method);
 
                     if(method.isVarArgs()) {
                         shouldVarArgs = shouldUseVarArgs(params, types.toArray(new Class[0]));
@@ -1179,7 +1486,9 @@ public class Invoke implements Expression {
                         compileArguments(arguments, context, shouldEmit);
                     }
 
-                    if(shouldEmit) {
+                    if(resumable) {
+                        
+                    } else {
                         generator.invokeStatic(Type.getType(klass), org.objectweb.asm.commons.Method.getMethod(method));
                     }
 

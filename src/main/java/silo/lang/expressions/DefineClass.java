@@ -120,6 +120,7 @@ public class DefineClass implements Expression, Opcodes {
 
     public IPersistentMap doEmitConstructor(Node node, CompilationContext context, IPersistentMap ctors, IPersistentMap fields, ClassWriter cw, String fullyQualifiedName, boolean shouldEmit) {
         /*constructor(
+            resumable(true) // Not allowed
             modifiers(public, varargs)
             inputs(int) {
                 ...
@@ -129,12 +130,17 @@ public class DefineClass implements Expression, Opcodes {
         Node modifiersNode = node.getChildNode(new Symbol("modifiers"));
         Node inputsNode = node.getChildNode(new Symbol("inputs"));
         Node body = node.getChildNode(null);
+        Node resumableNode = node.getChildNode(new Symbol("resumable"));
 
         Vector modifiers = new Vector();
         Vector inputs = new Vector();
 
         if(modifiersNode != null) {
             modifiers = modifiersNode.getChildren();
+        }
+
+        if(resumableNode != null) {
+            throw new RuntimeException("Silo cannot make constructors resumable at this time. Sorry. Is refactoring your code at all possible?");
         }
 
         if(inputsNode != null) {

@@ -612,7 +612,13 @@ public class Compiler {
     }
 
     public static void loadExecutionContext(CompilationContext context) {
-        context.currentFrame().generator.visitVarInsn(Opcodes.ALOAD, 0);
+        if((context.currentFrame().access & Opcodes.ACC_STATIC) == 0) {
+            // This is a virtual method
+            context.currentFrame().generator.visitVarInsn(Opcodes.ALOAD, 1);
+        } else {
+            // This is a static method
+            context.currentFrame().generator.visitVarInsn(Opcodes.ALOAD, 0);
+        }
     }
 
     public static void loadExecutionFrame(CompilationContext context) {
@@ -768,6 +774,14 @@ public class Compiler {
         }
 
         return fullyQualifiedName;
+    }
+
+    public static boolean isResumableMethod(java.lang.reflect.Method method) {
+        if(method.getAnnotation(Resumable.class) == null) {
+            return false;
+        } else {
+            return true;
+        }
     }
 }
 
