@@ -32,6 +32,8 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.PrintStream;
 
+// Note: Constructors and static initializers are *never* resumable.
+
 public class DefineClass implements Expression, Opcodes {
 
     Node node;
@@ -268,6 +270,7 @@ public class DefineClass implements Expression, Opcodes {
 
     public IPersistentMap doEmitMethod(Node node, CompilationContext context, IPersistentMap methods, ClassWriter cw, String fullyQualifiedName, boolean shouldEmit) {
         /*method(
+            resumable(true) // Optional
             name(i)
             modifiers(static, public)
             inputs(int)
@@ -281,6 +284,10 @@ public class DefineClass implements Expression, Opcodes {
         Node inputsNode = node.getChildNode(new Symbol("inputs"));
         Object outputs = getObject(node, "outputs");
         Node body = node.getChildNode(null);
+        Node resumableNode = node.getChildNode(new Symbol("resumable"));
+
+        // By default java methods are NOT resumable
+        boolean resumable = false;
 
         Vector modifiers = new Vector();
         Vector inputs = new Vector();
@@ -296,6 +303,12 @@ public class DefineClass implements Expression, Opcodes {
 
         if(name == null) {
             throw new RuntimeException("Method must have a name");
+        }
+
+        if(resumableNode != null) {
+            if(resumableNode.getFirstChild() != null && resumableNode.getFirstChild().equals(Boolean.TRUE)) {
+                resumable = true;
+            }
         }
 
         int access = 0;
@@ -317,15 +330,15 @@ public class DefineClass implements Expression, Opcodes {
         Vector<Class> inputClasses = new Vector<Class>();
         Vector<Symbol> inputNames = new Vector<Symbol>();
 
-        // TODO: handle resumable
-        //inputTypes.add(Type.getType(ExecutionContext.class));
-        //inputClasses.add(ExecutionContext.class);
-        //inputNames.add(context.uniqueIdentifier("context:variable"));
+        if(resumable) {
+            inputTypes.add(Type.getType(ExecutionContext.class));
+            inputClasses.add(ExecutionContext.class);
+            inputNames.add(context.uniqueIdentifier("context:variable"));
+        }
 
         for(Object o : inputs) {
             if(o instanceof Symbol) {
                 // This is the case where the user did not supply any type information
-
                 // TODO: Change this to "Var"
                 inputTypes.add(Type.getType(Object.class));
                 inputClasses.add(Object.class);
@@ -334,7 +347,6 @@ public class DefineClass implements Expression, Opcodes {
                 Node n = (Node)o;
 
                 Symbol variableName = (Symbol)n.getFirstChild();
-
                 Object symbol = n.getSecondChild();
                 Class klass = Compiler.resolveType(symbol, context);
                 if(klass == null) {
@@ -363,6 +375,11 @@ public class DefineClass implements Expression, Opcodes {
         Method m = new Method(name.toString(), Type.getType(outputClass), inputTypes.toArray(new Type[0]));
         GeneratorAdapter g = new GeneratorAdapter(access, m, null, null, cw);
 
+        if(resumable) {
+            AnnotationVisitor av = g.visitAnnotation(Type.getType(Resumable.class).getDescriptor(), true);
+            av.visitEnd();
+        }
+
         String methodDescriptor = name.toString() + ":" + m.getDescriptor();
         if(PersistentMapHelper.contains(methods, methodDescriptor)) {
             throw new RuntimeException("Duplicate method");
@@ -377,22 +394,43 @@ public class DefineClass implements Expression, Opcodes {
         if(shouldEmit) {
             CompilationContext.SymbolEntry symbolEntry = context.symbolTable.get(fullyQualifiedName);
             if(symbolEntry != null) {
-                // TODO: Handle resumable
                 declaringClass = symbolEntry.klass;
-                frame = new CompilationFrame(access, m, g, declaringClass, false, outputClass);
+                frame = new CompilationFrame(access, m, g, declaringClass, resumable, outputClass);
             } else {
                 throw new RuntimeException("Internal error should have scaffolded: " + fullyQualifiedName);
             }
         } else {
-            // TODO: Handle resumable
-            frame = new CompilationFrame(access, m, g, null, false, outputClass);
+            frame = new CompilationFrame(access, m, g, null, resumable, outputClass);
         }
 
         context.frames.push(frame);
 
-        // Handle local variables
+
+
         if(shouldEmit) {
-            frame.newLocal(new Symbol("this"), declaringClass);
+            // Prelude to method body
+            frame.restoreLocalsLabel = frame.generator.newLabel();
+            frame.captureLocalsLabel = frame.generator.newLabel();
+
+            // TODO: Optimize this so I dont' have to be jumping all over the place...
+            // TODO: Intead of doing this...leverage the Expression abstraction and walk the syntax tree and extract all of the local variables along with their types.
+            Label initializationLabel = frame.generator.newLabel();
+            Label startLabel = frame.generator.newLabel();
+
+            if(resumable) {
+                // If I am resumable then go to my initialize variables phase.
+                // TODO: Optimize this call out with my new lazy coroutine code...
+                frame.generator.goTo(initializationLabel);
+            }
+
+            frame.generator.mark(startLabel);
+
+            if ((access & ACC_STATIC) == 0) {
+                // This is a virtual method
+                inputNames.add(0, new Symbol("this"));
+                inputTypes.add(0, Type.getType(declaringClass));
+                inputClasses.add(0, declaringClass);
+            }
 
             if(inputClasses.size() == inputNames.size()) {
                 for(int i = 0; i < inputClasses.size(); i++) {
@@ -404,6 +442,84 @@ public class DefineClass implements Expression, Opcodes {
 
             frame.newLocal(new Symbol("constructor:variable"), Object[].class);
             (new Block(body)).emit(context);
+            (new Return(null, false)).emit(context);
+
+
+            // Local Initialization
+            if(resumable) {
+                frame.generator.mark(initializationLabel);
+                for(Symbol local : frame.locals.keySet()) {
+                    if(inputNames.contains(local)) {
+                        continue;
+                    }
+
+                    int index = frame.locals.get(local);
+                    Class klass = frame.localTypes.get(local);
+
+                    // TODO: Redo this by using the AssignExpression. Just create a node and pass it into `Assign.build` or `new Assign`
+                    Compiler.pushInitializationValue(klass, frame.generator);
+                    frame.generator.visitVarInsn(Type.getType(klass).getOpcode(Opcodes.ISTORE), index);
+                }
+                Label[] resumeLabels = frame.resumeLabels();
+                if(resumeLabels.length == 0) {
+                    frame.generator.goTo(startLabel);
+                } else {
+                    Compiler.loadExecutionContext(context);
+                    frame.generator.getField(Type.getType(ExecutionContext.class), "programCounter", Type.getType(int.class));
+                    frame.generator.visitTableSwitchInsn(0, resumeLabels.length - 1, startLabel, resumeLabels);
+                }
+
+                // Local Restoration
+                Label invalidProgamCounterLabel = frame.generator.mark();
+                frame.generator.throwException(Type.getType(RuntimeException.class), "Invalid program counter");
+                frame.generator.mark(frame.restoreLocalsLabel);
+                for(Symbol variableName : frame.locals.keySet()) {
+                    int variableIndex = frame.locals.get(variableName).intValue();
+                    Class variableType = frame.localTypes.get(variableName);
+
+                    if(variableIndex == 0) {
+                        continue;
+                    }
+
+                    // TODO: Is this more or less efficient than doing weird DUP / DUPX2 / Swaps
+                    Compiler.loadExecutionFrame(context);
+                    frame.generator.getField(Type.getType(ExecutionFrame.class), "locals", Type.getType(Object[].class));
+                    frame.generator.push(variableIndex);
+                    frame.generator.arrayLoad(Type.getType(Object.class));
+
+                    frame.generator.unbox(Type.getType(variableType));
+                    frame.generator.visitVarInsn(Type.getType(variableType).getOpcode(Opcodes.ISTORE), variableIndex);
+                }
+                Compiler.loadExecutionContext(context);
+                frame.generator.getField(Type.getType(ExecutionContext.class), "programCounter", Type.getType(int.class));
+                Label[] continuationLabels = frame.continuationLabels(invalidProgamCounterLabel);
+                frame.generator.visitTableSwitchInsn(0, continuationLabels.length - 1, continuationLabels[continuationLabels.length - 1], continuationLabels);
+
+                // Local Capture
+                frame.generator.mark(frame.captureLocalsLabel);
+                Compiler.loadExecutionFrame(context);
+                frame.generator.push(frame.nextLocal());
+                frame.generator.newArray(Type.getType(Object.class));
+                frame.generator.putField(Type.getType(ExecutionFrame.class), "locals", Type.getType(Object[].class));
+                for(Symbol variableName : frame.locals.keySet()) {
+                    int variableIndex = frame.locals.get(variableName).intValue();
+                    Class variableType = frame.localTypes.get(variableName);
+
+                    if(variableIndex == 0) {
+                        continue;
+                    }
+
+                    // TODO: Is this more or less efficient than doing weird DUP / DUPX2 / Swaps
+                    Compiler.loadExecutionFrame(context);
+                    frame.generator.getField(Type.getType(ExecutionFrame.class), "locals", Type.getType(Object[].class));
+                    frame.generator.push(variableIndex);
+                    frame.generator.visitVarInsn(Type.getType(variableType).getOpcode(Opcodes.ILOAD), variableIndex);
+                    frame.generator.box(Type.getType(variableType));
+                    frame.generator.arrayStore(Type.getType(Object.class));
+                }
+                Compiler.pushInitializationValue(frame.outputClass, frame.generator);
+                frame.generator.returnValue();
+            }
         } else {
             Node newBody = new Node(
                 new Symbol("return"),
@@ -411,9 +527,8 @@ public class DefineClass implements Expression, Opcodes {
             );
 
             Compiler.buildExpression(newBody).emit(context);
+            (new Return(null, false)).emit(context);
         }
-
-        (new Return(null, false)).emit(context);
 
         // End method
         context.frames.pop();
