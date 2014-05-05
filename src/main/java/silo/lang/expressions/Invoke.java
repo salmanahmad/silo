@@ -1157,7 +1157,11 @@ public class Invoke implements Expression {
 
                     Method method = resolveMethod(klass, symbol.toString(), true, types.toArray(new Class[0]));
                     if(method == null) {
-                        throw new RuntimeException("Could not find function: " + symbol.toString());
+                        types.add(0, ExecutionContext.class);
+                        method = resolveMethod(klass, symbol.toString(), true, types.toArray(new Class[0]));
+                        if(method == null) {
+                            throw new RuntimeException("Could not find function: " + symbol.toString());
+                        }
                     }
 
                     if(!shouldEmit) {

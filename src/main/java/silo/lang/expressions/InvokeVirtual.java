@@ -103,14 +103,21 @@ public class InvokeVirtual implements Expression {
         Class klass = originalklass;
 
         Vector<Class> types = Invoke.argumentTypes(arguments, context);
-
         java.lang.reflect.Method m = Invoke.resolveMethod(originalklass, method.toString(), false, types.toArray(new Class[0]));
 
-        if(m == null && originalklass.isInterface()) {
-            m = Invoke.resolveMethod(Object.class, method.toString(), false, types.toArray(new Class[0]));
+        if(m == null) {
+            Vector<Class> resumableTypes = (Vector<Class>)types.clone();
+            resumableTypes.add(0, ExecutionContext.class);
+            m = Invoke.resolveMethod(originalklass, method.toString(), false, resumableTypes.toArray(new Class[0]));
 
-            if(m != null) {
-                klass = Object.class;
+            if(m == null && originalklass.isInterface()) {
+                m = Invoke.resolveMethod(Object.class, method.toString(), false, types.toArray(new Class[0]));
+
+                if(m != null) {
+                    klass = Object.class;
+                }
+            } else {
+                types = resumableTypes;
             }
         }
 

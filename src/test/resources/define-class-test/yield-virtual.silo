@@ -1,0 +1,43 @@
+
+
+defineclass(
+    name(Workflow)
+
+    field(
+        name(a)
+        type(String)
+        modifiers(public)
+    )
+
+    method(
+        resumable(true)
+        name(run)
+        outputs(Object)
+        modifiers(public)
+        {
+            result : Object = fiber.yield("Waiting")
+            return(this.a + result)
+        }
+    )
+)
+
+func(foo() {
+    w : Workflow = Workflow()
+    w.a = "This is a "
+    w#run()
+})
+
+func(main() {
+    args : Vector = vector.create()
+
+    f : fiber.Fiber = fiber.Fiber(foo)
+
+    fiber.resume(f)
+    args = vector.push(args, f.value)
+
+    fiber.resume(f, "Result")
+    args = vector.push(args, f.value)
+
+    return(args)
+})
+
