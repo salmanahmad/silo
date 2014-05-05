@@ -126,44 +126,10 @@ public class InvokeVirtual implements Expression {
             return;
         }
 
-        Class[] params = m.getParameterTypes();
-        boolean shouldVarArgs = false;
-
-        if(m.isVarArgs()) {
-            shouldVarArgs = Invoke.shouldUseVarArgs(params, types.toArray(new Class[0]));
-        }
-
-        if(shouldVarArgs) {
-            Invoke.compileVariableArguments(params, arguments, context, shouldEmit);
+        if(Compiler.isResumableMethod(m)) {
+            Invoke.performResumableInvoke(context, m, arguments);
         } else {
-            Invoke.compileArguments(arguments, context, shouldEmit);
-        }
-
-        if(shouldEmit) {
-            if(klass.isInterface()) {
-                generator.invokeInterface(Type.getType(klass), Method.getMethod(m));
-            } else {
-                generator.invokeVirtual(Type.getType(klass), Method.getMethod(m));
-            }
-        }
-
-        // Pop the arguments
-        for(int i = 0; i < params.length; i++) {
-            frame.operandStack.pop();
-        }
-
-        // Pop the receiver
-        frame.operandStack.pop();
-        
-        // Add the return type
-        if(m.getReturnType().equals(Void.TYPE)) {
-            if(shouldEmit) {
-                generator.push((String)null);
-            }
-
-            frame.operandStack.push(Null.class);
-        } else {
-            frame.operandStack.push(m.getReturnType());
+            Invoke.performNonResumableInvoke(context, m, arguments);
         }
     }
 }

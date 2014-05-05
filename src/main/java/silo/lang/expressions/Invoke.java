@@ -551,11 +551,55 @@ public class Invoke implements Expression {
         return shouldVarArgs;
     }
 
-    public void performNonResumableInvoke(CompilationContext context, Method method, Vector<Expression> arguments) {
-        // TODO
+    public static void performNonResumableInvoke(CompilationContext context, Method method, Vector<Expression> arguments) {
+        CompilationFrame frame = context.currentFrame();
+        GeneratorAdapter generator = frame.generator;
+
+        Class klass = method.getDeclaringClass();
+        Class[] params = method.getParameterTypes();
+        Vector<Class> types = argumentTypes(arguments, context);
+        boolean shouldVarArgs = false;
+
+        if(method.isVarArgs()) {
+            shouldVarArgs = shouldUseVarArgs(params, types.toArray(new Class[0]));
+        }
+
+        if(shouldVarArgs) {
+            compileVariableArguments(params, arguments, context, true);
+        } else {
+            compileArguments(arguments, context, true);
+        }
+
+        if(Modifier.isStatic(method.getModifiers())) {
+            generator.invokeStatic(Type.getType(klass), org.objectweb.asm.commons.Method.getMethod(method));
+        } else {
+            if(klass.isInterface()) {
+                generator.invokeInterface(Type.getType(klass), org.objectweb.asm.commons.Method.getMethod(method));
+            } else {
+                generator.invokeVirtual(Type.getType(klass), org.objectweb.asm.commons.Method.getMethod(method));
+            }
+        }
+
+        // Pop the arguments
+        for(int i = 0; i < params.length; i++) {
+            frame.operandStack.pop();
+        }
+
+        // Pop the receiver
+        if(!Modifier.isStatic(method.getModifiers())) {
+            frame.operandStack.pop();
+        }
+
+        // Add the return type
+        if(method.getReturnType().equals(Void.TYPE)) {
+            generator.push((String)null);
+            frame.operandStack.push(Null.class);
+        } else {
+            frame.operandStack.push(method.getReturnType());
+        }
     }
 
-    public void performResumableInvoke(CompilationContext context, Method method, Vector<Expression> arguments) {
+    public static void performResumableInvoke(CompilationContext context, Method method, Vector<Expression> arguments) {
         CompilationFrame frame = context.currentFrame();
         GeneratorAdapter generator = frame.generator;
 
@@ -1112,7 +1156,6 @@ public class Invoke implements Expression {
                     Vector<Class> types = argumentTypes(arguments, context);
 
                     Method method = resolveMethod(klass, symbol.toString(), true, types.toArray(new Class[0]));
-
                     if(method == null) {
                         throw new RuntimeException("Could not find function: " + symbol.toString());
                     }
@@ -1123,38 +1166,10 @@ public class Invoke implements Expression {
                         return;
                     }
 
-                    Class[] params = method.getParameterTypes();
-                    boolean shouldVarArgs = false;
-                    boolean resumable = Compiler.isResumableMethod(method);
-
-                    if(method.isVarArgs()) {
-                        shouldVarArgs = shouldUseVarArgs(params, types.toArray(new Class[0]));
-                    }
-
-                    if(shouldVarArgs) {
-                        compileVariableArguments(params, arguments, context, shouldEmit);
+                    if(Compiler.isResumableMethod(method)) {
+                        performResumableInvoke(context, method, arguments);
                     } else {
-                        compileArguments(arguments, context, shouldEmit);
-                    }
-
-                    if(resumable) {
-                        
-                    } else {
-                        generator.invokeStatic(Type.getType(klass), org.objectweb.asm.commons.Method.getMethod(method));
-                    }
-
-                    for(int i = 0; i < params.length; i++) {
-                        frame.operandStack.pop();
-                    }
-
-                    if(method.getReturnType().equals(Void.TYPE)) {
-                        if(shouldEmit) {
-                            generator.push((String)null);
-                        }
-
-                        frame.operandStack.push(Null.class);
-                    } else {
-                        frame.operandStack.push(method.getReturnType());
+                        performNonResumableInvoke(context, method, arguments);
                     }
 
                     return;
@@ -1195,12 +1210,9 @@ public class Invoke implements Expression {
 
             // TODO: Right now I am forcing the use of apply which is an varargs method taking an Object[]
             Class[] argMask = new Class[arguments.size() + 1];
-            for(int i = 0; i < argMask.length; i++) {
-                if(i == 0) {
-                    argMask[i] = ExecutionContext.class;
-                } else {
-                    argMask[i] = Object.class;
-                }
+            argMask[0] = ExecutionContext.class;
+            for(int i = 1; i < argMask.length; i++) {
+                argMask[i] = Object.class;
             }
 
             Method method = resolveMethod(operand, "apply", false, argMask);
