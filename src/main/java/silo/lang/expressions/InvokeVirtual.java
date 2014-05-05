@@ -134,6 +134,7 @@ public class InvokeVirtual implements Expression {
         }
 
         if(Compiler.isResumableMethod(m)) {
+            Compiler.assertResumableContext(context);
             Invoke.performResumableInvoke(context, m, arguments);
         } else {
             Invoke.performNonResumableInvoke(context, m, arguments);

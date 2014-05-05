@@ -110,6 +110,33 @@ public class DefineClassTest {
         IPersistentVector vector = PersistentVectorHelper.create("Waiting", "This is a Result");
         Assert.assertEquals(vector, runtime.spawn("main").await());
     }
+
+    @Test
+    public void testResumabilityEnforcement() {
+        Runtime runtime = new Runtime();
+        String source = null;
+
+        source = Helper.readResource("/define-class-test/resumability-enforcement-good.silo");
+        runtime.compile(Parser.parse(source));
+
+        try {
+            source = Helper.readResource("/define-class-test/resumability-enforcement-bad.silo");
+            runtime.compile(Parser.parse(source));
+             Assert.fail();
+        } catch (Exception e) {
+            Assert.assertEquals(RuntimeException.class, e.getClass());
+            Assert.assertEquals("Cannot perform resumable call from a non-resumable context.", e.getMessage());
+        }
+
+        try {
+            source = Helper.readResource("/define-class-test/resumability-enforcement-default.silo");
+            runtime.compile(Parser.parse(source));
+             Assert.fail();
+        } catch (Exception e) {
+            Assert.assertEquals(RuntimeException.class, e.getClass());
+            Assert.assertEquals("Cannot perform resumable call from a non-resumable context.", e.getMessage());
+        }
+    }
 }
 
 

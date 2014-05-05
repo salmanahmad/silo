@@ -1,0 +1,14 @@
+
+defineclass(
+    name(Workflow)
+
+    method(
+        name(run)
+        outputs(Object)
+        modifiers(public)
+        {
+            result : Object = fiber.yield("Waiting")
+            return(result)
+        }
+    )
+)

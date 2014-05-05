@@ -783,6 +783,15 @@ public class Compiler {
             return true;
         }
     }
+
+    public static boolean assertResumableContext(CompilationContext context) {
+        if(context.currentFrame().resumable) {
+            return true;
+        } else {
+            // TODO: Make this better.
+            throw new RuntimeException("Cannot perform resumable call from a non-resumable context.");
+        }
+    }
 }
 
 

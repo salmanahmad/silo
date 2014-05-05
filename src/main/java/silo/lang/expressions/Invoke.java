@@ -1068,7 +1068,7 @@ public class Invoke implements Expression {
                             }
                         }
 
-
+                        Compiler.assertResumableContext(context);
                         performResumableInvoke(context, method, arguments);
                         return;
                     } else {
@@ -1171,6 +1171,7 @@ public class Invoke implements Expression {
                     }
 
                     if(Compiler.isResumableMethod(method)) {
+                        Compiler.assertResumableContext(context);
                         performResumableInvoke(context, method, arguments);
                     } else {
                         performNonResumableInvoke(context, method, arguments);
@@ -1230,6 +1231,7 @@ public class Invoke implements Expression {
                 return;
             }
 
+            Compiler.assertResumableContext(context);
             performResumableInvoke(context, method, arguments);
             return;
         } else {
