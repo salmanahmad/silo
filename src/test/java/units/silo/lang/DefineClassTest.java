@@ -137,6 +137,21 @@ public class DefineClassTest {
             Assert.assertEquals("Cannot perform resumable call from a non-resumable context.", e.getMessage());
         }
     }
+
+    @Test
+    public void testIllegalOverloading() {
+        Runtime runtime = new Runtime();
+        String source = null;
+
+        try {
+            source = Helper.readResource("/define-class-test/overloading.silo");
+            runtime.compile(Parser.parse(source));
+             Assert.fail();
+        } catch (Exception e) {
+            Assert.assertEquals(RuntimeException.class, e.getClass());
+            Assert.assertEquals("Attempting to overload a resumable method. Unfortunately, right now, you cannot have a method with the same name and same arguments except one is resumable and the other is not. That is not supported. Can you possible change the method name to something else?", e.getMessage());
+        }
+    }
 }
 
 

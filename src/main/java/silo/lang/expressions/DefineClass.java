@@ -390,6 +390,21 @@ public class DefineClass implements Expression, Opcodes {
         if(PersistentMapHelper.contains(methods, methodDescriptor)) {
             throw new RuntimeException("Duplicate method");
         } else {
+            // Check if there is a duplicated method when considering resumability
+
+            Vector<Type> tempTypes = (Vector<Type>)inputTypes.clone();
+            if(resumable) {
+                tempTypes.remove(0);
+            } else {
+                tempTypes.add(0, Type.getType(ExecutionContext.class));
+            }
+
+            String tempDesc = name.toString() + ":" + (new Method(name.toString(), Type.getType(outputClass), tempTypes.toArray(new Type[0]))).getDescriptor();
+
+            if(PersistentMapHelper.contains(methods, tempDesc)) {
+                throw new RuntimeException("Attempting to overload a resumable method. Unfortunately, right now, you cannot have a method with the same name and same arguments except one is resumable and the other is not. That is not supported. Can you possible change the method name to something else?");
+            }
+
             methods = PersistentMapHelper.set(methods, methodDescriptor, Boolean.TRUE);
         }
 
