@@ -998,4 +998,25 @@ public class CompilerTest {
         source = Helper.readResource("/examples/package-scopes-inherited-import.silo");
         runtime.compile(Parser.parse(source));
     }
+
+    @Test
+    public void testNonResumable() {
+        Runtime runtime = new Runtime();
+        String source = null;
+
+        try {
+            source = Helper.readResource("/examples/non-resumable-function-bad.silo");
+            runtime.compile(Parser.parse(source));
+            Assert.fail();
+        } catch(Exception e) {
+            Assert.assertEquals(RuntimeException.class, e.getClass());
+            Assert.assertEquals("Cannot perform resumable call from a non-resumable context.", e.getMessage());
+        }
+
+        source = Helper.readResource("/examples/non-resumable-function.silo");
+        runtime.compile(Parser.parse(source));
+        Object output = runtime.spawn("main").await();
+
+        Assert.assertEquals(PersistentVectorHelper.create("Hello", "Hello", "World"), output);
+    }
 }

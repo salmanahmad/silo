@@ -26,6 +26,7 @@ public class Function {
     public static @interface Definition {
         boolean macro() default false;
         boolean varargs() default false;
+        boolean resumable() default true;
     }
 
     @Retention(RetentionPolicy.RUNTIME)
@@ -52,6 +53,15 @@ public class Function {
         if(klass.isAnnotationPresent(Definition.class)) {
             Definition d = (Definition)klass.getAnnotation(Definition.class);
             return d.varargs();
+        }
+
+        return false;
+    }
+
+    public static boolean isResumable(Class klass) {
+        if(klass.isAnnotationPresent(Definition.class)) {
+            Definition d = (Definition)klass.getAnnotation(Definition.class);
+            return d.resumable();
         }
 
         return false;
@@ -178,23 +188,29 @@ public class Function {
 
     public Object apply(ExecutionContext context, Object... args) {
         try {
-            if(args == null) {
-                args = new Object[inputCount];
-                args[0] = context;
+            Object output = null;
+
+            if(Function.isResumable(this.getClass())) {
+                if(args == null) {
+                    args = new Object[inputCount];
+                    args[0] = context;
+                } else {
+                    Object[] actualArgs = new Object[args.length + 1];
+                    System.arraycopy(args, 0, actualArgs, 1, args.length);
+                    actualArgs[0] = context;
+                    args = actualArgs;
+                }
+
+                if(isVarArgs) {
+                    args = convertArgsToVarArgs(args);
+                }
+
+                context.beginCall();
+                output = methodHandle.invoke(null, args);
+                context.endCall();
             } else {
-                Object[] actualArgs = new Object[args.length + 1];
-                System.arraycopy(args, 0, actualArgs, 1, args.length);
-                actualArgs[0] = context;
-                args = actualArgs;
+                output = methodHandle.invoke(null, args);
             }
-
-            if(isVarArgs) {
-                args = convertArgsToVarArgs(args);
-            }
-
-            context.beginCall();
-            Object output = methodHandle.invoke(null, args);
-            context.endCall();
 
             return output;
         } catch(java.lang.reflect.InvocationTargetException e) {

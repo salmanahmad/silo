@@ -1,0 +1,9 @@
+
+function(
+    name(foo)
+    resumable(false)
+    {
+        fiber.yield()
+    }
+)
+

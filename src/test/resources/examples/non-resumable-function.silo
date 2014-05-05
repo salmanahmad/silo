@@ -1,0 +1,17 @@
+
+function(
+    name(foo)
+    resumable(false)
+    {
+        return("Hello")
+    }
+)
+
+function(
+    name(main)
+    {
+        f : Function = foo
+        vector.create(foo(), f(), "World");
+    }
+)
+

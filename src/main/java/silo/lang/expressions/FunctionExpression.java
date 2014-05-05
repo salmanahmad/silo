@@ -107,6 +107,8 @@ public class FunctionExpression implements Expression, Opcodes {
         Node tempNode = null;
         Object tempObject = null;
 
+        // By default functions are always resumable
+        boolean resumable = true;
 
         tempObject = node.getChildNamed(new Symbol("macro"));
         macro = tempObject != null;
@@ -150,7 +152,12 @@ public class FunctionExpression implements Expression, Opcodes {
             body = new Block(tempNode);
         }
 
-
+        tempNode = node.getChildNode(new Symbol("resumable"));
+        if(tempNode != null) {
+            if(tempNode.getFirstChild() != null && tempNode.getFirstChild().equals(Boolean.FALSE)) {
+                resumable = false;
+            }
+        }
 
 
 
@@ -214,9 +221,11 @@ public class FunctionExpression implements Expression, Opcodes {
         Vector<Class> inputClasses = new Vector<Class>();
         Vector<Symbol> inputNames = new Vector<Symbol>();
 
-        inputTypes.add(Type.getType(ExecutionContext.class));
-        inputClasses.add(ExecutionContext.class);
-        inputNames.add(context.uniqueIdentifier("context:variable"));
+        if(resumable) {
+            inputTypes.add(Type.getType(ExecutionContext.class));
+            inputClasses.add(ExecutionContext.class);
+            inputNames.add(context.uniqueIdentifier("context:variable"));
+        }
 
         for(Object o : inputs) {
             // TODO: Add these inputs to the local variables
@@ -305,7 +314,14 @@ public class FunctionExpression implements Expression, Opcodes {
             // TODO: Varargs should also create an actual overloaded varargs method that wraps a PersistentVector and calls the actual method..
             av.visit("varargs", Boolean.TRUE);
         }
+        if(resumable) {
+            av.visit("resumable", Boolean.TRUE);
+        } else {
+            av.visit("resumable", Boolean.FALSE);
+        }
         av.visitEnd();
+
+
 
         // Default constructor
         m = Method.getMethod("void <init> ()");
@@ -322,7 +338,7 @@ public class FunctionExpression implements Expression, Opcodes {
         av.visitEnd();
 
         // Start a new frame...
-        CompilationFrame frame = new CompilationFrame(ACC_PUBLIC + ACC_STATIC, m, g, null, true, outputClass);
+        CompilationFrame frame = new CompilationFrame(ACC_PUBLIC + ACC_STATIC, m, g, null, resumable, outputClass);
         context.frames.push(frame);
 
         frame.restoreLocalsLabel = frame.generator.newLabel();
@@ -336,18 +352,98 @@ public class FunctionExpression implements Expression, Opcodes {
             throw new RuntimeException("Internal error. The length of the input names and types should be the same.");
         }
 
-        // TODO: Optimize this so I dont' have to be jumping all over the place...
-        // TODO: Intead of doing this...leverage the Expression abstraction and walk the syntax tree and
-        // extract all of the local variables along with their types.
-        Label initializationLabel = frame.generator.newLabel();
-        Label startLabel = frame.generator.newLabel();
-        frame.generator.goTo(initializationLabel);
-
-        frame.generator.mark(startLabel);
-
         if(shouldEmit) {
+            // TODO: Optimize this so I dont' have to be jumping all over the place...
+            // TODO: Intead of doing this...leverage the Expression abstraction and walk the syntax tree and
+            // extract all of the local variables along with their types.
+            Label initializationLabel = frame.generator.newLabel();
+            Label startLabel = frame.generator.newLabel();
+
+            if(resumable) {
+                frame.generator.goTo(initializationLabel);
+            }
+
+            frame.generator.mark(startLabel);
+
             frame.newLocal(new Symbol("constructor:variable"), Object[].class);
             body.emit(context);
+            (new Return(null, false)).emit(context);
+
+            if(resumable) {
+                // Local Initialization
+                frame.generator.mark(initializationLabel);
+                for(Symbol local : frame.locals.keySet()) {
+                    if(inputNames.contains(local)) {
+                        continue;
+                    }
+
+                    int index = frame.locals.get(local);
+                    Class klass = frame.localTypes.get(local);
+
+                    // TODO: Redo this by using the AssignExpression. Just create a node and pass it into `Assign.build` or `new Assign`
+                    Compiler.pushInitializationValue(klass, frame.generator);
+                    frame.generator.visitVarInsn(Type.getType(klass).getOpcode(Opcodes.ISTORE), index);
+                }
+                Label[] resumeLabels = frame.resumeLabels();
+                if(resumeLabels.length == 0) {
+                    frame.generator.goTo(startLabel);
+                } else {
+                    Compiler.loadExecutionContext(context);
+                    frame.generator.getField(Type.getType(ExecutionContext.class), "programCounter", Type.getType(int.class));
+                    frame.generator.visitTableSwitchInsn(0, resumeLabels.length - 1, startLabel, resumeLabels);
+                }
+
+                // Local Restoration
+                Label invalidProgamCounterLabel = frame.generator.mark();
+                frame.generator.throwException(Type.getType(RuntimeException.class), "Invalid program counter");
+                frame.generator.mark(frame.restoreLocalsLabel);
+                for(Symbol variableName : frame.locals.keySet()) {
+                    int variableIndex = frame.locals.get(variableName).intValue();
+                    Class variableType = frame.localTypes.get(variableName);
+
+                    if(variableIndex == 0) {
+                        continue;
+                    }
+
+                    // TODO: Is this more or less efficient than doing weird DUP / DUPX2 / Swaps
+                    Compiler.loadExecutionFrame(context);
+                    frame.generator.getField(Type.getType(ExecutionFrame.class), "locals", Type.getType(Object[].class));
+                    frame.generator.push(variableIndex);
+                    frame.generator.arrayLoad(Type.getType(Object.class));
+
+                    frame.generator.unbox(Type.getType(variableType));
+                    frame.generator.visitVarInsn(Type.getType(variableType).getOpcode(Opcodes.ISTORE), variableIndex);
+                }
+                Compiler.loadExecutionContext(context);
+                frame.generator.getField(Type.getType(ExecutionContext.class), "programCounter", Type.getType(int.class));
+                Label[] continuationLabels = frame.continuationLabels(invalidProgamCounterLabel);
+                frame.generator.visitTableSwitchInsn(0, continuationLabels.length - 1, continuationLabels[continuationLabels.length - 1], continuationLabels);
+
+                // Local Capture
+                frame.generator.mark(frame.captureLocalsLabel);
+                Compiler.loadExecutionFrame(context);
+                frame.generator.push(frame.nextLocal());
+                frame.generator.newArray(Type.getType(Object.class));
+                frame.generator.putField(Type.getType(ExecutionFrame.class), "locals", Type.getType(Object[].class));
+                for(Symbol variableName : frame.locals.keySet()) {
+                    int variableIndex = frame.locals.get(variableName).intValue();
+                    Class variableType = frame.localTypes.get(variableName);
+
+                    if(variableIndex == 0) {
+                        continue;
+                    }
+
+                    // TODO: Is this more or less efficient than doing weird DUP / DUPX2 / Swaps
+                    Compiler.loadExecutionFrame(context);
+                    frame.generator.getField(Type.getType(ExecutionFrame.class), "locals", Type.getType(Object[].class));
+                    frame.generator.push(variableIndex);
+                    frame.generator.visitVarInsn(Type.getType(variableType).getOpcode(Opcodes.ILOAD), variableIndex);
+                    frame.generator.box(Type.getType(variableType));
+                    frame.generator.arrayStore(Type.getType(Object.class));
+                }
+                Compiler.pushInitializationValue(frame.outputClass, frame.generator);
+                frame.generator.returnValue();
+            }
         } else {
             Node newBody = new Node(
                 new Symbol("return"),
@@ -355,87 +451,12 @@ public class FunctionExpression implements Expression, Opcodes {
             );
 
             Compiler.buildExpression(newBody).emit(context);
+            (new Return(null, false)).emit(context);
         }
 
-        (new Return(null, false)).emit(context);
 
-        // Local Initialization
-        frame.generator.mark(initializationLabel);
-        for(Symbol local : frame.locals.keySet()) {
-            if(inputNames.contains(local)) {
-                continue;
-            }
-
-            int index = frame.locals.get(local);
-            Class klass = frame.localTypes.get(local);
-
-            // TODO: Redo this by using the AssignExpression. Just create a node and pass it into `Assign.build` or `new Assign`
-            Compiler.pushInitializationValue(klass, frame.generator);
-            frame.generator.visitVarInsn(Type.getType(klass).getOpcode(Opcodes.ISTORE), index);
-        }
-        Label[] resumeLabels = frame.resumeLabels();
-        if(resumeLabels.length == 0) {
-            frame.generator.goTo(startLabel);
-        } else {
-            Compiler.loadExecutionContext(context);
-            frame.generator.getField(Type.getType(ExecutionContext.class), "programCounter", Type.getType(int.class));
-            frame.generator.visitTableSwitchInsn(0, resumeLabels.length - 1, startLabel, resumeLabels);
-        }
-
-        // Local Restoration
-        Label invalidProgamCounterLabel = frame.generator.mark();
-        frame.generator.throwException(Type.getType(RuntimeException.class), "Invalid program counter");
-        frame.generator.mark(frame.restoreLocalsLabel);
-        for(Symbol variableName : frame.locals.keySet()) {
-            int variableIndex = frame.locals.get(variableName).intValue();
-            Class variableType = frame.localTypes.get(variableName);
-
-            if(variableIndex == 0) {
-                continue;
-            }
-
-            // TODO: Is this more or less efficient than doing weird DUP / DUPX2 / Swaps
-            Compiler.loadExecutionFrame(context);
-            frame.generator.getField(Type.getType(ExecutionFrame.class), "locals", Type.getType(Object[].class));
-            frame.generator.push(variableIndex);
-            frame.generator.arrayLoad(Type.getType(Object.class));
-
-            frame.generator.unbox(Type.getType(variableType));
-            frame.generator.visitVarInsn(Type.getType(variableType).getOpcode(Opcodes.ISTORE), variableIndex);
-        }
-        Compiler.loadExecutionContext(context);
-        frame.generator.getField(Type.getType(ExecutionContext.class), "programCounter", Type.getType(int.class));
-        Label[] continuationLabels = frame.continuationLabels(invalidProgamCounterLabel);
-        frame.generator.visitTableSwitchInsn(0, continuationLabels.length - 1, continuationLabels[continuationLabels.length - 1], continuationLabels);
-
-        // Local Capture
-        frame.generator.mark(frame.captureLocalsLabel);
-        Compiler.loadExecutionFrame(context);
-        frame.generator.push(frame.nextLocal());
-        frame.generator.newArray(Type.getType(Object.class));
-        frame.generator.putField(Type.getType(ExecutionFrame.class), "locals", Type.getType(Object[].class));
-        for(Symbol variableName : frame.locals.keySet()) {
-            int variableIndex = frame.locals.get(variableName).intValue();
-            Class variableType = frame.localTypes.get(variableName);
-
-            if(variableIndex == 0) {
-                continue;
-            }
-
-            // TODO: Is this more or less efficient than doing weird DUP / DUPX2 / Swaps
-            Compiler.loadExecutionFrame(context);
-            frame.generator.getField(Type.getType(ExecutionFrame.class), "locals", Type.getType(Object[].class));
-            frame.generator.push(variableIndex);
-            frame.generator.visitVarInsn(Type.getType(variableType).getOpcode(Opcodes.ILOAD), variableIndex);
-            frame.generator.box(Type.getType(variableType));
-            frame.generator.arrayStore(Type.getType(Object.class));
-        }
-        Compiler.pushInitializationValue(frame.outputClass, frame.generator);
-        frame.generator.returnValue();
-
-        context.frames.pop();
         // End the frame...
-
+        context.frames.pop();
         g.endMethod();
 
         // TODO: Virtual apply methods from Function.class

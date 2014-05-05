@@ -1038,10 +1038,12 @@ public class Invoke implements Expression {
                             return;
                         }
 
-
                         Class[] params = method.getParameterTypes();
                         Vector<Class> types = argumentTypes(arguments, context);
-                        params = Arrays.copyOfRange(params, 1, params.length);
+
+                        if(Function.isResumable(klass)) {
+                            params = Arrays.copyOfRange(params, 1, params.length);
+                        }
 
                         boolean isVarArgs = Function.isVarArgs(klass);;
 
@@ -1068,8 +1070,13 @@ public class Invoke implements Expression {
                             }
                         }
 
-                        Compiler.assertResumableContext(context);
-                        performResumableInvoke(context, method, arguments);
+                        if(Function.isResumable(klass)) {
+                            Compiler.assertResumableContext(context);
+                            performResumableInvoke(context, method, arguments);
+                        } else {
+                            performNonResumableInvoke(context, method, arguments);
+                        }
+
                         return;
                     } else {
                         // TODO: Add another "else if" clause that checks for a "record" or "type"
@@ -1212,6 +1219,7 @@ public class Invoke implements Expression {
             frame.operandStack.push(operand.getComponentType());
             return;
         } else if(Function.class.isAssignableFrom(operand)) {
+            // Note: Function handles are always resumable
 
             // TODO: Right now I am forcing the use of apply which is an varargs method taking an Object[]
             Class[] argMask = new Class[arguments.size() + 1];
@@ -1227,6 +1235,7 @@ public class Invoke implements Expression {
             }
 
             if(!shouldEmit) {
+                frame.operandStack.pop();
                 frame.operandStack.push(method.getReturnType());
                 return;
             }
