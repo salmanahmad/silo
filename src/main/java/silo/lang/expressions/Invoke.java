@@ -569,7 +569,14 @@ public class Invoke implements Expression {
 
         boolean isVarArg = false;
         if(isNative) {
-            isVarArg = Function.isVarArgs(klass);
+            if(isStatic) {
+                // Direct function invocation
+                isVarArg = Function.isVarArgs(klass);
+            } else {
+                // Invoking through a function handle
+                // Right now all function handles are invoked with varargs. This may change.
+                isVarArg = true;
+            }
         } else {
             isVarArg = method.isVarArgs();
         }
@@ -1367,14 +1374,47 @@ public class Invoke implements Expression {
                         // TODO: Should I support type overloading?
                         // TODO: If I do, I should consider doing it how Clojure does it... or implement it as a macro...
 
+                        Method method = Function.methodHandle(klass);
+
                         if(!shouldEmit) {
                             // Fast exit to improve the performance of Expression#type()
-                            Method method = Function.methodHandle(klass);
                             frame.operandStack.push(method.getReturnType());
                             return;
                         }
 
-                        performInvoke(context, klass, arguments, true, shouldEmit);
+
+                        Class[] params = method.getParameterTypes();
+                        Vector<Class> types = argumentTypes(arguments, context);
+                        params = Arrays.copyOfRange(params, 1, params.length);
+
+                        boolean isVarArgs = Function.isVarArgs(klass);;
+
+                        if(isVarArgs) {
+                            if(types.size() < (params.length - 1)) {
+                                throw new RuntimeException("Arity mismatch.");
+                            }
+                        } else {
+                            if(types.size() != params.length) {
+                                throw new RuntimeException("Arity mismatch.");
+                            }
+                        }
+
+                        for(int i = 0; i < params.length; i++) {
+                            if(isVarArgs && (i == (params.length - 1))) {
+                                continue;
+                            }
+
+                            Class expectedType = params[i];
+                            Class providedType = types.get(i);
+
+                            if(Compiler.assignmentValidation(expectedType, providedType) != Compiler.AssignmentOperation.VALID) {
+                                throw new RuntimeException("Parameter mismatch in " + klass + ". Expected: " + expectedType + " Provided: " + providedType);
+                            }
+                        }
+
+
+                        performResumableInvoke(context, method, arguments);
+                        //performInvoke(context, klass, arguments, true, shouldEmit);
                         return;
                     } else {
                         // TODO: Add another "else if" clause that checks for a "record" or "type"
@@ -1541,7 +1581,30 @@ public class Invoke implements Expression {
             frame.operandStack.push(operand.getComponentType());
             return;
         } else if(Function.class.isAssignableFrom(operand)) {
-            performInvoke(context, Function.class, arguments, false, shouldEmit);
+
+            // TODO: Right now I am forcing the use of apply which is an varargs method taking an Object[]
+            Class[] argMask = new Class[arguments.size() + 1];
+            for(int i = 0; i < argMask.length; i++) {
+                if(i == 0) {
+                    argMask[i] = ExecutionContext.class;
+                } else {
+                    argMask[i] = Object.class;
+                }
+            }
+
+            Method method = resolveMethod(operand, "apply", false, argMask);
+
+            if(method == null) {
+                throw new RuntimeException("Could not find apply method with function handle.");
+            }
+
+            if(!shouldEmit) {
+                frame.operandStack.push(method.getReturnType());
+                return;
+            }
+
+            performResumableInvoke(context, method, arguments);
+            //performInvoke(context, Function.class, arguments, false, shouldEmit);
             return;
         } else {
             // Dynamic function invocation
