@@ -37,12 +37,13 @@ transform(for(init, condition, end, body) {
 //    }
 //})
 
-macro(type(name : Symbol, body : Node) {
+macro(type(typeName : Symbol, body : Node) {
     context : CompilationContext = silo.lang.compiler.Compiler.getCurrentCompilationContext()
 
     output : Vector = vector.create(
         quote(defineclass)
-        quote(name(escape(name)))
+        quote(name(escape(typeName)))
+        quote(extends(silo.lang.Structure))
     )
 
     children : java.util.Vector = body#getChildren();
@@ -71,7 +72,36 @@ macro(type(name : Symbol, body : Node) {
                 field(
                     name(escape(name))
                     type(escape(kind))
+                    // TODO: Fix this. I want to support private fields but need to support that with DefineClass first
                     modifiers(public)
+                )
+            )
+        )
+
+        output = vector.push(
+            output
+            quote(
+                method(
+                    name(escape(Symbol("get_" + name#toString())))
+                    outputs(escape(kind))
+                    modifiers(public) {
+                        return(.(this, escape(name)))
+                    }
+                )
+            )
+        )
+
+        output = vector.push(
+            output
+            quote(
+                method(
+                    name(escape(Symbol("set_" + name#toString())))
+                    outputs(escape(kind))
+                    inputs(value : escape(kind))
+                    modifiers(public) {
+                        .(this, escape(name)) = value
+                        return(value)
+                    }
                 )
             )
         )

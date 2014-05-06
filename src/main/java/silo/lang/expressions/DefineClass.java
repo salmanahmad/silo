@@ -32,6 +32,8 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.PrintStream;
 
+import org.apache.commons.lang3.StringUtils;
+
 // Note: Constructors and static initializers are *never* resumable.
 
 public class DefineClass implements Expression, Opcodes {
@@ -44,6 +46,21 @@ public class DefineClass implements Expression, Opcodes {
 
     public Class type(CompilationContext context) {
         return Class.class;
+    }
+
+    private static boolean classesAreEqual(Object symbol, Symbol className, CompilationContext context) {
+        if(symbol instanceof Symbol) {
+            return symbol.equals(className);
+        } else if(symbol instanceof Node) {
+            String fullyQualifiedName = Compiler.fullyQualifiedName(className, context);
+            Vector<Symbol> list = Compiler.symbolList(symbol);
+
+            if(list != null) {
+                return fullyQualifiedName.equals(StringUtils.join(list, "."));
+            }
+        }
+
+        return false;
     }
 
     public Object scaffoldMethod(Node node, CompilationContext context) {
@@ -118,7 +135,7 @@ public class DefineClass implements Expression, Opcodes {
         return null;
     }
 
-    public IPersistentMap doEmitConstructor(Node node, CompilationContext context, IPersistentMap ctors, IPersistentMap fields, ClassWriter cw, String fullyQualifiedName, boolean shouldEmit) {
+    public IPersistentMap doEmitConstructor(Node node, CompilationContext context, IPersistentMap ctors, IPersistentMap fields, ClassWriter cw, Symbol className, boolean shouldEmit) {
         /*constructor(
             resumable(true) // Not allowed
             modifiers(public, varargs)
@@ -126,6 +143,8 @@ public class DefineClass implements Expression, Opcodes {
                 ...
             }
         )*/
+
+        String fullyQualifiedName = Compiler.fullyQualifiedName(className, context);
 
         Node modifiersNode = node.getChildNode(new Symbol("modifiers"));
         Node inputsNode = node.getChildNode(new Symbol("inputs"));
@@ -180,12 +199,18 @@ public class DefineClass implements Expression, Opcodes {
                 Object symbol = n.getSecondChild();
                 Class klass = Compiler.resolveType(symbol, context);
                 if(klass == null) {
-                    throw new RuntimeException("Could not find symbol: " + symbol.toString());
+                    if(classesAreEqual(symbol, className, context)) {
+                        inputTypes.add(Type.getObjectType(fullyQualifiedName.replace(".", "/")));
+                        inputClasses.add(Object.class); // Just make it object for now...
+                        inputNames.add(variableName);
+                    } else {
+                        throw new RuntimeException("Could not find symbol: " + symbol.toString());
+                    }
+                } else {
+                    inputTypes.add(Type.getType(klass));
+                    inputClasses.add(klass);
+                    inputNames.add(variableName);
                 }
-
-                inputTypes.add(Type.getType(klass));
-                inputClasses.add(klass);
-                inputNames.add(variableName);
             } else {
                 throw new RuntimeException("Invalid input specification for function: " + o);
             }
@@ -274,7 +299,7 @@ public class DefineClass implements Expression, Opcodes {
         return ctors;
     }
 
-    public IPersistentMap doEmitMethod(Node node, CompilationContext context, IPersistentMap methods, ClassWriter cw, String fullyQualifiedName, boolean shouldEmit) {
+    public IPersistentMap doEmitMethod(Node node, CompilationContext context, IPersistentMap methods, ClassWriter cw, Symbol className, boolean shouldEmit) {
         /*method(
             resumable(true) // Optional
             name(i)
@@ -284,6 +309,8 @@ public class DefineClass implements Expression, Opcodes {
                 ...
             }
         )*/
+
+        String fullyQualifiedName = Compiler.fullyQualifiedName(className, context);
 
         Symbol name = getSymbol(node, "name");
         Node modifiersNode = node.getChildNode(new Symbol("modifiers"));
@@ -356,29 +383,44 @@ public class DefineClass implements Expression, Opcodes {
                 Object symbol = n.getSecondChild();
                 Class klass = Compiler.resolveType(symbol, context);
                 if(klass == null) {
-                    throw new RuntimeException("Could not find symbol: " + symbol.toString());
+                    if(classesAreEqual(symbol, className, context)) {
+                        inputTypes.add(Type.getObjectType(fullyQualifiedName.replace(".", "/")));
+                        inputClasses.add(Object.class); // Just make it object for now...
+                        inputNames.add(variableName);
+                    } else {
+                        throw new RuntimeException("Could not find symbol: " + symbol.toString());
+                    }
+                } else {
+                    inputTypes.add(Type.getType(klass));
+                    inputClasses.add(klass);
+                    inputNames.add(variableName);
                 }
-
-                inputTypes.add(Type.getType(klass));
-                inputClasses.add(klass);
-                inputNames.add(variableName);
             } else {
                 throw new RuntimeException("Invalid input specification for function: " + o);
             }
         }
 
+        Type outputType = null;
         Class outputClass = null;
         if(outputs == null) {
             // TODO: Make this Var?
             outputClass = Object.class;
+            outputType = Type.getType(Object.class);
         } else {
             outputClass = Compiler.resolveType(outputs, context);
             if(outputClass == null) {
-                throw new RuntimeException("Could not resolve type: " + outputs);
+                if(classesAreEqual(outputs, className, context)) {
+                    outputClass = Object.class;
+                    outputType = Type.getObjectType(fullyQualifiedName.replace(".", "/"));
+                } else {
+                    throw new RuntimeException("Could not find symbol: " + outputs.toString());
+                }
+            } else {
+                outputType = Type.getType(outputClass);
             }
         }
 
-        Method m = new Method(name.toString(), Type.getType(outputClass), inputTypes.toArray(new Type[0]));
+        Method m = new Method(name.toString(), outputType, inputTypes.toArray(new Type[0]));
         GeneratorAdapter g = new GeneratorAdapter(access, m, null, null, cw);
 
         if(resumable) {
@@ -399,7 +441,7 @@ public class DefineClass implements Expression, Opcodes {
                 tempTypes.add(0, Type.getType(ExecutionContext.class));
             }
 
-            String tempDesc = name.toString() + ":" + (new Method(name.toString(), Type.getType(outputClass), tempTypes.toArray(new Type[0]))).getDescriptor();
+            String tempDesc = name.toString() + ":" + (new Method(name.toString(), outputType, tempTypes.toArray(new Type[0]))).getDescriptor();
 
             if(PersistentMapHelper.contains(methods, tempDesc)) {
                 throw new RuntimeException("Attempting to overload a resumable method. Unfortunately, right now, you cannot have a method with the same name and same arguments except one is resumable and the other is not. That is not supported. Can you possible change the method name to something else?");
@@ -558,7 +600,7 @@ public class DefineClass implements Expression, Opcodes {
         return methods;
     }
 
-    public IPersistentMap doEmitField(Node node, CompilationContext context, IPersistentMap fields, ClassWriter cw) {
+    public IPersistentMap doEmitField(Node node, CompilationContext context, IPersistentMap fields, ClassWriter cw, Symbol className) {
         /*field(
             name(i)
             type(int)
@@ -583,9 +625,16 @@ public class DefineClass implements Expression, Opcodes {
             type = new Symbol("Object");
         }
 
+        Type outputType = null;
         Class klass = Compiler.resolveType(type, context);
         if(klass == null) {
-            throw new RuntimeException("Could not resolve type: " + type);
+            if(classesAreEqual(type, className, context)) {
+                outputType = Type.getObjectType(Compiler.fullyQualifiedName(className, context).replace(".", "/"));
+            } else {
+                throw new RuntimeException("Could not resolve type: " + type);
+            }
+        } else {
+            outputType = Type.getType(klass);
         }
 
         int access = 0;
@@ -601,7 +650,7 @@ public class DefineClass implements Expression, Opcodes {
             }
         }
 
-        cw.visitField(access, name.toString(), Type.getType(klass).getDescriptor(), null, defaultValue).visitEnd();
+        cw.visitField(access, name.toString(), outputType.getDescriptor(), null, defaultValue).visitEnd();
 
         fields = PersistentMapHelper.set(fields, name, defaultValue);
         return fields;
@@ -638,7 +687,7 @@ public class DefineClass implements Expression, Opcodes {
         // Get the name of the superclass
         temp = node.getChildNode(new Symbol("extends"));
         if(temp != null) {
-            if(temp.getFirstChild() instanceof Symbol) {
+            if((temp.getFirstChild() instanceof Symbol) || (temp.getFirstChild() instanceof Node)) {
                  Class klass = Compiler.resolveType(temp.getFirstChild(), context);
                  if(klass == null) {
                      throw new RuntimeException("Could not find symbol: " + temp.getFirstChild());
@@ -646,7 +695,7 @@ public class DefineClass implements Expression, Opcodes {
 
                  superClass = klass;
             } else {
-                throw new RuntimeException("The name of a class's superclass must be a symbol.");
+                throw new RuntimeException("The name of a class's superclass must be a symbol or a node.");
             }
         } else {
             superClass = Object.class;
@@ -697,7 +746,7 @@ public class DefineClass implements Expression, Opcodes {
 
         for(int i = 0; i < PersistentVectorHelper.length(fieldNodes); i++) {
             Node field = (Node)PersistentVectorHelper.get(fieldNodes, i);
-            fields = PersistentMapHelper.merge(fields, doEmitField(field, context, fields, cw));
+            fields = PersistentMapHelper.merge(fields, doEmitField(field, context, fields, cw, name));
         }
 
 
@@ -717,7 +766,7 @@ public class DefineClass implements Expression, Opcodes {
         } else {
             for(int i = 0; i < PersistentVectorHelper.length(constructorNodes); i++) {
                 Node constructor = (Node)PersistentVectorHelper.get(constructorNodes, i);
-                constructors = PersistentMapHelper.merge(constructors, doEmitConstructor(constructor, context, constructors, fields, cw, fullyQualifiedName, shouldEmit));
+                constructors = PersistentMapHelper.merge(constructors, doEmitConstructor(constructor, context, constructors, fields, cw, name, shouldEmit));
             }
         }
 
@@ -729,7 +778,7 @@ public class DefineClass implements Expression, Opcodes {
 
         for(int i = 0; i < PersistentVectorHelper.length(methodNodes); i++) {
             Node method = (Node)PersistentVectorHelper.get(methodNodes, i);
-            methods = PersistentMapHelper.merge(methods, doEmitMethod(method, context, methods, cw, fullyQualifiedName, shouldEmit));
+            methods = PersistentMapHelper.merge(methods, doEmitMethod(method, context, methods, cw, name, shouldEmit));
         }
 
 
