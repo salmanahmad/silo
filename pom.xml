@@ -191,6 +191,7 @@
                   <sysproperty key="skipSilo" value="${skipSilo}"/>
                   <!--<jvmarg line="-agentlib:hprof=cpu=samples" />-->
                   <arg value="${basedir}/src/main/silo/core.silo" />
+                  <arg value="${basedir}/src/main/silo/core-control.silo" />
                   <arg value="${basedir}/src/main/silo/actor.silo" />
                   <arg value="${basedir}/src/main/silo/file.silo" />
                   <arg value="${basedir}/src/main/silo/http.silo" />

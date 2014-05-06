@@ -523,10 +523,86 @@ function(
 )
 
 function(
+    name(assert)
+    inputs(value : boolean, reason : String) {
+        if(value {
+            return(true)
+        } else {
+            throw(reason)
+        })
+    }
+)
+
+function(
     name(macro)
     macro
     inputs(id : Object, body : Object)
     {
         quote(silo.core.func(escape(id), escape(body), Boolean.TRUE))
+    }
+)
+
+function(
+    name(transformWalk)
+    inputs(values : Map, code : Object)
+    outputs(Object)
+    {
+        if(code | instanceof(Symbol) {
+            if(map.contains(values, code) {
+                return(quote(escape(quote(escape))(escape(code))))
+            } else {
+                return(code)
+            })
+        } else(code | instanceof(Node)) {
+            node : Node = code | checkcast(Node)
+
+            if(node#getLabel() == Symbol("escape") {
+                return(code)
+            } else {
+                children : java.util.Vector = node#getChildren()
+                meta : Map = node#getMeta()
+
+                nodeChildren : java.util.Vector = java.util.Vector()
+
+                i : int = 0
+                while(i < children#size() {
+                    child : Object = children#get(i)
+                    nodeChildren#add(transformWalk(values, child))
+                    i = i + 1
+                })
+
+                node = Node.withMeta(meta, transformWalk(values, node#getLabel()))
+                node#addChildren(nodeChildren)
+                return(node)
+            })
+        } else {
+            return(code)
+        })
+    }
+)
+
+function(
+    name(transform)
+    macro
+    inputs(definition : Node, code : Object)
+    {
+        name : Symbol = definition#getLabel() | checkcast(Symbol)
+        children : java.util.Vector = definition#getChildren()
+        values : Map = map.create()
+
+        i : int = 0
+        while(i < children#size() {
+            child : Object = children#get(i)
+            if(!instanceof(child, Symbol) {
+                throw("Transform macros must have simple symbols as children. No types.")
+            })
+
+            values = map.set(values, child, Boolean.TRUE)
+
+            i = i + 1
+        })
+
+        code = transformWalk(values, code)
+        quote(silo.core.macro(escape(definition), quote(escape(code))))
     }
 )

@@ -1089,7 +1089,7 @@ public class Invoke implements Expression {
 
                         Constructor constructor = resolveConstructor(klass, types.toArray(new Class[0]));
                         if(constructor == null) {
-                            throw new RuntimeException("Could not find constructor");
+                            throw new RuntimeException("Could not find constructor: " + klass);
                         }
 
                         if(!shouldEmit) {

@@ -1,0 +1,10 @@
+
+package(silo.core)
+
+transform(for(init, condition, end, body) {
+    init
+    while(condition {
+        body
+        end
+    })
+})
