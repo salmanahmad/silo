@@ -31,6 +31,14 @@ import com.github.krukow.clj_lang.PersistentVector;
 
 public class Compiler {
 
+    // Currently only used in a hacky capacity with macro-expansions. I may want to figure out a better way to propogate this
+    // information down into the other macros that need this information.
+    public static final ThreadLocal<CompilationContext> currentCompilationContext = new ThreadLocal<CompilationContext>();
+
+    public static CompilationContext getCurrentCompilationContext() {
+        return currentCompilationContext.get();
+    }
+
     public static HashMap<String, Class> primitives = new HashMap<String, Class>();
     static {
         primitives.put("silo.core.boolean", Boolean.TYPE);

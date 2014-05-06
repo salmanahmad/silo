@@ -523,17 +523,6 @@ function(
 )
 
 function(
-    name(assert)
-    inputs(value : boolean, reason : String) {
-        if(value {
-            return(true)
-        } else {
-            throw(reason)
-        })
-    }
-)
-
-function(
     name(macro)
     macro
     inputs(id : Object, body : Object)
@@ -603,6 +592,6 @@ function(
         })
 
         code = transformWalk(values, code)
-        quote(silo.core.macro(escape(definition), quote(escape(code))))
+        quote(silo.core.macro(escape(definition), silo.core.quote(escape(code))))
     }
 )

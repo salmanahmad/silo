@@ -1,10 +1,81 @@
 
 package(silo.core)
 
+alias(Symbol, silo.lang.Symbol)
+alias(Node, silo.lang.Node)
+alias(CompilationContext, silo.lang.CompilationContext)
+
+macro(comment(body ...) {
+    return(null)
+})
+
+// Note: this is a  macro and not a function
+transform(assert(value, reason) {
+    try({
+        if(!value {
+            throw(reason)
+        })
+    } catch(escape(uniquesymbol()) : Exception) {
+        throw(reason)
+    })
+})
+
 transform(for(init, condition, end, body) {
     init
     while(condition {
         body
         end
     })
+})
+
+//type(User {
+//    name : String
+//    id : int
+//} Readable {
+//    read() {
+//        
+//    }
+//})
+
+macro(type(name : Symbol, body : Node) {
+    context : CompilationContext = silo.lang.compiler.Compiler.getCurrentCompilationContext()
+
+    output : Vector = vector.create(
+        quote(defineclass)
+        quote(name(escape(name)))
+    )
+
+    children : java.util.Vector = body#getChildren();
+    for(i : int = 0; i < children#size(); i = i + 1 {
+        name : Symbol = null
+        kind : Object = quote(java.lang.Object)
+
+        child : Object = children#get(i)
+
+        if(child | instanceof(Node) {
+            n : Node = child | checkcast(Node)
+            assert(n#getFirstChild() | instanceof(Symbol), "Invalid type declaration.")
+            assert(n#getSecondChild() | instanceof(Object), "Invalid type declaration.")
+
+            name = n#getFirstChild() | checkcast(Symbol)
+            kind = n#getSecondChild()
+        } else(child | instanceof(Symbol)) {
+            name = child | checkcast(Symbol)
+        } else {
+            throw("Invalid type declaration.")
+        })
+
+        output = vector.push(
+            output
+            quote(
+                field(
+                    name(escape(name))
+                    type(escape(kind))
+                    modifiers(public)
+                )
+            )
+        )
+    })
+
+    return(Node.fromVector(output))
 })

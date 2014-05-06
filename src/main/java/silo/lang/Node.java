@@ -39,6 +39,19 @@ public class Node {
         return new Node(label, children);
     }
 
+    public static Node fromVectorWithMeta(IPersistentMap meta, IPersistentVector v) {
+        Object label = v.nth(0);
+        Vector children = new Vector();
+
+        for(int i = 1; i < v.length(); i++) {
+            children.add(v.nth(i));
+        }
+
+        Node node = Node.withMeta(meta, label);
+        node.addChildren(children);
+        return node;
+    }
+
     public static Node withMeta(IPersistentMap meta, Object label, Object ... children) {
         Node node = new Node(label, children);
         node.meta = meta;

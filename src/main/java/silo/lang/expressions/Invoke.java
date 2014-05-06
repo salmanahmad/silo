@@ -948,7 +948,15 @@ public class Invoke implements Expression {
                         klass = Compiler.resolveType(label, context);
                     }
 
+                    // TODO: Figure out a better way to propogate the CompilationContext other than using thread locals
+                    CompilationContext existingContext = Compiler.currentCompilationContext.get();
+                    Compiler.currentCompilationContext.set(context);
+
+                    // TODO: Make this runtime.spawn and await
                     o = context.runtime.eval(klass, children.toArray());
+
+                    Compiler.currentCompilationContext.set(existingContext);
+
                     didMacroExpansion = true;
                 } else {
                     break;
