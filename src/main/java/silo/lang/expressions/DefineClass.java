@@ -135,7 +135,7 @@ public class DefineClass implements Expression, Opcodes {
         return null;
     }
 
-    public IPersistentMap doEmitConstructor(Node node, CompilationContext context, IPersistentMap ctors, IPersistentMap fields, ClassWriter cw, Symbol className, boolean shouldEmit) {
+    public IPersistentMap doEmitConstructor(Node node, CompilationContext context, IPersistentMap ctors, IPersistentMap fields, ClassWriter cw, Symbol className, Class superClass, boolean shouldEmit) {
         /*constructor(
             resumable(true) // Not allowed
             modifiers(public, varargs)
@@ -287,7 +287,7 @@ public class DefineClass implements Expression, Opcodes {
         } else {
             // Invoke super constructor just to avoid verification errors
             g.loadThis();
-            g.invokeConstructor(Type.getType(Object.class), Method.getMethod("void <init> ()"));
+            g.invokeConstructor(Type.getType(superClass), Method.getMethod("void <init> ()"));
 
             g.returnValue();
         }
@@ -766,7 +766,7 @@ public class DefineClass implements Expression, Opcodes {
         } else {
             for(int i = 0; i < PersistentVectorHelper.length(constructorNodes); i++) {
                 Node constructor = (Node)PersistentVectorHelper.get(constructorNodes, i);
-                constructors = PersistentMapHelper.merge(constructors, doEmitConstructor(constructor, context, constructors, fields, cw, name, shouldEmit));
+                constructors = PersistentMapHelper.merge(constructors, doEmitConstructor(constructor, context, constructors, fields, cw, name, superClass, shouldEmit));
             }
         }
 

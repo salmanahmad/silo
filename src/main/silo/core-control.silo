@@ -47,9 +47,11 @@ macro(type(typeName : Symbol, body : Node) {
         quote(defineclass)
         quote(name(escape(typeName)))
         quote(extends(silo.lang.Structure))
+        quote(constructor(modifiers(public){}))
     )
 
-    // TODO: Handle the constructors
+    ctorInputs : Vector = vector.create(quote(inputs))
+    ctorBody : Vector = vector.create(null)
 
     children : java.util.Vector = body#getChildren();
     for(i : int = 0; i < children#size(); i = i + 1 {
@@ -70,6 +72,11 @@ macro(type(typeName : Symbol, body : Node) {
         } else {
             throw("Invalid type declaration.")
         })
+
+        ctorInputs = vector.push(ctorInputs, quote(escape(name) : escape(kind)))
+        ctorBody = vector.push(ctorBody, quote(
+            assign(.(this, escape(name)), escape(name), escape(Boolean.FALSE))
+        ))
 
         c : Class = Compiler.resolveType(kind, context)
         isStructure : boolean = DefineClass.classesAreEqual(kind, typeName, context) || (c != null && Structure#isAssignableFrom(c))
@@ -138,5 +145,13 @@ macro(type(typeName : Symbol, body : Node) {
         )
     })
 
+    ctor : Vector = vector.create(
+        quote(constructor)
+        quote(modifiers(public))
+        quote(escape(Node.fromVector(ctorInputs)))
+        quote(escape(Node.fromVector(ctorBody)))
+    );
+
+    output = vector.push(output, Node.fromVector(ctor))
     return(Node.fromVector(output))
 })

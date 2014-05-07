@@ -230,7 +230,7 @@ public class Assign implements Expression {
         RuntimeClassLoader loader = context.runtime.loader;
         CompilationFrame frame = context.currentFrame();
 
-        if(node.getChildren().size() != 2) {
+        if(node.getChildren().size() < 2) {
             throw new RuntimeException("Assignment requires at least 2 arguments.");
         }
 
@@ -289,7 +289,15 @@ public class Assign implements Expression {
                     // an exception...
                     // TODO: The above todo is not actually correct - what if I have a java interop expression
                     // like user.getAccount().name = "foo"
-                    (new Access(structure, true)).emit(context);
+
+                    boolean willMutate = true;
+                    try {
+                        willMutate = node.getChild(2).equals(Boolean.TRUE);
+                    } catch(Exception e) {
+                        willMutate = true;
+                    }
+
+                    (new Access(structure, willMutate)).emit(context);
                 } else {
                     Compiler.buildExpression(structure).emit(context);
                 }
