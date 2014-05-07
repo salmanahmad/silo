@@ -11,6 +11,8 @@
 
 package silo.lang;
 
+import java.lang.reflect.Field;
+
 public class Structure implements Cloneable {
     private int referenceCount;
 
@@ -51,7 +53,18 @@ public class Structure implements Cloneable {
     }
 
     public String toString() {
-        // TODO:
-        return super.toString();
+        Node description = new Node(new Symbol(this.getClass().getName()));
+
+        try {
+            Field[] fields = this.getClass().getFields();
+            for(Field field : fields) {
+                description.addChild(field.get(this));
+            }
+        } catch(IllegalAccessException e) {
+            // Ignore
+        }
+
+
+        return description.toString();
     }
 }
