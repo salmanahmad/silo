@@ -1,9 +1,12 @@
 
 package(silo.core)
 
+alias(Compiler, silo.lang.compiler.Compiler)
 alias(Symbol, silo.lang.Symbol)
 alias(Node, silo.lang.Node)
+alias(Structure, silo.lang.Structure)
 alias(CompilationContext, silo.lang.CompilationContext)
+alias(DefineClass, silo.lang.expressions.DefineClass)
 
 macro(comment(body ...) {
     return(null)
@@ -46,6 +49,8 @@ macro(type(typeName : Symbol, body : Node) {
         quote(extends(silo.lang.Structure))
     )
 
+    // TODO: Handle the constructors
+
     children : java.util.Vector = body#getChildren();
     for(i : int = 0; i < children#size(); i = i + 1 {
         name : Symbol = null
@@ -65,6 +70,9 @@ macro(type(typeName : Symbol, body : Node) {
         } else {
             throw("Invalid type declaration.")
         })
+
+        c : Class = Compiler.resolveType(kind, context)
+        isStructure : boolean = DefineClass.classesAreEqual(kind, typeName, context) || (c != null && Structure#isAssignableFrom(c))
 
         output = vector.push(
             output
@@ -86,6 +94,29 @@ macro(type(typeName : Symbol, body : Node) {
                     outputs(escape(kind))
                     modifiers(public) {
                         return(.(this, escape(name)))
+                    }
+                )
+            )
+        )
+
+        mutationBody : Object = null
+        if(isStructure {
+            mutationBody = quote({
+                .(this, escape(name)) = checkcast(invokevirtual(.(this, escape(name)), copyForMutation()), escape(kind))
+                return(.(this, escape(name)))
+            })
+        } else {
+            mutationBody = quote(return(.(this, escape(name))))
+        })
+
+        output = vector.push(
+            output
+            quote(
+                method(
+                    name(escape(Symbol("get_for_mutation_" + name#toString())))
+                    outputs(escape(kind))
+                    modifiers(public) {
+                        escape(mutationBody)
                     }
                 )
             )

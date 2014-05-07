@@ -296,16 +296,10 @@ public class Assign implements Expression {
 
                 generator.swap(Type.getType(valueClass), Type.getType(frame.operandStack.peek()));
 
-                // TODO: Support mutated field type if a "Structure" or "Var" is on the operandStack
-                if(true) {
-                    // Normal Field Put
-                    performSetField((Symbol)field, valueClass, typeClass, context);
-                    return;
-                } else {
-                    // Mutated Field Put
-                    throw new RuntimeException("Unimplemented");
-                }
-
+                // Field Put. This works with POJOs as well as immutable types because I have already taken care of copying fields above with (new Access(..., true)) which will perform a "get_for_mutations_<field>" access call...
+                // TODO: I may want to check if the top of the operand stack is a Structure object because then I could call the mutator (set_<field>) instead of access the field directly.
+                performSetField((Symbol)field, valueClass, typeClass, context);
+                return;
             } else {
                 // DynamicSet or Array Set
                 Compiler.buildExpression(label).emit(context);

@@ -48,7 +48,7 @@ public class DefineClass implements Expression, Opcodes {
         return Class.class;
     }
 
-    private static boolean classesAreEqual(Object symbol, Symbol className, CompilationContext context) {
+    public static boolean classesAreEqual(Object symbol, Symbol className, CompilationContext context) {
         if(symbol instanceof Symbol) {
             return symbol.equals(className);
         } else if(symbol instanceof Node) {

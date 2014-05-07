@@ -42,9 +42,16 @@ public class Structure implements Cloneable {
 
     public Structure copyForMutation() {
         if(referenceCount <= 1) {
-            return this;
+            // TODO: Once I implement reference counting I could uncomment this following line...
+            //return this;
+            return this.copy();
         } else {
             return this.copy();
         }
+    }
+
+    public String toString() {
+        // TODO:
+        return super.toString();
     }
 }

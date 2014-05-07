@@ -39,11 +39,11 @@ public class Access implements Expression {
         this.willMutate = willMutate;
     }
 
-    public static void resolveSymbol(Symbol symbol, CompilationContext context) {
+    public void resolveSymbol(Symbol symbol, CompilationContext context) {
         resolveSymbol(symbol, context, true);
     }
 
-    private static void resolveSymbol(Symbol symbol, CompilationContext context, boolean shouldEmit) {
+    private void resolveSymbol(Symbol symbol, CompilationContext context, boolean shouldEmit) {
         CompilationFrame frame = context.currentFrame();
         GeneratorAdapter generator = frame.generator;
 
@@ -53,6 +53,13 @@ public class Access implements Expression {
 
             if(shouldEmit) {
                 generator.visitVarInsn(Type.getType(scope).getOpcode(Opcodes.ILOAD), local);
+
+                if(willMutate && Structure.class.isAssignableFrom(scope)) {
+                    generator.invokeVirtual(Type.getType(Structure.class), org.objectweb.asm.commons.Method.getMethod("silo.lang.Structure copyForMutation()"));
+                    generator.checkCast(Type.getType(scope));
+                    generator.dup();
+                    generator.visitVarInsn(Type.getType(scope).getOpcode(Opcodes.ISTORE), local);
+                }
             }
 
             frame.operandStack.push(scope);
@@ -152,7 +159,8 @@ public class Access implements Expression {
                     path = new Vector<Symbol>();
                     path.add((Symbol)node.getSecondChild());
 
-                    Expression expression = Compiler.buildExpression(node.getFirstChild());
+                    //Expression expression = Compiler.buildExpression(node.getFirstChild());
+                    Expression expression = new Access(node.getFirstChild(), willMutate);
 
                     if(shouldEmit) {
                         expression.emit(context);
@@ -227,7 +235,11 @@ public class Access implements Expression {
                     Field field = operand.getField(symbol.toString());
 
                     if(shouldEmit) {
-                        generator.getField(Type.getType(operand), field.getName(), Type.getType(field.getType()));
+                        if(willMutate && Structure.class.isAssignableFrom(operand)) {
+                            generator.invokeVirtual(Type.getType(operand), new org.objectweb.asm.commons.Method("get_for_mutation_" + symbol.toString(), Type.getType(field.getType()), new Type[0]));
+                        } else {
+                            generator.getField(Type.getType(operand), field.getName(), Type.getType(field.getType()));
+                        }
                     }
 
                     frame.operandStack.push(field.getType());

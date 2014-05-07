@@ -141,6 +141,15 @@ public class CoreTest {
 
         Assert.assertEquals(Parser.parse("print(\"Hello, World!\")").getFirstChild(), runtime.eval(classes.get(2)));
     }
+
+    @Test
+    public void testType() throws Exception {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/core-test/type.silo");
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+
+        Assert.assertEquals(PersistentVectorHelper.create("bbb", "bbb", "xxx", "yyy"), runtime.eval(classes.get(2)));
+    }
 }
 
 

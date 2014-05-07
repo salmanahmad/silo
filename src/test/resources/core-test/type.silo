@@ -1,0 +1,26 @@
+
+defineclass(
+    name(A)
+
+    field(
+        name(name)
+        type(String)
+        modifiers(public)
+    )
+)
+
+type(B {
+    name : String
+})
+
+a : A = A()
+a.name = "aaa"
+b : A = a
+b.name = "bbb"
+
+x : B = B()
+x.name = "xxx"
+y : B = x
+y.name = "yyy"
+
+vector.create(a.name, b.name, x.name, y.name)
