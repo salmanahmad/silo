@@ -13,7 +13,7 @@ package silo.lang;
 
 import java.lang.reflect.Field;
 
-public class Structure implements Cloneable {
+public class Structure implements ReferenceCountable, Cloneable {
     private int referenceCount;
 
     public void reset() {

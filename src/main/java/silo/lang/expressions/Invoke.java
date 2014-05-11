@@ -718,7 +718,11 @@ public class Invoke implements Expression {
             generator.invokeStatic(Type.getType(klass), org.objectweb.asm.commons.Method.getMethod(method));
         } else {
             // TODO: Support calls with invokeSpecial?
-            generator.invokeVirtual(Type.getType(klass), org.objectweb.asm.commons.Method.getMethod(method));
+            if(klass.isInterface()) {
+                generator.invokeInterface(Type.getType(klass), org.objectweb.asm.commons.Method.getMethod(method));
+            } else {
+                generator.invokeVirtual(Type.getType(klass), org.objectweb.asm.commons.Method.getMethod(method));
+            }
         }
 
         if(method.getReturnType().equals(Void.TYPE)) {

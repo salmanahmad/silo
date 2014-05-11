@@ -27,6 +27,7 @@ public class Function {
         boolean macro() default false;
         boolean varargs() default false;
         boolean resumable() default true;
+        boolean mutator() default false;
     }
 
     @Retention(RetentionPolicy.RUNTIME)

@@ -183,6 +183,10 @@ public class Node {
         return null;
     }
 
+    public int getChildCount() {
+        return children.size();
+    }
+
     public Object getChild(int index) {
         return children.get(index);
     }
@@ -201,6 +205,14 @@ public class Node {
 
     public Object getLastChild() {
         return children.lastElement();
+    }
+
+    public static Node removeChild(Node input, int index) {
+        Node output = new Node(input.getLabel());
+        Vector children = input.getChildren();
+        children.remove(index);
+        output.addChildren(children);
+        return output;
     }
 
     public static Node chainNodes(Object label, Object... elements) {

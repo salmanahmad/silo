@@ -40,7 +40,7 @@ transform(for(init, condition, end, body) {
 //    }
 //})
 
-macro(type(typeName : Symbol, body : Node) {
+macro(type(typeName : Symbol, rest ...) {
     context : CompilationContext = silo.lang.compiler.Compiler.getCurrentCompilationContext()
 
     output : Vector = vector.create(
@@ -49,6 +49,9 @@ macro(type(typeName : Symbol, body : Node) {
         quote(extends(silo.lang.Structure))
         quote(constructor(modifiers(public){}))
     )
+
+    body : Node = vector.get(rest, 0) | checkcast(Node)
+    rest = vector.removeFirst(rest);
 
     ctorInputs : Vector = vector.create(quote(inputs))
     ctorBody : Vector = vector.create(null)
@@ -145,6 +148,8 @@ macro(type(typeName : Symbol, body : Node) {
         )
     })
 
+
+
     ctor : Vector = vector.create(
         quote(constructor)
         quote(modifiers(public))
@@ -153,5 +158,230 @@ macro(type(typeName : Symbol, body : Node) {
     );
 
     output = vector.push(output, Node.fromVector(ctor))
+
+
+    implementations : Vector = vector.create(quote(implements))
+
+    assert(vector.length(rest) % 2 == 0, "Invalid type declaration")
+    for(i : int = 0; i < vector.length(rest); i = i + 2 {
+        first : Object = rest | vector.get(i)
+        second : Object = rest | vector.get(i + 1)
+
+        assert(first | instanceof(Symbol), "Trait name must be a symbol")
+        assert(second | instanceof(Node), "Invalid trait body for trait: " + first)
+
+        traitName : Symbol = first | checkcast(Symbol)
+        traitImpl : Node = second | checkcast(Node)
+
+        traitClass : Class = Compiler.resolveType(traitName, context)
+        assert(traitClass != null, "Could not find trait: " + traitName)
+
+        methodsArray : array(java.lang.reflect.Method) = traitClass#getDeclaredMethods()
+        methods : Map = map.create()
+
+        for(j : int = 0; j < arraylength(methodsArray); j = j + 1 {
+            methods = map.set(methods, Symbol(methodsArray(j)#getName()), Boolean.TRUE)
+        })
+
+        traitMethods : java.util.Vector = traitImpl#getChildren()
+        assert(traitMethods#size() % 2 == 0, "Invalid trait implementation for: " + traitName)
+        for(j : int = 0; j < traitMethods#size(); j = j + 2 {
+            methodNode : Node = traitMethods#get(j) | checkcast(Node)
+            methodBody : Node = traitMethods#get(j + 1) | checkcast(Node)
+            methodName : Symbol = methodNode#getLabel() | checkcast(Symbol)
+            methods = map.remove(methods, methodName)
+
+            spec : Map = parseFunctionInputsOutputs(methodNode#getChildren())
+            inputs : Node = spec | map.get("inputs") | checkcast(Node)
+
+            assert(inputs#getFirstChild() | instanceof(Symbol), "The first argument for a trait must be a symbol for the receiver")
+            receiver : Symbol = inputs#getFirstChild() | checkcast(Symbol)
+            inputs = Node.removeChild(inputs, 0)
+
+            output = vector.push(
+                output,
+                quote(method(
+                    name(escape(methodName))
+                    resumable(escape(Boolean.TRUE))
+                    modifiers(public)
+                    receiver(escape(receiver))
+                    escape(inputs)
+                    escape(map.get(spec, "outputs"))
+                    escape(map.get(spec, "varargs"))
+                    escape(methodBody)
+                ))
+            )
+        })
+
+        implementations = vector.push(implementations, traitName)
+        assert(map.size(methods) == 0, "Unimplemented trait methods: " + methods)
+    })
+
+    // TODO: handle "mutator" traits
+    // TODO: handle "default" methods
+    // TODO: handle "varargs" in define class
+
+    output = vector.push(output, Node.fromVector(implementations))
     return(Node.fromVector(output))
 })
+
+//trait(Addable {
+//    add(i : int, j : int => int)
+//    subtract(i : int, j : int => int)
+//})
+
+func(parseFunctionInputsOutputs(form : java.util.Vector => Map) {
+    inputs : Vector = vector.create(quote(inputs))
+    outputs : Vector = vector.create(quote(outputs))
+    varargs : Node = null
+
+    useInputs : boolean = true
+    isVarArgs : boolean = false
+
+    last : Object = null
+    for(i : int = 0; i < form#size(); i = i + 1 {
+        o : Object = form#get(i)
+
+        if(o | instanceof(Node) {
+            n : Node = checkcast(o, Node)
+
+            if(quote(=>) == n#getLabel() {
+                useInputs = false
+
+                if(n#getFirstChild() == quote(...) {
+                    assert(last | instanceof(Symbol), "Invalid varargs")
+                    assert(isVarArgs == false, "Invalid varargs")
+                    assert(useInputs == true, "Invalid varargs")
+
+                    isVarArgs = true
+                } else {
+                    inputs = vector.push(inputs, n#getFirstChild())
+                })
+
+                outputs = vector.push(outputs, n#getSecondChild())
+            } else {
+                if(useInputs {
+                    inputs = vector.push(inputs, o)
+                } else {
+                    outputs = vector.push(outputs, o)
+                })
+            })
+        } else(o | instanceof(Symbol)) {
+            s : Symbol = checkcast(o, Symbol)
+            if(s == quote(...) {
+                assert(last | instanceof(Symbol), "Invalid varargs")
+                assert(isVarArgs == false, "Invalid varargs")
+                assert(useInputs == true, "Invalid varargs")
+
+                isVarArgs = true
+            } else(s == quote(=>)) {
+                useInputs = false
+            } else {
+                if(useInputs {
+                    inputs = vector.push(inputs, o)
+                } else {
+                    outputs = vector.push(outputs, o)
+                })
+            })
+        } else {
+            throw("Invalid function form")
+        })
+
+        last = o;
+    })
+
+    if(isVarArgs {
+        varargs = Node.fromVector(vector.create(
+            quote(varargs)
+            vector.last(inputs)
+        ))
+
+        inputs = vector.pop(inputs)
+    })
+
+    return(map.create(
+        "inputs" Node.fromVector(inputs)
+        "outputs" Node.fromVector(outputs)
+        "varargs" varargs
+    ))
+})
+
+macro(trait(typeName : Symbol, body : Node) {
+    context : CompilationContext = silo.lang.compiler.Compiler.getCurrentCompilationContext()
+
+    fns : Vector = vector.create(null)
+
+    iface : Vector = vector.create(
+        quote(defineclass)
+        quote(name(escape(typeName)))
+        quote(modifiers(abstract, interface))
+        quote(implements(silo.lang.ReferenceCountable))
+    )
+
+    children : java.util.Vector = body#getChildren();
+    for(i : int = 0; i < children#size(); i = i + 1 {
+        child : Object = children#get(i)
+        assert(child | instanceof(Node), "Invalid trait method")
+
+        node : Node = child | checkcast(Node)
+        assert(node#getLabel() | instanceof(Symbol), "Invalid trait method")
+
+        spec : Map = parseFunctionInputsOutputs(node#getChildren())
+        name : Symbol = node#getLabel() | checkcast(Symbol)
+        inputs : Node = map.get(spec, "inputs") | checkcast(Node)
+        outputs : Node = map.get(spec, "outputs") | checkcast(Node)
+        varargs : Node = map.get(spec, "varargs") | checkcast(Node)
+
+        assert(inputs#getFirstChild() | instanceof(Symbol), "The first argument for a trait must be a symbol for the receiver")
+        receiver : Symbol = inputs#getFirstChild() | checkcast(Symbol)
+        inputs = Node.removeChild(inputs, 0)
+
+        iface = vector.push(
+            iface
+            quote(method(
+                name(escape(name))
+                resumable(escape(Boolean.TRUE))
+                modifiers(public, abstract)
+                receiver(escape(receiver))
+                escape(inputs)
+                escape(outputs)
+                escape(varargs)
+            ))
+        )
+
+        fnInputs : Vector = vector.fromNode(spec | map.get("inputs") | checkcast(Node))
+        fnInputs = vector.set(fnInputs, 1, quote(escape(receiver) : escape(typeName)))
+
+        callVector : Vector = vector.create(name)
+        for(j : int = 2; j < vector.length(fnInputs); j = j + 1 {
+            arg : Object = vector.get(fnInputs, j)
+            if(arg | instanceof(Node) {
+                callVector = vector.push(callVector, arg|checkcast(Node)#getFirstChild())
+            } else {
+                callVector = vector.push(callVector, arg)
+            })
+        })
+        call : Node = Node.fromVector(callVector)
+
+        fns = vector.push(
+            fns
+            quote(function(
+                name(escape(name))
+                escape(Node.fromVector(fnInputs))
+                escape(outputs)
+                escape(varargs) {
+                    invokevirtual(escape(receiver), escape(call))
+                }
+            ))
+        )
+    })
+
+    return(Node.fromVector(vector.create(
+        null
+        Node.fromVector(iface)
+        Node.fromVector(fns)
+    )))
+})
+
+
+

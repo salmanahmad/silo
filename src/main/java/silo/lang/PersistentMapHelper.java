@@ -32,6 +32,10 @@ public class PersistentMapHelper {
         return PersistentHashMap.create(items);
     }
 
+    public static int size(IPersistentMap map) {
+        return PersistentVectorHelper.length(keys(map));
+    }
+
     public static IPersistentVector keys(IPersistentMap map) {
         Iterable i = (Iterable)RT.keys(map);
 
@@ -69,5 +73,9 @@ public class PersistentMapHelper {
 
     public static IPersistentMap set(IPersistentMap map, Object key, Object value) {
         return map.assoc(key, value);
+    }
+
+    public static IPersistentMap remove(IPersistentMap map, Object key) {
+        return map.without(key);
     }
 }

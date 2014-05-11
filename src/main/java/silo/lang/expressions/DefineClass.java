@@ -128,7 +128,7 @@ public class DefineClass implements Expression, Opcodes {
         Symbol s = new Symbol(symbol);
 
         Node n = node.getChildNode(s);
-        if(n != null) {
+        if(n != null && n.getChildCount() > 0) {
             return n.getFirstChild();
         }
 
@@ -305,7 +305,8 @@ public class DefineClass implements Expression, Opcodes {
             name(i)
             modifiers(static, public)
             inputs(int)
-            outputs(int) {
+            outputs(int)
+            receiver(this) {
                 ...
             }
         )*/
@@ -352,6 +353,8 @@ public class DefineClass implements Expression, Opcodes {
                 access = access + ACC_PRIVATE;
             } else if(modifier.equals(new Symbol("protected"))) {
                 access = access + ACC_PROTECTED;
+            } else if(modifier.equals(new Symbol("abstract"))) {
+                access = access + ACC_ABSTRACT;
             } else if(modifier.equals(new Symbol("static"))) {
                 access = access + ACC_STATIC;
             } else if(modifier.equals(new Symbol("varargs"))) {
@@ -470,6 +473,19 @@ public class DefineClass implements Expression, Opcodes {
 
 
 
+        if(body == null) {
+            // If the body is null that means it was not provided.
+            // AKA this is an interface or this is an abstract method.
+
+            // End method
+            context.frames.pop();
+            g.endMethod();
+
+            return methods;
+        }
+
+
+
         if(shouldEmit) {
             // Prelude to method body
             frame.restoreLocalsLabel = frame.generator.newLabel();
@@ -490,7 +506,15 @@ public class DefineClass implements Expression, Opcodes {
 
             if ((access & ACC_STATIC) == 0) {
                 // This is a virtual method
-                inputNames.add(0, new Symbol("this"));
+
+                Node receiverNode = node.getChildNode(new Symbol("receiver"));
+                Symbol receiver = new Symbol("this");
+
+                if(receiverNode != null) {
+                    receiver = (Symbol)receiverNode.getFirstChild();
+                }
+
+                inputNames.add(0, receiver);
                 inputTypes.add(0, Type.getType(declaringClass));
                 inputClasses.add(0, declaringClass);
             }
@@ -725,6 +749,24 @@ public class DefineClass implements Expression, Opcodes {
 
 
 
+        temp = node.getChildNode(new Symbol("modifiers"));
+        int access = ACC_PUBLIC + ACC_SUPER;
+        if(temp != null) {
+            access = ACC_PUBLIC;
+            Vector modifiers = temp.getChildren();
+            for(Object modifier : modifiers) {
+                if(modifier.equals(new Symbol("abstract"))) {
+                    access = access + ACC_ABSTRACT;
+                } else if(modifier.equals(new Symbol("super"))) {
+                    access = access + ACC_SUPER;
+                } else if(modifier.equals(new Symbol("interface"))) {
+                    access = access + ACC_INTERFACE;
+                }
+            }
+        }
+
+
+
         // Handle the meta data
         if(PersistentMapHelper.get(node.getMeta(), "file") == null) {
             cw.visitSource("UNKNOWN_FILE", null);
@@ -736,7 +778,7 @@ public class DefineClass implements Expression, Opcodes {
 
         // The class definition
         String fullyQualifiedName = Compiler.fullyQualifiedName(name, context);
-        cw.visit(V1_6, ACC_PUBLIC + ACC_SUPER, fullyQualifiedName.replace(".", "/"), null, superClassName, interfaces);
+        cw.visit(V1_6, access, fullyQualifiedName.replace(".", "/"), null, superClassName, interfaces);
 
 
 
@@ -756,13 +798,15 @@ public class DefineClass implements Expression, Opcodes {
         IPersistentMap constructors = PersistentMapHelper.create();
 
         if(PersistentVectorHelper.length(constructorNodes) == 0) {
-            // Add the default constructor
-            m = Method.getMethod("void <init> ()");
-            g = new GeneratorAdapter(ACC_PUBLIC, m, null, null, cw);
-            g.loadThis();
-            g.invokeConstructor(Type.getType(superClass), m);
-            g.returnValue();
-            g.endMethod();
+            if((access & ACC_INTERFACE) == 0) {
+                // Add the default constructor
+                m = Method.getMethod("void <init> ()");
+                g = new GeneratorAdapter(ACC_PUBLIC, m, null, null, cw);
+                g.loadThis();
+                g.invokeConstructor(Type.getType(superClass), m);
+                g.returnValue();
+                g.endMethod();
+            }
         } else {
             for(int i = 0; i < PersistentVectorHelper.length(constructorNodes); i++) {
                 Node constructor = (Node)PersistentVectorHelper.get(constructorNodes, i);

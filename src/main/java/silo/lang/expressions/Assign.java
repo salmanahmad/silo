@@ -37,6 +37,17 @@ public class Assign implements Expression {
         RuntimeClassLoader loader = context.runtime.loader;
         CompilationFrame frame = context.currentFrame();
 
+
+
+        // TODO:
+        //if(ReferenceCountable.class.isAssignableFrom(scope)) {
+        //    generator.dup();
+        //    generator.invokeInterface(Type.getType(ReferenceCountable.class), org.objectweb.asm.commons.Method.getMethod("silo.lang.ReferenceCountable retain()"));
+        //    generator.checkCast(Type.getType(type));
+        //}
+
+
+
         int local = -1;
         Symbol identifier = field;
 

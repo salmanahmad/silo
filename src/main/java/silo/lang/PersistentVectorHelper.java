@@ -33,6 +33,10 @@ public class PersistentVectorHelper {
         return PersistentVector.create(items);
     }
 
+    public static IPersistentVector fromNode(Node node) {
+        return concat(create(node.getLabel()), create(node.getChildren()));
+    }
+
     public static Object get(IPersistentVector vector, int index) {
         return vector.nth(index);
     }
@@ -75,6 +79,10 @@ public class PersistentVectorHelper {
 
     public static int length(IPersistentVector vector) {
         return vector.length();
+    }
+
+    public static Object first(IPersistentVector vector) {
+        return get(vector, 0);
     }
 
     public static Object last(IPersistentVector vector) {
