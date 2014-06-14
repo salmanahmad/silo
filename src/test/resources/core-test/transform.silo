@@ -1,0 +1,36 @@
+
+func(a {
+    macroexpand(quote({
+        foo("this is a string")
+        foo("this is a string")
+        bar("this is a string")
+    }))
+})
+
+func(b {
+    macroexpand(quote({
+        transform(foo(a) {
+            macrolocal(a) = a
+        })
+
+        transform(bar(a) {
+            macrolocal(a) = a
+        })
+
+        transform(baz(a) {
+            macrolocal(a) = a
+        })
+    }))
+})
+
+
+transform(foo(a) {
+    macrolocal(a) = a
+})
+
+transform(bar(a) {
+    macrolocal(a) = a
+    macrolocal(a) = a
+    macrolocal(b) = a
+})
+

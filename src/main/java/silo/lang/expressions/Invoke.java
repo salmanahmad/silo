@@ -1061,11 +1061,11 @@ public class Invoke implements Expression {
 
                         if(isVarArgs) {
                             if(types.size() < (params.length - 1)) {
-                                throw new RuntimeException("Arity mismatch.");
+                                throw new RuntimeException("Arity mismatch when calling: " + method.toString());
                             }
                         } else {
                             if(types.size() != params.length) {
-                                throw new RuntimeException("Arity mismatch.");
+                                throw new RuntimeException("Arity mismatch when calling: " + method.toString());
                             }
                         }
 

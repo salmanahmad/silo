@@ -4,6 +4,7 @@ package(silo.core)
 alias(RT, com.github.krukow.clj_lang.RT)
 alias(Node, silo.lang.Node)
 alias(Symbol, silo.lang.Symbol)
+alias(CompilationContext, silo.lang.CompilationContext)
 
 function(
     name(while)
@@ -452,7 +453,7 @@ function(
     inputs(form : Object)
     outputs(Object)
     {
-        rt : silo.lang.Runtime = silo.lang.Runtime()
+        rt : silo.lang.Runtime = silo.core.runtime()
         silo.lang.compiler.Compiler.expandCode(silo.lang.CompilationContext(rt), form);
     }
 )
@@ -533,7 +534,7 @@ function(
 
 function(
     name(transformWalk)
-    inputs(values : Map, code : Object)
+    inputs(values : Map, macroLocalPrefix : Symbol, code : Object)
     outputs(Object)
     {
         if(code | instanceof(Symbol) {
@@ -547,6 +548,8 @@ function(
 
             if(node#getLabel() == Symbol("escape") {
                 return(code)
+            } else(node#getLabel() == Symbol("macrolocal")) {
+                 return(quote(escape(quote(escape))(silo.lang.Symbol(escape(macroLocalPrefix)#toString() + escape(node#getFirstChild()#toString())))))
             } else {
                 children : java.util.Vector = node#getChildren()
                 meta : Map = node#getMeta()
@@ -556,11 +559,11 @@ function(
                 i : int = 0
                 while(i < children#size() {
                     child : Object = children#get(i)
-                    nodeChildren#add(transformWalk(values, child))
+                    nodeChildren#add(transformWalk(values, macroLocalPrefix, child))
                     i = i + 1
                 })
 
-                node = Node.withMeta(meta, transformWalk(values, node#getLabel()))
+                node = Node.withMeta(meta, transformWalk(values, macroLocalPrefix, node#getLabel()))
                 node#addChildren(nodeChildren)
                 return(node)
             })
@@ -571,10 +574,28 @@ function(
 )
 
 function(
+    name(uniqueidentifier)
+    outputs(Symbol)
+    {
+        context : CompilationContext = silo.lang.compiler.Compiler.getCurrentCompilationContext()
+        if(context {
+            return(context#uniqueIdentifier("unique:identifier"))
+        } else {
+            throw("Could not find compilation context.")
+        })
+
+        return(null)
+    }
+)
+
+function(
     name(transform)
     macro
     inputs(definition : Node, code : Object)
     {
+        //macrolocal : Symbol = uniquesymbol()
+        macrolocal : Symbol = uniqueidentifier()
+
         name : Symbol = definition#getLabel() | checkcast(Symbol)
         children : java.util.Vector = definition#getChildren()
         values : Map = map.create()
@@ -591,7 +612,10 @@ function(
             i = i + 1
         })
 
-        code = transformWalk(values, code)
-        quote(silo.core.macro(escape(definition), silo.core.quote(escape(code))))
+        //silo.lang.Symbol(java.util.UUID.randomUUID()#toString())
+
+        code = transformWalk(values, macrolocal, code)
+        code = quote({escape(macrolocal) = silo.core.uniqueidentifier(), silo.core.quote(escape(code))})
+        quote(silo.core.macro(escape(definition), escape(code)))
     }
 )

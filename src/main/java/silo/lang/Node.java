@@ -87,7 +87,7 @@ public class Node {
 
     public int hashCode() {
         int hash = 1;
-        return Helper.hashCombine(Helper.hashCode(this.label.hashCode()), this.children.hashCode());
+        return Helper.hashCombine(Helper.hashCode(this.label), Helper.hashCode(this.children));
     }
 
     public IPersistentMap getMeta() {

@@ -143,6 +143,51 @@ public class CoreTest {
     }
 
     @Test
+    public void testTransform() throws Exception {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/core-test/transform.silo");
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+
+        Function func = (Function)classes.get(0).newInstance();
+        Assert.assertEquals(
+            new Node(null,
+                new Node(null,
+                    new Node(new Symbol("="),
+                        new Symbol("__unique:identifier__1a"),
+                        "this is a string"
+                    )
+                ),
+                new Node(null,
+                    new Node(new Symbol("="),
+                        new Symbol("__unique:identifier__2a"),
+                        "this is a string"
+                    )
+                ),
+                new Node(null,
+                    new Node(new Symbol("="),
+                        new Symbol("__unique:identifier__3a"),
+                        "this is a string"
+                    ),
+                    new Node(new Symbol("="),
+                        new Symbol("__unique:identifier__3a"),
+                        "this is a string"
+                    ),
+                    new Node(new Symbol("="),
+                        new Symbol("__unique:identifier__3b"),
+                        "this is a string")
+                    )
+            ),
+            runtime.spawn(func).await()
+        );
+
+        func = (Function)classes.get(1).newInstance();
+        Node output = (Node)runtime.spawn(func).await();
+        Assert.assertEquals(new Symbol("__unique:identifier__1"), ((Node)((Node)((Node)((Node)output.getChildren().get(0)).getChildren().get(4)).getFirstChild()).getFirstChild()).getFirstChild());
+        Assert.assertEquals(new Symbol("__unique:identifier__3"), ((Node)((Node)((Node)((Node)output.getChildren().get(1)).getChildren().get(4)).getFirstChild()).getFirstChild()).getFirstChild());
+        Assert.assertEquals(new Symbol("__unique:identifier__5"), ((Node)((Node)((Node)((Node)output.getChildren().get(2)).getChildren().get(4)).getFirstChild()).getFirstChild()).getFirstChild());
+    }
+
+    @Test
     public void testType() throws Exception {
         Runtime runtime = new Runtime();
         String source = Helper.readResource("/core-test/type.silo");
