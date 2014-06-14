@@ -369,10 +369,28 @@ func(help(command) {
 
     if(command#equals("run") {
 "
-Usage: silo [run] <program-file> [arguments]
+Usage: silo [run] [mode] <program-file> [arguments]
 
-  Run a Silo program. If files lists raw '.silo' files they will be compiled
-  and dynamically executed. If a '.jar' file is present it will be run instead.
+  Run a Silo program. Arguments will be provided as command line arguments.
+  By default the mode will be chosen heuristically based on the name of the
+  <program-file>. Modes can be explicitly specified using the flags described
+  below.
+
+Modes include:
+  [-f | --file]        # Compile the <program-file> as a Silo source file and
+                       # then automatically run it. This mode is chosen by
+                       # default if the <program-file> ends with \".silo\".
+
+  [-j | --jar]         # Run the <program-file> as a jar file with an embedded
+                       # manifest. The jar file is added to the classpath and
+                       # the manifest is used to determine the main function.
+                       # This mode is chosen by default if the <program-file>
+                       # ends with \".jar\".
+
+  [-m | --main]        # Run <program-file> as the name of the main function.
+                       # This mode is chosen by default if the <program-file>
+                       # specifies the fully qualified name of a function that
+                       # exists in the classpath.
 "
     } else(command#equals("service")) {
 "
@@ -402,15 +420,11 @@ Usage: silo service <command> <name> [run-arguments]
 "
 Usage: silo compile [options] <files>
 
-  Compile a Silo source files and output JVM bytecode.
+  Compile a Silo source files and output JVM bytecode. If a directory is 
+  specified (including '.') all of the Silo source files in that directory.
 
 
 Options include:
-  --all                 # Compile all of the files in the current directory.
-                        # This option causes '--output' to default to the
-                        # current directory. This means that .class
-                        # files will appear in the current directory.
-
   [--jar | --classes]   # Output a single .jar file or individual java .class
                         # files. The jar file can be directly executed using
                         # the 'silo run' command. The default is --jar.
@@ -419,11 +433,7 @@ Options include:
                         # the .class files. If .jar is used and a directory is
                         # specified, the name of the jar file will match the
                         # name of the directory. This option will default to
-                        # the name of the first file listed or the current
-                        # directory if --all is specified.
-
-  --show-bytecode       # Print the compiled byte code. Useful for
-                        # debugging purposes.
+                        # the name of the first file or directory listed.
 "
     } else(command#equals("shell")) {
 
