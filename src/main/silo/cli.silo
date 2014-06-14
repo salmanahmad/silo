@@ -376,7 +376,9 @@ Usage: silo [run] [mode] <program-file> [arguments]
   <program-file>. Modes can be explicitly specified using the flags described
   below.
 
+
 Modes include:
+
   [-f | --file]        # Compile the <program-file> as a Silo source file and
                        # then automatically run it. This mode is chosen by
                        # default if the <program-file> ends with \".silo\".
@@ -425,6 +427,7 @@ Usage: silo compile [options] <files>
 
 
 Options include:
+
   [--jar | --classes]   # Output a single .jar file or individual java .class
                         # files. The jar file can be directly executed using
                         # the 'silo run' command. The default is --jar.
