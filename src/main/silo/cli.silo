@@ -34,7 +34,7 @@ func(main(args : Vector) {
     first : Object = args#nth(0, null)
 
     if(first#equals("run") {
-        run(args#nth(1, null))
+        run(vector.removeFirst(args))
     } else(first#equals("shell")) {
         shell()
     } else(first#equals("service")) {
@@ -57,7 +57,7 @@ func(main(args : Vector) {
             println(help("service"))
         })
     } else(first#equals("compile")) {
-        compile(args#nth(1, null))
+        compile(vector.removeFirst(args))
     } else(first#equals("help")) {
         println(help(args#nth(1, null)))
     } else(first#equals("version")) {
@@ -65,13 +65,14 @@ func(main(args : Vector) {
     } else(first#equals("copyright")) {
         println(copyright())
     } else {
-        run(args#nth(0, null))
+        run(args)
     })
 })
 
-func(run(arg : Object) {
+func(run(args : Vector) {
     runtime : Runtime = Runtime()
     main : java.lang.Class = null
+    arg : Object = vector.get(args, 0, null)
 
     if(arg {
         name : String = arg#toString()
@@ -334,11 +335,34 @@ func(shell {
     })
 })
 
-func(compile(file_ : Object) {
-    if(file_ {
-        file : String = file_#toString();
-    } else {
-        return
+func(compile(files : Vector) {
+    if(files == null return())
+
+    useJar : boolean = true
+    output : String = null
+    file : String = null
+
+    for(i : int = 0; i < vector.length(files); i = i + 1 {
+        if(vector.get(files, i) == "--jar" {
+            useJar = true
+        } else(vector.get(files, i) == "--classes") {
+            useJar = false
+        } else(vector.get(files, i) == "--output") {
+            i = i + 1
+            if(output == null {
+                output = vector.get(files, i, null) | checkcast(String)
+            })
+        } else {
+            if(file == null {
+                file = vector.get(files, i, null) | checkcast(String)
+            })
+        })
+    })
+
+    if(file == null return())
+
+    if(output == null {
+        output = "lib" + File.separator + FilenameUtils.removeExtension(file)
     })
 
     source : String = FileUtils.readFileToString(File(file))
@@ -347,12 +371,10 @@ func(compile(file_ : Object) {
     runtime : Runtime = Runtime();
     context : CompilationContext = runtime#contextByCompiling(source)
 
-    i : int = 0
-    while(i < invokevirtual(context.bytecode, size()) {
-        bytecode : array(byte) = checkcast(invokevirtual(context.bytecode, get(i)), array(byte))
-        silo.lang.Compile.writeBytecodeToDirectory(bytecode, FilenameUtils.removeExtension(file))
-
-        i = i + 1
+    if(useJar {
+        silo.lang.Compile.writeBytecodeToJarFile(context.bytecode, output + ".jar")
+    } else {
+        silo.lang.Compile.writeBytecodeToDirectory(context.bytecode, output)
     })
 })
 

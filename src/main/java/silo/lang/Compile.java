@@ -14,15 +14,22 @@ package silo.lang;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.Vector;
+import java.util.List;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.objectweb.asm.ClassReader;
 
+import java.util.jar.JarOutputStream;
+import java.util.jar.Manifest;
+import java.util.jar.JarEntry;
+import java.util.jar.Attributes;
+
+
 public class Compile {
 
-    public static void writeBytecodeToDirectory(byte[] code, String targetDirectory) throws Exception {
+    public static void writeBytecodeToDirectory(List<byte[]> code, String targetDirectory) throws Exception {
         File test = new File(targetDirectory).getCanonicalFile();
 
         if(test.exists() && !test.isDirectory()) {
@@ -31,14 +38,41 @@ public class Compile {
 
         test.mkdirs();
 
-        ClassReader reader = new ClassReader(code);
-        String fileName = reader.getClassName() + ".class";
+        for(byte[] b : code) {
+            ClassReader reader = new ClassReader(b);
+            String fileName = reader.getClassName() + ".class";
 
-        File file = new File(targetDirectory, fileName);
-        file.getParentFile().mkdirs();
+            File file = new File(targetDirectory, fileName);
+            file.getParentFile().mkdirs();
 
-        FileOutputStream output = new FileOutputStream(file);
-        IOUtils.write(code, output);
+            FileOutputStream output = new FileOutputStream(file);
+            IOUtils.write(b, output);
+        }
+    }
+
+    public static void writeBytecodeToJarFile(List<byte[]> code, String targetFile) throws Exception {
+        File test = new File(targetFile);
+        if(test.getParent() != null) {
+            test.getParentFile().mkdirs();
+        }
+
+        FileOutputStream stream = new FileOutputStream(targetFile);
+
+        Manifest manifest = new Manifest();
+        manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
+        manifest.getMainAttributes().put(new Attributes.Name("Silo-Main"), (new ClassReader(code.get(code.size() - 1))).getClassName());
+
+        JarOutputStream target = new JarOutputStream(stream, manifest);
+
+        for(byte[] b : code) {
+            ClassReader reader = new ClassReader(b);
+            JarEntry entry = new JarEntry(reader.getClassName() + ".class");
+            target.putNextEntry(entry);
+            target.write(b, 0, b.length);
+            target.closeEntry();
+        }
+
+        target.close();
     }
 
     public static void main(String[] args) throws Exception {
@@ -58,9 +92,7 @@ public class Compile {
             String file = args[i];
             String source = FileUtils.readFileToString(new File(file));
             CompilationContext context = runtime.contextByCompiling(FilenameUtils.getName(file), source);
-            for(byte[] code : context.bytecode) {
-                writeBytecodeToDirectory(code, outputPath);
-            }
+            writeBytecodeToDirectory(context.bytecode, outputPath);
         }
     }
 }
