@@ -442,10 +442,12 @@ Usage: silo service <command> <name> [run-arguments]
 "
     } else(command#equals("compile")) {
 "
-Usage: silo compile [options] <files>
+Usage: silo compile [options] file [arguments]
 
   Compile a Silo source files and output JVM bytecode. If a directory is 
   specified (including '.') all of the Silo source files in that directory.
+  The arguments are preserved as command line arguments that the macros can
+  have access to.
 
 
 Options include:
