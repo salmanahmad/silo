@@ -14,6 +14,7 @@ package silo.lang;
 import java.util.Stack;
 import java.util.Vector;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 
@@ -60,6 +61,8 @@ public class CompilationContext {
     public final Vector<Class> classes; // TODO: How do I handle temporary types and forwarded declarations?
     public final Vector<byte[]> bytecode;
 
+    public final HashSet<String> files;
+
     public RuntimeClassLoader symbolLoader;
     public final LinkedHashMap<String, SymbolEntry> symbolTable;
 
@@ -74,6 +77,8 @@ public class CompilationContext {
 
         this.classes = new Vector<Class>();
         this.bytecode = new Vector<byte[]>();
+
+        this.files = new HashSet<String>();
 
         this.symbolLoader = new RuntimeClassLoader();
         this.symbolTable = new LinkedHashMap<String, SymbolEntry>();

@@ -308,6 +308,8 @@ public class Compiler {
                 return new Alias(node);
             } else if(label.equals(new Symbol("import"))) {
                 return new Import(node);
+            } else if(label.equals(new Symbol("require"))) {
+                return new Require(node);
             } else if(label.equals(new Symbol("defineclass"))) {
                 return new DefineClass(node);
             } else if(label.equals(new Symbol("function"))) {
