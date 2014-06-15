@@ -171,9 +171,17 @@ package(silo.net.http.connection {
             return(null)
         })
 
-        // TODO: Support Headers
-
         response : DefaultHttpResponse = DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.valueOf(status))
+
+        if(headers {
+            keys : Vector = map.keys(headers)
+            for(i : int = 0; i < vector.length(keys); i = i + 1 {
+                key : String = vector.get(keys, i)#toString()
+                value : Object = map.get(headers, key)
+
+                response#headers()#add(key, value)
+            })
+        })
 
         c.context#write(response)
 
