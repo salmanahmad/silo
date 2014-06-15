@@ -70,26 +70,57 @@ func(main(args : Vector) {
 })
 
 func(run(args : Vector) {
-    runtime : Runtime = Runtime()
-    main : java.lang.Class = null
+    guess : int = 0
+    jar : int = 1
+    file : int = 2
+    main : int = 3
+
+    mode : int = guess
+
     arg : Object = vector.get(args, 0, null)
-
-    if(arg {
-        name : String = arg#toString()
-        main = runtime.loader#resolveType(name)
-
-        if(!main {
-            source : String = FileUtils.readFileToString(File(name))
-            code : silo.lang.Node = silo.lang.compiler.Parser.parse(name, source)
-
-            classes : java.util.Vector = runtime#compile(code)
-            main = checkcast(classes#get(classes#size() - 1), java.lang.Class)
-        })
-    } else {
-        return
+    if(arg == "-f" || arg == "--file" {
+        mode = file
+        arg = vector.get(args, 1, null)
+    } else(arg == "-m" || arg == "--main") {
+        mode = main
+        arg = vector.get(args, 1, null)
+    } else(arg == "-j" || arg == "--jar") {
+        mode = jar
+        arg = vector.get(args, 1, null)
     })
 
-    f : Function = checkcast(main#newInstance(), Function)
+    if(arg == null return)
+    name : String = arg#toString()
+    runtime : Runtime = Runtime()
+    startup : java.lang.Class = null
+
+    if(mode == guess {
+        if(name#endsWith(".jar") {
+            mode = jar
+        } else(runtime.loader#resolveType(name)) {
+            mode = main
+        } else {
+            mode = file
+        })
+    })
+
+    if(mode == jar {
+        jarFile : java.util.jar.JarFile = java.util.jar.JarFile(File(name))
+        runtime.loader#addURL(File(name)#toURI()#toURL())
+
+        name = jarFile#getManifest()#getMainAttributes()#get(java.util.jar.Attributes$Name("Silo-Main")) | checkcast(String)
+        startup = runtime.loader#resolveType(name)
+    } else(mode == main) {
+        startup = runtime.loader#resolveType(name)
+    } else {
+        source : String = FileUtils.readFileToString(File(name))
+        code : silo.lang.Node = silo.lang.compiler.Parser.parse(name, source)
+
+        classes : java.util.Vector = runtime#compile(code)
+        startup = checkcast(classes#get(classes#size() - 1), java.lang.Class)
+    })
+
+    f : Function = checkcast(startup#newInstance(), Function)
 
     a : silo.lang.Actor = runtime#spawn(f)
     ignore(RuntimeException {

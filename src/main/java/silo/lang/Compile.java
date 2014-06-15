@@ -60,7 +60,7 @@ public class Compile {
 
         Manifest manifest = new Manifest();
         manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
-        manifest.getMainAttributes().put(new Attributes.Name("Silo-Main"), (new ClassReader(code.get(code.size() - 1))).getClassName());
+        manifest.getMainAttributes().put(new Attributes.Name("Silo-Main"), (new ClassReader(code.get(code.size() - 1))).getClassName().replace("/", "."));
 
         JarOutputStream target = new JarOutputStream(stream, manifest);
 

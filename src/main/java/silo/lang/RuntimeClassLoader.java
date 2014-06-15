@@ -30,6 +30,10 @@ public class RuntimeClassLoader extends URLClassLoader {
         super(new URL[] {}, parent);
     }
 
+    public void addURL(URL url) {
+        super.addURL(url);
+    }
+
     public Class loadClass(byte[] b) {
         Class klass = null;
 
