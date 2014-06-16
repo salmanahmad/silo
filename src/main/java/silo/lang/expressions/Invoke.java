@@ -192,9 +192,68 @@ public class Invoke implements Expression {
     }
 
     public static int resolveFunctionByAutoboxing(Class[][] parameters, Class[] args) {
-        // TODO: Implement This
         // TODO: I may want to implement this with my type propogation algorithm...
-        return -1;
+
+        Vector<Integer> options = new Vector<Integer>();
+
+        // First filter out the parameters that are not valid for the args
+        int i = 0;
+        for(Class[] expected : parameters) {
+            boolean match = true;
+
+            if(expected.length != args.length) {
+                match = false;
+                i++;
+                continue;
+            }
+
+            for(int j = 0; j < expected.length; j++) {
+                Class e = expected[j];
+                Class p = args[j];
+
+                if(!Compiler.isValidAutoBoxedAssignment(e, p)) {
+                    match = false;
+                }
+            }
+
+            if(match) {
+                options.add(i);
+            }
+
+            i++;
+        }
+
+        // Second, we have to find the most specific arguments
+        int index = -1;
+        for(i = 0; i < options.size(); i++) {
+            if(i == 0) {
+                index = 0;
+            } else {
+
+                int result = mostSpecificParametersFixedArgs(
+                    parameters[options.get(index)],
+                    parameters[options.get(i)]
+                );
+
+                if(result == 0) {
+                    // If they are equal we are going to pick the first method, hence we do not change index
+                    index = index;
+                } else if(result == 1) {
+                    index = index;
+                } else if(result == 2) {
+                    index = i;
+                } else {
+                    index = -1;
+                    break;
+                }
+            }
+        }
+
+        if(index == -1) {
+            return -1;
+        } else {
+            return options.get(index);
+        }
     }
 
     // Assumes the last parameter in the parameter list is an array that represent that type of the
@@ -217,8 +276,7 @@ public class Invoke implements Expression {
                     e = expected[j];
                 }
 
-                // TODO: isValidAssignment does not handle boxing and unboxing
-                if(Compiler.isValidAssignment(e, arg)) {
+                if(Compiler.isValidAutoBoxedAssignment(e, arg)) {
                     match = match && true;
                 } else {
                     match = false;
@@ -314,7 +372,10 @@ public class Invoke implements Expression {
         }
 
         // Phase 2
-        // TODO: Autoboxing
+        index = resolveFunctionByAutoboxing(convertMethodsToParameterLists(methods.toArray(new Method[0])), args);
+        if(index != -1) {
+            return methods.get(index);
+        }
 
         // Phase 3
         Vector<Method> varArgsMethods = new Vector<Method>();
@@ -352,7 +413,10 @@ public class Invoke implements Expression {
         }
 
         // Phase 2
-        // TODO: Autoboxing
+        index = resolveFunctionByAutoboxing(convertConstructorsToParameterLists(constructors.toArray(new Constructor[0])), args);
+        if(index != -1) {
+            return constructors.get(index);
+        }
 
         // Phase 3
         Vector<Constructor> varArgsConstructors = new Vector<Constructor>();
@@ -368,10 +432,6 @@ public class Invoke implements Expression {
         }
 
         return null;
-    }
-
-    public static Vector<Class> compileArguments(Vector<Expression> arguments, CompilationContext context) {
-        return compileArguments(arguments, context, true);
     }
 
     public static Vector<Class> compileArguments(Vector<Expression> arguments, CompilationContext context, boolean shouldEmit) {
@@ -567,7 +627,7 @@ public class Invoke implements Expression {
         if(shouldVarArgs) {
             compileVariableArguments(params, arguments, context, true);
         } else {
-            compileArguments(arguments, context, true);
+            compileArguments(params, arguments, context, true);
         }
 
         if(Modifier.isStatic(method.getModifiers())) {
@@ -1077,7 +1137,7 @@ public class Invoke implements Expression {
                             Class expectedType = params[i];
                             Class providedType = types.get(i);
 
-                            if(Compiler.assignmentValidation(expectedType, providedType) != Compiler.AssignmentOperation.VALID) {
+                            if(Compiler.assignmentValidation(expectedType, providedType) == Compiler.AssignmentOperation.INVALID) {
                                 throw new RuntimeException("Parameter mismatch in " + klass + ". Expected: " + expectedType + " Provided: " + providedType);
                             }
                         }
@@ -1101,7 +1161,7 @@ public class Invoke implements Expression {
 
                         Constructor constructor = resolveConstructor(klass, types.toArray(new Class[0]));
                         if(constructor == null) {
-                            throw new RuntimeException("Could not find constructor: " + klass);
+                            throw new RuntimeException("Could not find constructor: " + klass.toString() + " " + types.toString());
                         }
 
                         if(!shouldEmit) {
@@ -1120,7 +1180,7 @@ public class Invoke implements Expression {
                         if(shouldVarArgs) {
                             compileVariableArguments(params, arguments, context, shouldEmit);
                         } else {
-                            compileArguments(arguments, context, shouldEmit);
+                            compileArguments(params, arguments, context, shouldEmit);
                         }
 
                         if(shouldEmit) {

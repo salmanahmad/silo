@@ -1,0 +1,15 @@
+
+function(
+    name(test)
+    {
+        foo(Integer(42))
+    }
+)
+
+function(
+    name(foo)
+    inputs(i : int)
+    {
+        return(Integer(i))
+    }
+)

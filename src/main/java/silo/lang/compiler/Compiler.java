@@ -665,6 +665,22 @@ public class Compiler {
         }
     }
 
+    public static boolean isValidAutoBoxedAssignment(Class target, Class value) {
+        if(isValidAssignment(target, value)) {
+            return true;
+        }
+
+        if(target.isAssignableFrom(assignmentBoxType(value))) {
+            return true;
+        }
+
+        if(target.isAssignableFrom(assignmentUnboxType(value))) {
+            return true;
+        }
+
+        return false;
+    }
+
     public static enum AssignmentOperation {
         INVALID,
         VALID,
@@ -702,7 +718,7 @@ public class Compiler {
     }
 
     public static Class assignmentUnbox(Class source, CompilationContext context) {
-        context.currentFrame().generator.unbox(Type.getType(source));
+        context.currentFrame().generator.unbox(Type.getType(Compiler.assignmentUnboxType(source)));
         context.currentFrame().operandStack.pop();
         context.currentFrame().operandStack.push(Compiler.assignmentUnboxType(source));
         return assignmentUnboxType(source);
@@ -772,7 +788,7 @@ public class Compiler {
                 Compiler.assignmentUnbox(operandClass, context);
             } else {
                 context.currentFrame().operandStack.pop();
-                context.currentFrame().operandStack.push(Compiler.assignmentBoxType(operandClass));
+                context.currentFrame().operandStack.push(Compiler.assignmentUnboxType(operandClass));
             }
         }
     }

@@ -1019,4 +1019,24 @@ public class CompilerTest {
 
         Assert.assertEquals(PersistentVectorHelper.create("Hello", "Hello", "World"), output);
     }
+
+    @Test
+    public void testAutoBoxing() {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/examples/autoboxing.silo");
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+
+        Assert.assertEquals(PersistentVectorHelper.create(new Integer(1), new Integer(2), new Integer(3), new Integer(4)), runtime.eval(classes.get(0)));
+        Assert.assertEquals(new Integer(42), runtime.eval(classes.get(1)));
+        Assert.assertEquals(new Integer(24), runtime.eval(classes.get(2)));
+    }
+
+    @Test
+    public void testAutoBoxingUnbox() {
+        Runtime runtime = new Runtime();
+        String source = Helper.readResource("/examples/autoboxing-unbox.silo");
+        Vector<Class> classes = runtime.compile(Parser.parse(source));
+
+        Assert.assertEquals(new Integer(42), runtime.eval(classes.get(0)));
+    }
 }
