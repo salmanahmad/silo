@@ -245,6 +245,16 @@ package(silo.net.http.connection {
             response#headers()#set("Connection", "Close")
         })
 
+        if(headers {
+            keys : Vector = map.keys(headers)
+            for(i : int = 0; i < vector.length(keys); i = i + 1 {
+                key : String = vector.get(keys, i)#toString()
+                value : Object = map.get(headers, key)
+
+                response#headers()#add(key, value)
+            })
+        })
+
         c.context#writeAndFlush(response)
 
         null

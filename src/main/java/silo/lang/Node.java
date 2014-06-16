@@ -276,7 +276,9 @@ public class Node {
         for(Object child : childs) {
             if(child instanceof Node) {
                 children.add(replaceSymbol((Node)child, target, replacement));
-            } else if(child.equals(target)) {
+            } else if(child == null && target != null) {
+                children.add(child);
+            } else if((child == null && target == null) || child.equals(target)) {
                 children.add(replacement);
             } else {
                 children.add(child);
