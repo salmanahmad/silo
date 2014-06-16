@@ -11,6 +11,8 @@
 
 package silo.lang;
 
+import com.github.krukow.clj_lang.IPersistentMap;
+
 import com.github.krukow.clj_lang.IPersistentVector;
 import com.github.krukow.clj_lang.PersistentVector;
 
@@ -31,6 +33,10 @@ public class PersistentVectorHelper {
 
     public static IPersistentVector create(Iterable items) {
         return PersistentVector.create(items);
+    }
+
+    public static IPersistentVector create(IPersistentMap items) {
+        return PersistentVector.create((Object)items);
     }
 
     public static IPersistentVector fromNode(Node node) {
