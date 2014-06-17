@@ -16,6 +16,7 @@ import java.util.Arrays;
 @lexer::header {
 
 import silo.lang.*;
+import org.apache.commons.lang3.StringEscapeUtils;
 }
 
 @parser::members {
@@ -176,7 +177,7 @@ literalExpression returns [Object value]
   : NULL                               { $value = null; }
   | TRUE                               { $value = Boolean.TRUE; }
   | FALSE                              { $value = Boolean.FALSE; }
-  | STRING                             { $value = StringEscapeUtils.unescapeJava($text); }
+  | STRING                             { $value = $text; }
   | FLOAT                              { $value = Float.parseFloat($text.substring(0, $text.length() - 1)); }
   | LONG                               { $value = Long.parseLong($text.substring(0, $text.length() - 1)); }
   | DOUBLE                             { $value = Double.parseDouble($text); }
@@ -284,7 +285,7 @@ STRING
     ( ESC
     | ~('"'|'\\')
     )*
-    '"'                                {setText(getText().substring(1, getText().length() - 1));}
+    '"'                                {setText(StringEscapeUtils.unescapeJava(getText().substring(1, getText().length() - 1)));}
   | '\''
     ( ~('\'')
     )*
