@@ -47,6 +47,10 @@ public class PersistentMapHelper {
     }
 
     public static IPersistentMap merge(IPersistentMap map1, IPersistentMap map2) {
+        if(map1 == null) {
+            map1 = create();
+        }
+
         IPersistentMap output = map1;
 
         IPersistentVector keys = keys(map2);
