@@ -64,10 +64,12 @@ package(silo.net.http.connection {
 
         try({
             f(r, c)
-        } finally {
             if(!checkcast(map.get(r.headers, "Connection", "Close"), String)#equalsIgnoreCase("Keep-Alive") {
                 close(c)
             })
+        } catch(e : Exception) {
+            close(c)
+            throw(e)
         })
     })
 
