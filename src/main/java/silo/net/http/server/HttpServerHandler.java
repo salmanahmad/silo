@@ -128,7 +128,7 @@ public class HttpServerHandler extends SimpleChannelInboundHandler {
                 httpRequest.is100ContinueExpected = false;
             }
 
-            this.actor = runtime.spawn(connection.actorId, handle, handler, httpRequest, connection);
+            this.actor = runtime.spawn(connection.actorId, handle, handler, httpRequest, connection, options);
 
             // TODO: Do I need to check this?
             //appendDecoderResult(buf, request);

@@ -59,11 +59,11 @@ package(silo.net.http.client {
 })
 
 package(silo.net.http.connection {
-    func(handle(f : Function, r : Request, c : Connection) {
+    func(handle(f : Function, r : Request, c : Connection, o : Map) {
         // TODO: I feel that if an exception took place, I should close the connection.
 
         try({
-            f(r, c)
+            f(r, c, o)
             if(!checkcast(map.get(r.headers, "Connection", "Close"), String)#equalsIgnoreCase("Keep-Alive") {
                 close(c)
             })
