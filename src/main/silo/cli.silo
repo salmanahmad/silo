@@ -138,7 +138,7 @@ func(serviceStart(args : Vector) {
     serviceName : String = args#nth(0, null) | checkcast(String)
     name : String = serviceName
     serviceName = serviceName + ".service"
-    args = vector.removeFirst(args)
+    //args = vector.removeFirst(args)
 
     argsString : String = ""
     i : int = 0
@@ -158,7 +158,7 @@ func(serviceStart(args : Vector) {
         println("Service is already running.")
     } else {
         command : array(String) = arraynew(String, 3)
-        command(0) = "sh"
+        command(0) = "bash"
         command(1) = "-c"
         command(2) = String.format("nohup %s/bin/java %s -classpath %s silo.lang.Main %s > %s/log.txt 2>&1 < /dev/null & echo $! > %s/service.pid", javaHome, javaFlags, javaPath, argsString, serviceName, serviceName)
 
