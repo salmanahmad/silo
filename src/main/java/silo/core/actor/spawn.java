@@ -27,7 +27,7 @@ public class spawn extends Function {
     @Function.Body
     public static String invoke(ExecutionContext context, Function function, IPersistentVector vector) {
         Runtime runtime = context.fiber.actor.runtime;
-        Actor actor = runtime.spawn(function, RT.toArray(vector));
+        Actor actor = runtime.spawnFork(function, RT.toArray(vector));
 
         return actor.address;
     }

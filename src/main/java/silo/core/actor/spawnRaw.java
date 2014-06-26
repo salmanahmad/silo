@@ -27,7 +27,7 @@ public class spawnRaw extends Function {
     @Function.Body
     public static Actor invoke(ExecutionContext context, Function function, IPersistentVector vector) {
         Runtime runtime = context.fiber.actor.runtime;
-        Actor actor = runtime.spawn(function, RT.toArray(vector));
+        Actor actor = runtime.spawnFork(function, RT.toArray(vector));
 
         return actor;
     }

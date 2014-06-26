@@ -98,6 +98,18 @@ public class Runtime {
         return actor;
     }
 
+    public Actor spawnFork(Function function, Object ... arguments) {
+        return spawnFork(UUID.randomUUID().toString(), function, arguments);
+    }
+
+    public Actor spawnFork(String address, Function function, Object ... arguments) {
+        Actor actor = new Actor(this, address, new Fiber(function, arguments));
+        this.actors.put(address, actor);
+        actor.schedule(true);
+
+        return actor;
+    }
+
     public Object eval(Node node) {
         Class klass = this.compile(node).lastElement();
         return eval(klass);
