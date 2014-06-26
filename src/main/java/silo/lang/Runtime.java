@@ -93,7 +93,7 @@ public class Runtime {
     public Actor spawn(String address, Function function, Object ... arguments) {
         Actor actor = new Actor(this, address, new Fiber(function, arguments));
         this.actors.put(address, actor);
-        actor.schedule();
+        actor.schedule(false);
 
         return actor;
     }

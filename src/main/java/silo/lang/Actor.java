@@ -12,6 +12,7 @@
 package silo.lang;
 
 import java.util.ArrayDeque;
+import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
 
 // TODO: move Fiber into silo.lang
@@ -186,7 +187,7 @@ public class Actor implements Runnable {
         this.locked = false;
     }
 
-    public synchronized void schedule() {
+    public synchronized void schedule(boolean shouldFork) {
         if(done) {
             return;
         }
@@ -206,9 +207,17 @@ public class Actor implements Runnable {
                 this.runtime.backgroundExecutor.submit(this);
             } else {
                 //this.runtime.actorExecutor.submit(this);
-                (new Task(this)).fork();
+                if(shouldFork) {
+                    (new Task(this)).fork();
+                } else {
+                    ((ForkJoinPool)this.runtime.actorExecutor).submit((new Task(this)));
+                }
             }
         }
+    }
+
+    public synchronized void schedule() {
+        schedule(true);
     }
 
     private synchronized boolean shouldRun() {
