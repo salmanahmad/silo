@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # Copyright 2011 by Salman Ahmad (salman@salmanahmad.com).
 # All rights reserved.
