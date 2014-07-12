@@ -14,6 +14,7 @@ package silo.lang.expressions;
 import silo.lang.*;
 import silo.lang.compiler.Compiler;
 
+import java.util.Stack;
 import java.util.Arrays;
 import java.util.Vector;
 import java.util.Set;
@@ -893,6 +894,9 @@ public class Invoke implements Expression {
         generator.goTo(rest);
 
         generator.mark(capturing);
+
+        context.customFrame(frame.operandStack);
+
         // Pop the return value, we do not care about it
         Compiler.pop(returnClass, generator);
         // Create new frame

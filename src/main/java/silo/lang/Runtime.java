@@ -191,7 +191,15 @@ public class Runtime {
         compilationContext.clear();
         Compiler.compile(compilationContext, program);
 
-        return compilationContext.classes;
+        Vector<Class> userClasses = new Vector<Class>();
+        for(Class klass : compilationContext.classes) {
+            if(!klass.getName().startsWith("silo.lang.rt.frames")) {
+                userClasses.add(klass);
+            }
+        }
+
+        //return compilationContext.classes;
+        return userClasses;
     }
 
     public Object expandCode(Object code) {
