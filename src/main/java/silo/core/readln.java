@@ -66,7 +66,7 @@ public class readln extends Function {
             runtime.backgroundExecutor.submit(new Task(id, actor));
         } else {
             ExecutionFrame frame = context.getCurrentFrame();
-            id = (String)frame.locals[0];
+            id = (String)((Object[])frame.locals)[0];
         }
 
         while(true) {

@@ -91,6 +91,14 @@ public class Helper {
         context.setCurrentFrame(frame);
     }
 
+    public static void storeLocalsExecutionFrame(Object locals, ExecutionContext context) {
+        context.getCurrentFrame().locals = locals;
+    }
+
+    public static void invalidProgramCounter() {
+        throw new RuntimeException("Invalid program counter.");
+    }
+
     public static String toQuotedString(Object o) {
         if(o == null) {
             return "null";

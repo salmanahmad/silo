@@ -72,7 +72,7 @@ public class sleep extends Function {
             t.schedule(new Task(id, actor), ms);
         } else {
             ExecutionFrame frame = context.getCurrentFrame();
-            id = (String)frame.locals[0];
+            id = (String)((Object[])frame.locals)[0];
         }
 
         while(true) {

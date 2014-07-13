@@ -14,6 +14,7 @@ package silo.lang.expressions;
 import silo.lang.*;
 import silo.lang.compiler.Compiler;
 
+import java.util.Stack;
 import java.util.Vector;
 
 import com.github.krukow.clj_lang.IPersistentVector;
@@ -371,6 +372,39 @@ public class FunctionExpression implements Expression, Opcodes {
             (new Return(null, false)).emit(context);
 
             if(resumable) {
+                // Handling local variables
+                Stack<Class> localVariableTypes = new Stack<Class>();
+                Stack<Symbol> localVariableNames = new Stack<Symbol>();
+
+                for(Symbol variableName : frame.locals.keySet()) {
+                    int variableIndex = frame.locals.get(variableName).intValue();
+                    Class variableType = frame.localTypes.get(variableName);
+
+                    if(variableName.toString().equals("return:variable")) {
+                        continue;
+                    }
+
+                    if(variableName.toString().equals("constructor:variable")) {
+                        continue;
+                    }
+
+                    if(variableIndex == 0) {
+                        continue;
+                    }
+
+                    localVariableTypes.push(variableType);
+                    localVariableNames.push(variableName);
+                }
+
+                Class restorationStackFrame = context.customFrame(localVariableTypes);
+                java.lang.reflect.Method restorationStackFrameMethod = null;
+                for(java.lang.reflect.Method tempMethod : restorationStackFrame.getMethods()) {
+                    if(tempMethod.getName().equals("build")) {
+                        restorationStackFrameMethod = tempMethod;
+                        break;
+                    }
+                }
+
                 // Local Initialization
                 frame.generator.mark(initializationLabel);
                 for(Symbol local : frame.locals.keySet()) {
@@ -396,29 +430,40 @@ public class FunctionExpression implements Expression, Opcodes {
 
                 // Local Restoration
                 Label invalidProgamCounterLabel = frame.generator.mark();
-                frame.generator.throwException(Type.getType(RuntimeException.class), "Invalid program counter");
+                frame.generator.invokeStatic(Type.getType(Helper.class), Method.getMethod("void invalidProgramCounter()"));
+                Compiler.pushInitializationValue(frame.outputClass, frame.generator);
+                frame.generator.returnValue();
+
                 frame.generator.mark(frame.restoreLocalsLabel);
-                for(Symbol variableName : frame.locals.keySet()) {
-                    if(variableName.toString().equals("return:variable")) {
-                        continue;
+                if(localVariableNames.size() != 0) {
+                    Compiler.loadExecutionFrame(context);
+                    frame.generator.getField(Type.getType(ExecutionFrame.class), "locals", Type.getType(Object.class));
+                    frame.generator.checkCast(Type.getType(restorationStackFrame));
+                    for(int i = 0; i < localVariableNames.size() - 1; i++) {
+                        frame.generator.dup();
                     }
+                }
+
+                for(int i = 0; i < localVariableNames.size(); i++) {
+                    Symbol variableName = localVariableNames.get(i);
 
                     int variableIndex = frame.locals.get(variableName).intValue();
                     Class variableType = frame.localTypes.get(variableName);
+                    Class fieldType = Object.class;
 
-                    if(variableIndex == 0) {
-                        continue;
+                    if(variableType.isPrimitive()) {
+                        fieldType = variableType;
                     }
 
-                    // TODO: Is this more or less efficient than doing weird DUP / DUPX2 / Swaps
-                    Compiler.loadExecutionFrame(context);
-                    frame.generator.getField(Type.getType(ExecutionFrame.class), "locals", Type.getType(Object[].class));
-                    frame.generator.push(variableIndex);
-                    frame.generator.arrayLoad(Type.getType(Object.class));
+                    frame.generator.getField(Type.getType(restorationStackFrame), "operand" + i, Type.getType(fieldType));
 
-                    frame.generator.unbox(Type.getType(variableType));
+                    if(!variableType.isPrimitive()) {
+                        frame.generator.checkCast(Type.getType(variableType));
+                    }
+
                     frame.generator.visitVarInsn(Type.getType(variableType).getOpcode(Opcodes.ISTORE), variableIndex);
                 }
+
                 Compiler.loadExecutionContext(context);
                 frame.generator.getField(Type.getType(ExecutionContext.class), "programCounter", Type.getType(int.class));
                 Label[] continuationLabels = frame.continuationLabels(invalidProgamCounterLabel);
@@ -426,26 +471,17 @@ public class FunctionExpression implements Expression, Opcodes {
 
                 // Local Capture
                 frame.generator.mark(frame.captureLocalsLabel);
-                Compiler.loadExecutionFrame(context);
-                frame.generator.push(frame.nextLocal());
-                frame.generator.newArray(Type.getType(Object.class));
-                frame.generator.putField(Type.getType(ExecutionFrame.class), "locals", Type.getType(Object[].class));
-                for(Symbol variableName : frame.locals.keySet()) {
+                for(int i = 0; i < localVariableNames.size(); i++) {
+                    Symbol variableName = localVariableNames.get(i);
                     int variableIndex = frame.locals.get(variableName).intValue();
                     Class variableType = frame.localTypes.get(variableName);
 
-                    if(variableIndex == 0) {
-                        continue;
-                    }
-
-                    // TODO: Is this more or less efficient than doing weird DUP / DUPX2 / Swaps
-                    Compiler.loadExecutionFrame(context);
-                    frame.generator.getField(Type.getType(ExecutionFrame.class), "locals", Type.getType(Object[].class));
-                    frame.generator.push(variableIndex);
                     frame.generator.visitVarInsn(Type.getType(variableType).getOpcode(Opcodes.ILOAD), variableIndex);
-                    frame.generator.box(Type.getType(variableType));
-                    frame.generator.arrayStore(Type.getType(Object.class));
                 }
+
+                frame.generator.invokeStatic(Type.getType(restorationStackFrame), Method.getMethod(restorationStackFrameMethod));
+                Compiler.loadExecutionContext(context);
+                frame.generator.invokeStatic(Type.getType(Helper.class), Method.getMethod("void storeLocalsExecutionFrame(Object, silo.lang.ExecutionContext)"));
                 Compiler.pushInitializationValue(frame.outputClass, frame.generator);
                 frame.generator.returnValue();
             }

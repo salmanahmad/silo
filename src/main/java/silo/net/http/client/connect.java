@@ -95,7 +95,7 @@ public class connect extends Function {
             b.connect(host, port).addListener(new ConnectionHandler(connection.connectionId, actor));
         } else {
             ExecutionFrame frame = context.getCurrentFrame();
-            connection = (Connection)frame.locals[0];
+            connection = (Connection)((Object[])frame.locals)[0];
         }
 
         while(true) {
