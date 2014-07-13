@@ -83,6 +83,14 @@ public class Helper {
         return ((Comparable)o1).compareTo(o2) >= 0;
     }
 
+    public static void buildExecutionFrame(Object stack, int programCounter, ExecutionContext context) {
+        ExecutionFrame frame = new ExecutionFrame();
+        frame.stack = stack;
+        frame.programCounter = programCounter;
+
+        context.setCurrentFrame(frame);
+    }
+
     public static String toQuotedString(Object o) {
         if(o == null) {
             return "null";

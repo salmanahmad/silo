@@ -796,35 +796,19 @@ public class Invoke implements Expression {
                 break;
             }
         }
-
         generator.invokeStatic(Type.getType(restorationStackFrame), org.objectweb.asm.commons.Method.getMethod(restorationStackFrameMethod));
-        generator.checkCast(Type.getType(Object.class));
-        generator.visitVarInsn(Type.getType(Object.class).getOpcode(Opcodes.ISTORE), frame.locals.get(new Symbol("return:variable")));
 
         // Create new frame
-        Compiler.loadExecutionContext(context);
-        generator.newInstance(Type.getType(ExecutionFrame.class));
-        generator.dup();
-        generator.dup();
-        generator.dup();
-        generator.invokeConstructor(Type.getType(ExecutionFrame.class), org.objectweb.asm.commons.Method.getMethod("void <init> ()"));
-
-        // Save the program counter and register a callsite
         CompilationFrame.CallSite frameCallSite = new CompilationFrame.CallSite();
         frameCallSite.resumeSite = resumeSite;
         frameCallSite.continuationSite = continuationSite;
         frame.callSites.push(frameCallSite);
         int programCounter = frame.callSites.size() - 1;
 
+        // Save the frame
         generator.push(programCounter);
-        generator.putField(Type.getType(ExecutionFrame.class), "programCounter", Type.getType(int.class));
-
-        // Store the operand stack
-        generator.visitVarInsn(Type.getType(Object.class).getOpcode(Opcodes.ILOAD), frame.locals.get(new Symbol("return:variable")));
-        generator.putField(Type.getType(ExecutionFrame.class), "stack", Type.getType(Object.class));
-
-        // Save the current frame
-        generator.invokeVirtual(Type.getType(ExecutionContext.class), org.objectweb.asm.commons.Method.getMethod("void setCurrentFrame(silo.lang.ExecutionFrame)"));
+        Compiler.loadExecutionContext(context);
+        generator.invokeStatic(Type.getType(Helper.class), org.objectweb.asm.commons.Method.getMethod("void buildExecutionFrame(Object, int, silo.lang.ExecutionContext)"));
 
         // Save Local Variables. Execution will return from this jump after capturing locals
         generator.goTo(frame.captureLocalsLabel);
