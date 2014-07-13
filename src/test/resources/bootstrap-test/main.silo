@@ -1,0 +1,37 @@
+
+function(
+    name(foo)
+    inputs(a : String)
+    outputs(String) {
+        return(a)
+    }
+)
+
+function(
+    name(bar)
+    inputs(a : String)
+    outputs(String) {
+        return(a + "0xBEEF")
+    }
+)
+
+function(
+    name(baz)
+    outputs(String) {
+        return(foo(bar("asdfasd")))
+    }
+)
+
+function(
+    name(barbarbar)
+    outputs(Object) {
+        f : Function = function(
+            inputs(s : String) 
+            {
+                return("huh> " + s)
+            }
+        )
+        f("World")
+    }
+)
+

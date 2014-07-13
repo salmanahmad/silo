@@ -399,6 +399,10 @@ public class FunctionExpression implements Expression, Opcodes {
                 frame.generator.throwException(Type.getType(RuntimeException.class), "Invalid program counter");
                 frame.generator.mark(frame.restoreLocalsLabel);
                 for(Symbol variableName : frame.locals.keySet()) {
+                    if(variableName.toString().equals("return:variable")) {
+                        continue;
+                    }
+
                     int variableIndex = frame.locals.get(variableName).intValue();
                     Class variableType = frame.localTypes.get(variableName);
 

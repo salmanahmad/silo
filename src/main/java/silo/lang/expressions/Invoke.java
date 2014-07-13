@@ -788,9 +788,6 @@ public class Invoke implements Expression {
         frame.operandStack.pop();
 
         // Save the operand stack
-        generator.push("saving " + frame.operandStack);
-        generator.pop();
-
         Class restorationStackFrame = context.customFrame(frame.operandStack);
         Method restorationStackFrameMethod = null;
         for(Method tempMethod : restorationStackFrame.getMethods()) {
@@ -799,6 +796,7 @@ public class Invoke implements Expression {
                 break;
             }
         }
+
         generator.invokeStatic(Type.getType(restorationStackFrame), org.objectweb.asm.commons.Method.getMethod(restorationStackFrameMethod));
         generator.checkCast(Type.getType(Object.class));
         generator.visitVarInsn(Type.getType(Object.class).getOpcode(Opcodes.ISTORE), frame.locals.get(new Symbol("return:variable")));
@@ -844,7 +842,7 @@ public class Invoke implements Expression {
             Compiler.loadExecutionFrame(context);
             generator.getField(Type.getType(ExecutionFrame.class), "stack", Type.getType(Object.class));
             generator.checkCast(Type.getType(restorationStackFrame));
-            generator.getField(Type.getType(ExecutionFrame.class), "operand" + (frame.operandStack.size() - 1), Type.getType(Object.class));
+            generator.getField(Type.getType(restorationStackFrame), "operand" + (frame.operandStack.size() - 1), Type.getType(Object.class));
             generator.checkCast(Type.getType(klass));
         }
         Compiler.loadExecutionContext(context);
@@ -898,9 +896,6 @@ public class Invoke implements Expression {
         generator.mark(resuming);
 
         // Save the return value temporarily
-        generator.push("resuming " + frame.operandStack);
-        generator.pop();
-
         generator.valueOf(Type.getType(returnClass));
         generator.checkCast(Type.getType(Object.class));
         generator.visitVarInsn(Type.getType(Object.class).getOpcode(Opcodes.ISTORE), frame.locals.get(new Symbol("return:variable")));
@@ -931,6 +926,9 @@ public class Invoke implements Expression {
         // Reset the return value
         generator.visitVarInsn(Type.getType(Object.class).getOpcode(Opcodes.ILOAD), frame.locals.get(new Symbol("return:variable")));
         generator.unbox(Type.getType(returnClass));
+
+
+
 
         // TODO: I don't think I need this anymore...
         //Compiler.loadExecutionContext(context);
