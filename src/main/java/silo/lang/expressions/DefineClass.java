@@ -282,6 +282,7 @@ public class DefineClass implements Expression, Opcodes {
             }
 
             frame.newLocal(new Symbol("constructor:variable"), Object[].class);
+            frame.newLocal(new Symbol("return:variable"), Object.class);
             (new Block(body)).emit(context);
             g.returnValue();
         } else {
@@ -528,6 +529,7 @@ public class DefineClass implements Expression, Opcodes {
             }
 
             frame.newLocal(new Symbol("constructor:variable"), Object[].class);
+            frame.newLocal(new Symbol("return:variable"), Object.class);
             (new Block(body)).emit(context);
             (new Return(null, false)).emit(context);
 
@@ -561,6 +563,10 @@ public class DefineClass implements Expression, Opcodes {
                 frame.generator.throwException(Type.getType(RuntimeException.class), "Invalid program counter");
                 frame.generator.mark(frame.restoreLocalsLabel);
                 for(Symbol variableName : frame.locals.keySet()) {
+                    if(variableName.toString().equals("return:variable")) {
+                        continue;
+                    }
+
                     int variableIndex = frame.locals.get(variableName).intValue();
                     Class variableType = frame.localTypes.get(variableName);
 
