@@ -18,11 +18,6 @@ import silo.core.fiber.Fiber;
 
 public class ExecutionContext {
 
-    public final int RUNNING = 1;
-    public final int RESUMING = 2;
-    public final int CAPTURING = 3;
-    public final int YIELDING = 4;
-
     int currentFrame = -1;
     ExecutionFrame[] frames = new ExecutionFrame[16];
 
@@ -51,28 +46,19 @@ public class ExecutionContext {
         }
     }
 
-    public int endCall() {
+    public boolean endCall() {
         currentFrame--;
-        ExecutionFrame frame = getCurrentFrame();
 
-        if(yielding) {
-            if(frame == null) {
-                programCounter = -1;
-                return CAPTURING;
-            } else {
-                programCounter = -1;
-                return YIELDING;
-            }
-        } else {
-            if(frame == null) {
-                programCounter = -1;
-                return RUNNING;
-            } else {
+        if(!yielding) {
+            ExecutionFrame frame = getCurrentFrame();
+
+            if(frame != null) {
                 frames[currentFrame + 1] = null;
                 programCounter = frame.programCounter;
-                return RESUMING;
             }
         }
+
+        return yielding;
     }
 
     public void setCurrentFrame(ExecutionFrame frame) {

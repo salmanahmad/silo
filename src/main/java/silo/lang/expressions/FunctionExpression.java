@@ -365,6 +365,7 @@ public class FunctionExpression implements Expression, Opcodes {
 
             frame.generator.mark(startLabel);
 
+            frame.newLocal(new Symbol("return:variable"), Object.class);
             frame.newLocal(new Symbol("constructor:variable"), Object[].class);
             body.emit(context);
             (new Return(null, false)).emit(context);
