@@ -55,8 +55,8 @@ public class Runtime {
         this.compilationContext = new CompilationContext(this);
 
         this.actors = new ConcurrentHashMap<String, Actor>();
-        //this.actorExecutor = Executors.newFixedThreadPool(nThreads);
-        this.actorExecutor = new ForkJoinPool(nThreads, ForkJoinPool.defaultForkJoinWorkerThreadFactory, null, true);
+        this.actorExecutor = Executors.newFixedThreadPool(nThreads);
+        //this.actorExecutor = new ForkJoinPool(nThreads, ForkJoinPool.defaultForkJoinWorkerThreadFactory, null, true);
         this.backgroundExecutor = Executors.newCachedThreadPool();
 
         this.registry = new ConcurrentHashMap<String, Object>();
