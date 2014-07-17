@@ -45,9 +45,17 @@ public class Runtime {
 
     public ConcurrentHashMap<String, Object> registry;
 
+    public static String scheduler() {
+        String scheduler = System.getProperty("silo.lang.scheduler");
+        if(scheduler == null) {
+            scheduler = "fixed";
+        }
+
+        return scheduler;
+    }
+
     public Runtime() {
-        //this(new RuntimeClassLoader(), java.lang.Runtime.getRuntime().availableProcessors() * 2);
-        this(new RuntimeClassLoader(), java.lang.Runtime.getRuntime().availableProcessors());
+        this(new RuntimeClassLoader(), -1);
     }
 
     public Runtime(RuntimeClassLoader loader, int nThreads) {
@@ -55,8 +63,21 @@ public class Runtime {
         this.compilationContext = new CompilationContext(this);
 
         this.actors = new ConcurrentHashMap<String, Actor>();
-        //this.actorExecutor = Executors.newFixedThreadPool(nThreads);
-        this.actorExecutor = new ForkJoinPool(nThreads, ForkJoinPool.defaultForkJoinWorkerThreadFactory, null, true);
+
+        if(scheduler().equals("fork-join")) {
+            if(nThreads == -1) {
+                nThreads = java.lang.Runtime.getRuntime().availableProcessors();
+            }
+
+            this.actorExecutor = new ForkJoinPool(nThreads, ForkJoinPool.defaultForkJoinWorkerThreadFactory, null, true);
+        } else {
+            if(nThreads == -1) {
+                nThreads = java.lang.Runtime.getRuntime().availableProcessors() * 2;
+            }
+
+            this.actorExecutor = Executors.newFixedThreadPool(nThreads);
+        }
+
         this.backgroundExecutor = Executors.newCachedThreadPool();
 
         this.registry = new ConcurrentHashMap<String, Object>();

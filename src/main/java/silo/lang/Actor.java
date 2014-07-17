@@ -206,11 +206,14 @@ public class Actor implements Runnable {
             if(this.locked) {
                 this.runtime.backgroundExecutor.submit(this);
             } else {
-                //this.runtime.actorExecutor.submit(this);
-                if(shouldFork) {
-                    (new Task(this)).fork();
+                if(Runtime.scheduler().equals("fork-join")) {
+                    if(shouldFork) {
+                        (new Task(this)).fork();
+                    } else {
+                        ((ForkJoinPool)this.runtime.actorExecutor).submit((new Task(this)));
+                    }
                 } else {
-                    ((ForkJoinPool)this.runtime.actorExecutor).submit((new Task(this)));
+                    this.runtime.actorExecutor.submit(this);
                 }
             }
         }
